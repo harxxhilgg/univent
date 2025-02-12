@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "univent",
+    "slug": "univent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/system/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/system/splash-icon-dark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "packageOpts": {
+      "hostType": "lan"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/system/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.univent.testOne"
+    },
+    "web": {
+      "favicon": "./assets/system/favicon.png"
+    },
+    "plugins": ["expo-font"],
+    "extra": {
+      "eas": {
+        "projectId": "ae9f7df3-dde8-4bf5-ac50-2908fa513010"
+      }
+    },
+    "owner": "harshil0"
+  }
+}
