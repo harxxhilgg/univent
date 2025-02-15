@@ -1,13 +1,16 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import React, { useContext, useState } from 'react'
 import CustomText from '../components/CustomText'
 import { theme } from '../../theme'
 import { useNavigation } from '@react-navigation/native'
 import { AuthScreenNavigationProp } from '../../App'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Toast from 'react-native-toast-message'
+import { UserContext } from '../context/UserContext'
 
 const Settings = () => {
+  const { user } = useContext(UserContext);
+
   const navigation = useNavigation<AuthScreenNavigationProp>();
 
   const [loading, setLoading] = useState(false);
@@ -54,6 +57,10 @@ const Settings = () => {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.userDataContainer}>
+          <CustomText style={styles.userDetails}>Username: {user?.username}</CustomText>
+          <CustomText style={styles.userDetails}>Email: {user?.email}</CustomText>
+        </View>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} disabled={loading}>
           {loading ? (
             <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
@@ -76,9 +83,24 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    paddingBottom: 30
+  },
+  userDataContainer: {
+    backgroundColor: theme.colorSlightDark,
+    marginTop: 40,
+    marginBottom: 30,
+    paddingVertical: 28,
+    paddingHorizontal: 28,
+    gap: 20,
+    borderRadius: 30
+  },
+  userDetails: {
+    fontSize: 20,
+    color: theme.colorFontLight
   },
   logoutBtn: {
+    marginTop: "auto",
+    marginBottom: "25%",
     paddingVertical: 6,
     backgroundColor: theme.colorTaskbarYellow,
     borderRadius: 20,

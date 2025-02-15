@@ -1,14 +1,17 @@
 import { View, TouchableOpacity, Image, StyleSheet, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { API_URL } from '../../univent-backend/src/utils/api';
+import { UserContext } from '../context/UserContext';
 
 const AuthScreen = () => {
+  const { setUser } = useContext(UserContext);
+
   const navigation = useNavigation<AuthScreenNavigationProp>();
 
   const [inputFieldActive, setInputFieldActive] = useState(theme.colorTransparentLightGray);
@@ -109,6 +112,7 @@ const AuthScreen = () => {
 
       try {
         await AsyncStorage.setItem("authToken", data.token);
+        setUser(data.user); // looged in user's data
         // console.log('Token stored successfully');
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
