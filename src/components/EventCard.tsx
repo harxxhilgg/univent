@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   timeLocationText: {
     color: theme.colorTaskbarYellow,
     fontSize: 14,
-    padding: 1,
+    padding: 2,
   },
   title: {
     color: theme.colorFontLight,
