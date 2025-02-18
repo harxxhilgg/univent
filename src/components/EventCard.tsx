@@ -1,32 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { theme } from '../../theme';
 import CustomText from './CustomText';
 
-interface EventCardProps {
-  date: {
-    month: string;
-    day: number;
-  };
-  timeUntil: string;
-  time: string;
-  location: string;
+interface EventAPI {
+  id: number;
   title: string;
   organizer: string;
-  imageUrl: string;
-  isPaid?: boolean;
+  event_date: string;
+  event_time: string;
+  location: string;
+  image_url: string;
+  is_paid?: boolean;
+  created_by_email: string;
+  created_at: string;
 };
 
-export default function EventCard({
-  date,
-  timeUntil,
-  time,
-  location,
-  title,
-  organizer,
-  imageUrl,
-  isPaid = false,
-}: EventCardProps) {
+interface EventCardProps {
+  event: EventAPI;
+};
+
+const getMonthAndDay = (dateString: string) => {
+  const date = new Date(dateString);
+  return {
+    month: date.toLocaleString('default', { month: 'short' }),
+    day: date.getDate()
+  };
+};
+
+const calculteTimeUntil = (eventDate: string, eventTime: string) => {
+  const now = new Date();
+  const eventDateTime = new Date(`${eventDate.split('T')[0]}T${eventTime}`);
+
+  const diffTime = eventDateTime.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return 'Event Ended';
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays < 7) return `${diffDays} days left`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks left`;
+  return `${Math.floor(diffDays / 30)} months left`;
+};
+
+const formatTime = (timeString: string) => {
+  const [hours, minutes] = timeString.split(':');
+  const date = new Date();
+  date.setHours(parseInt(hours), parseInt(minutes));
+
+  return date.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  });
+};
+
+export default function EventCard({ event }: EventCardProps) {
+  const [timeUntil, setTimeUntil] = useState('');
+
+  useEffect(() => {
+    setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
+
+    const timer = setInterval(() => {
+      setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
+    }, 6000);
+
+    return () => clearInterval(timer);
+  }, [event.event_date, event.event_time]);
+
+  const date = getMonthAndDay(event.event_date);
+  const formattedTime = formatTime(event.event_time);
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -34,8 +78,8 @@ export default function EventCard({
           <CustomText style={styles.month}>{date.month}</CustomText>
           <CustomText style={styles.day}>{date.day}</CustomText>
         </View>
-        <Image source={{ uri: imageUrl }} style={styles.image} />
-        {isPaid ? (
+        <Image source={{ uri: event.image_url }} style={styles.image} />
+        {event.is_paid ? (
           <View style={styles.paidTag}>
             <CustomText style={styles.paidText}>$ Paid</CustomText>
           </View>
@@ -49,10 +93,10 @@ export default function EventCard({
             <View style={styles.timeUntilContainer}>
               <CustomText style={styles.timeUntilText}>{timeUntil}</CustomText>
             </View>
-            <CustomText style={styles.timeLocationText}>{time} • {location}</CustomText>
+            <CustomText style={styles.timeLocationText}>{formattedTime} • {event.location}</CustomText>
           </View>
-          <CustomText style={styles.title} numberOfLines={2}>{title}</CustomText>
-          <CustomText style={styles.organizer}>{organizer}</CustomText>
+          <CustomText style={styles.title} numberOfLines={2}>{event.title}</CustomText>
+          <CustomText style={styles.organizer}>{event.organizer}</CustomText>
         </View>
       </View>
     </View>

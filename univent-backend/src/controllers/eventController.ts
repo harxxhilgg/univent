@@ -11,6 +11,7 @@ export const createEvent = async (req: Request, res: Response) => {
       location,
       image_url,
       is_paid,
+      created_by_email,
     } = req.body;
 
     if (
@@ -31,7 +32,8 @@ export const createEvent = async (req: Request, res: Response) => {
         1
       FROM
         events
-      WHERE title = $1;
+      WHERE 
+        title = $1;
       `,
       [title]
     );
@@ -43,12 +45,21 @@ export const createEvent = async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       INSERT INTO
-        events (title, organizer, event_date, event_time, location, image_url, is_paid)
+        events (title, organizer, event_date, event_time, location, image_url, is_paid, created_by_email)
       VALUES
-        ($1, $2, $3, $4, $5, $6, $7)
+        ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
       `,
-      [title, organizer, event_date, event_time, location, image_url, is_paid]
+      [
+        title,
+        organizer,
+        event_date,
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email,
+      ]
     );
 
     res.status(201).json({
@@ -77,5 +88,30 @@ export const getAllEvents = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching events: ", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getEventsByUser = async (req: Request, res: Response) => {
+  const { email } = req.params; // get email from url
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        *
+      FROM
+        events
+      WHERE
+        created_by_email = $1
+      ORDER BY
+        event_date DESC;
+      `,
+      [email]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
   }
 };

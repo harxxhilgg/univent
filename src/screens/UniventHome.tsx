@@ -1,5 +1,5 @@
 import { TouchableOpacity, View, StyleSheet, TextInput, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView, Dimensions } from 'react-native';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
@@ -8,9 +8,31 @@ import Feather from '@expo/vector-icons/Feather';
 import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
 
+interface Event {
+  id: number;
+  title: string;
+  organizer: string;
+  event_date: string;
+  event_time: string;
+  location: string;
+  image_url: string;
+  is_paid: boolean;
+  created_by_email: string;
+  created_at: string;
+}
+
 const { width } = Dimensions.get('window');
 
 const DiscoverEvents = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    fetch('http://192.168.195.200:5000/api/events/getAllEvents')
+      .then(res => res.json())
+      .then(data => setEvents(data))
+      .catch(err => console.error('Error fetching events: ', err));
+  }, []);
+
   const [isFocused, setIsFocused] = useState(false);
   const userContext = useContext(UserContext);
 
@@ -87,36 +109,11 @@ const DiscoverEvents = () => {
               <View>
                 <CustomText style={styles.headerUpcomingEvent}>Upcoming event</CustomText>
               </View>
-              <EventCard
-                date={{ month: 'NOV', day: 17 }}
-                timeUntil="In 25 Min"
-                time="10:00 PM"
-                location="Dubai"
-                title="Gullie Dubai Summer Social: Founders x Investors x Operators"
-                organizer="Gullie Global Community Events"
-                imageUrl="https://media.istockphoto.com/id/821463698/photo/microphone-over-the-abstract-blurred-photo-of-conference-hall-or-seminar-room-with-attendee.jpg?s=2048x2048&w=is&k=20&c=ldyPYc4cvOouhmNiDfxjxSR0seFLDmVY0zET27XTNEI="
-                isPaid
-              />
-              <EventCard
-                date={{ month: 'NOV', day: 28 }}
-                timeUntil="In 1 Month"
-                time="10:00 PM"
-                location="Noida"
-                title="Story of Manas Negi: The NEGIMAN"
-                organizer="Negiman"
-                imageUrl="https://c4.wallpaperflare.com/wallpaper/178/707/772/slender-man-wallpaper-preview.jpg"
-                isPaid
-              />
-              <EventCard
-                date={{ month: 'SEP', day: 14 }}
-                timeUntil="In 3 Days"
-                time="9:30 AM"
-                location="Germany"
-                title="German Autobahn True Story: Audi RS6 Accident"
-                organizer="German Community Events"
-                imageUrl="https://images.unsplash.com/photo-1578991132108-16c5296b63dc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                isPaid={false}
-              />
+              {
+                events.map(event => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              }
             </View>
           </View>
           <View style={styles.emptyContainer}></View>
