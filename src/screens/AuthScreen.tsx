@@ -81,7 +81,8 @@ const AuthScreen = () => {
       // console.log('Starting login attempt...');
       console.log('Request details: ', {
         url: `${API_URL}/auth/login`,
-        body: { email, password }
+        // body: { email, password } --- uncomment for debug
+        body: { email }
       });
 
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -111,9 +112,9 @@ const AuthScreen = () => {
       // store token
 
       try {
+        // console.log('Token stored successfully');
         await AsyncStorage.setItem("authToken", data.token);
         setUser(data.user); // looged in user's data
-        // console.log('Token stored successfully');
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
         showToastFailure();
