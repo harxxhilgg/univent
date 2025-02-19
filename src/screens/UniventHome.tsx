@@ -1,5 +1,5 @@
 import { TouchableOpacity, View, StyleSheet, TextInput, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView, Dimensions } from 'react-native';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
@@ -7,7 +7,8 @@ import Octicons from '@expo/vector-icons/Octicons';
 import Feather from '@expo/vector-icons/Feather';
 import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
-
+import { API_URL } from '../../univent-backend/src/utils/api';
+import { RefreshControl } from 'react-native-gesture-handler';
 interface Event {
   id: number;
   title: string;
@@ -25,16 +26,25 @@ const { width } = Dimensions.get('window');
 
 const DiscoverEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const userContext = useContext(UserContext);
 
-  useEffect(() => {
-    fetch('http://192.168.195.200:5000/api/events/getAllEvents')
+  const fetchEvents = useCallback(() => {
+    return fetch(`${API_URL}/events/getAllEvents`)
       .then(res => res.json())
       .then(data => setEvents(data))
       .catch(err => console.error('Error fetching events: ', err));
   }, []);
 
-  const [isFocused, setIsFocused] = useState(false);
-  const userContext = useContext(UserContext);
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchEvents().finally(() => setRefreshing(false));
+  }, [fetchEvents]);
 
   if (!userContext) {
     return null;
@@ -52,6 +62,15 @@ const DiscoverEvents = () => {
           indicatorStyle='white'
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colorWhite}
+              colors={[theme.colorWhite]}
+              progressBackgroundColor={theme.colorSlightDark}
+            />
+          }
         >
           <View style={styles.container}>
             <View style={styles.searchBarContainer}>
