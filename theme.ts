@@ -4,7 +4,7 @@ export const theme = {
   colorRed: "#FF0000",
   colorTintInactive: "#81868b",
   colorSlightDark: "#181a26",
-  colorExclusivePink: "#e94d89",
+  colorExclusivePink: "#fe347e",
   colorFontDark: "#090b11",
   colorFontLight: "#f5f5f5",
   colorFontGray: "#81868b",
