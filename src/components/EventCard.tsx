@@ -18,6 +18,7 @@ interface EventAPI {
 
 interface EventCardProps {
   event: EventAPI;
+  hideEndedEvents?: boolean;
 };
 
 const getMonthAndDay = (dateString: string) => {
@@ -43,6 +44,12 @@ const calculteTimeUntil = (eventDate: string, eventTime: string) => {
   return `${Math.floor(diffDays / 30)} months left`;
 };
 
+const isEventEnded = (eventDate: string, eventTime: string) => {
+  const now = new Date();
+  const eventDateTime = new Date(`${eventDate.split('T')[0]}T${eventTime}`);
+  return eventDateTime.getTime() < now.getTime();
+}
+
 const formatTime = (timeString: string) => {
   const [hours, minutes] = timeString.split(':');
   const date = new Date();
@@ -55,18 +62,31 @@ const formatTime = (timeString: string) => {
   });
 };
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, hideEndedEvents = false }: EventCardProps) {
   const [timeUntil, setTimeUntil] = useState('');
+  const [isEnded, setIsEnded] = useState(false);
 
   useEffect(() => {
-    setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
-
-    const timer = setInterval(() => {
+    const checkEventStatus = () => {
+      const ended = isEventEnded(event.event_date, event.event_time);
+      setIsEnded(ended);
       setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
-    }, 6000);
+    };
+
+    checkEventStatus();
+
+    // const timer = setInterval(() => {
+    //   setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
+    // }, 6000);
+
+    const timer = setInterval(checkEventStatus, 6000);
 
     return () => clearInterval(timer);
   }, [event.event_date, event.event_time]);
+
+  if (hideEndedEvents && isEnded) {
+    return null;
+  }
 
   const date = getMonthAndDay(event.event_date);
   const formattedTime = formatTime(event.event_time);

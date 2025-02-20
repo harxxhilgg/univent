@@ -130,7 +130,7 @@ const DiscoverEvents = () => {
               </View>
               {
                 events.map(event => (
-                  <EventCard key={event.id} event={event} />
+                  <EventCard key={event.id} event={event} hideEndedEvents={true} />
                 ))
               }
             </View>
