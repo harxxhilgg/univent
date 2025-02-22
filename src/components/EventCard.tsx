@@ -30,17 +30,18 @@ const getMonthAndDay = (dateString: string) => {
 };
 
 const calculteTimeUntil = (eventDate: string, eventTime: string) => {
-  const now = new Date();
-  const eventDateTime = new Date(`${eventDate.split('T')[0]}T${eventTime}`);
-
-  const diffTime = eventDateTime.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const now = new Date(); // get current date
+  const eventDateTime = new Date(`${eventDate.split('T')[0]}T${eventTime}`); // create event date object e.g. "2025-02-26T12:30:00"
+  const diffTime = eventDateTime.getTime() - now.getTime(); // ms for feb 26, 2025, 12:30:00 - ms since jan 1, 1970 i.e.: 1743097800000 - 1742661600000
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // returns days
 
   if (diffDays < 0) return 'Event Ended';
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Tomorrow';
   if (diffDays < 7) return `${diffDays} days left`;
+  if (diffDays === 7) return '1 week left';
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks left`;
+  if (diffDays < 59) return `1 month left`;
   return `${Math.floor(diffDays / 30)} months left`;
 };
 
@@ -75,11 +76,7 @@ export default function EventCard({ event, hideEndedEvents = false }: EventCardP
 
     checkEventStatus();
 
-    // const timer = setInterval(() => {
-    //   setTimeUntil(calculteTimeUntil(event.event_date, event.event_time));
-    // }, 6000);
-
-    const timer = setInterval(checkEventStatus, 6000);
+    const timer = setInterval(checkEventStatus, 60000);
 
     return () => clearInterval(timer);
   }, [event.event_date, event.event_time]);
