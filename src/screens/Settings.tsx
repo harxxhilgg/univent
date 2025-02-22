@@ -1,4 +1,4 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Image } from 'react-native'
 import React, { useContext, useState } from 'react'
 import CustomText from '../components/CustomText'
 import { theme } from '../../theme'
@@ -10,9 +10,7 @@ import { UserContext } from '../context/UserContext'
 
 const Settings = () => {
   const { user } = useContext(UserContext);
-
   const navigation = useNavigation<AuthScreenNavigationProp>();
-
   const [loading, setLoading] = useState(false);
 
   const showToastLogoutSuccess = () => {
@@ -58,8 +56,9 @@ const Settings = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.userDataContainer}>
-          <CustomText style={styles.userDetails}>Username: {user?.username}</CustomText>
-          <CustomText style={styles.userDetails}>Email: {user?.email}</CustomText>
+          <Image source={require('../../assets/logos/userProfile.png')} style={styles.userProfile} />
+          <CustomText style={[styles.userDetails, styles.usernameText]}>{user?.username || 'User Name'}</CustomText>
+          <CustomText style={[styles.userDetails, styles.emailText]}>{user?.email || 'testemail@example.com'}</CustomText>
         </View>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} disabled={loading}>
           {loading ? (
@@ -87,16 +86,27 @@ const styles = StyleSheet.create({
   },
   userDataContainer: {
     backgroundColor: theme.colorSlightDark,
-    marginTop: 40,
-    marginBottom: 30,
+    width: "80%",
     paddingVertical: 28,
     paddingHorizontal: 28,
-    gap: 20,
-    borderRadius: 30
+    gap: 10,
+    borderRadius: 28,
+    alignItems: 'center',
+    marginTop: "10%"
   },
   userDetails: {
-    fontSize: 20,
     color: theme.colorFontLight
+  },
+  userProfile: {
+    resizeMode: 'cover',
+    width: 150,
+    height: 150,
+  },
+  usernameText: {
+    fontSize: 24
+  },
+  emailText: {
+    fontSize: 16
   },
   logoutBtn: {
     marginTop: "auto",
