@@ -63,7 +63,7 @@ export default function BottomTabNavigator() {
       {/* My-Events Tab */}
 
       <Tab.Screen
-        name="MyEvents"
+        name="My Events"
         component={MyEvents}
         options={{
           tabBarIcon: ({ color, size }) => (

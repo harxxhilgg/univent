@@ -9,7 +9,7 @@ import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
-interface Event {
+export interface Event {
   id: number;
   title: string;
   organizer: string;
@@ -30,13 +30,12 @@ const DiscoverEvents = () => {
   const [isFocused, setIsFocused] = useState(false);
   const userContext = useContext(UserContext);
 
-  const fetchEvents = useCallback(() => {
+  const fetchEvents = useCallback(async () => {
     return fetch(`${API_URL}/events/getAllEvents`)
       .then(res => res.json())
       .then(data => setEvents(data))
       .catch(err => console.error('Error fetching events: ', err));
   }, []);
-
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
@@ -126,7 +125,7 @@ const DiscoverEvents = () => {
             </ScrollView>
             <View>
               <View>
-                <CustomText style={styles.headerUpcomingEvent}>Upcoming event</CustomText>
+                <CustomText style={styles.headerUpcomingEvent}>Upcoming events</CustomText>
               </View>
               {
                 events.map(event => (

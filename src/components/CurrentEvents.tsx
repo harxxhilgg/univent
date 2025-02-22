@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Image, StyleSheet, Dimensions } from 'react-native';
 import { theme } from '../../theme';
 import CustomText from './CustomText';
@@ -12,7 +11,7 @@ interface EventCardProps {
   organizer: string;
   imageUrl: string;
   isPaid?: boolean;
-}
+};
 
 export default function CurrentEvents({
   time,
