@@ -33,9 +33,11 @@ export const createEvent = async (req: Request, res: Response) => {
       FROM
         events
       WHERE 
-        title = $1;
+        title = $1
+      AND
+        created_by_email = $2
       `,
-      [title]
+      [title, created_by_email]
     );
     if (eventExists.rows.length > 0) {
       return res.status(400).json({ message: "Event already exists" });
@@ -104,7 +106,7 @@ export const getEventsByUser = async (req: Request, res: Response) => {
       WHERE
         created_by_email = $1
       ORDER BY
-        event_date DESC;
+        event_date ASC;
       `,
       [email]
     );
