@@ -4,13 +4,13 @@
     "slug": "univent",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/system/icon.png",
+    "icon": "./assets/system/noBgColorText.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/system/splash-icon-dark.png",
+      "image": "./assets/system/noBgColorText.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#080b12"
     },
     "packageOpts": {
       "hostType": "lan"
@@ -20,8 +20,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/system/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/system/noBgColorText.png",
+        "backgroundColor": "#080b12"
       },
       "package": "com.univent.testOne"
     },
