@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import dotenv from "dotenv";
+import { API_URL } from "../utils/api";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const pool = new Pool({
 pool
   .connect()
   .then(() => console.log("Connected to PostgreSQL"))
+  .then(() => console.log(`API is accessible at: ${API_URL}`))
   .catch((err) => console.error("PostgrSQL connection error: ", err));
 
 export default pool;
