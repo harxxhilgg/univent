@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Image, StyleSheet, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
+import { View, TouchableOpacity, Image, StyleSheet, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
 import { useContext, useEffect, useState } from 'react';
