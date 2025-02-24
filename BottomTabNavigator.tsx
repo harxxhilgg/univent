@@ -1,4 +1,4 @@
-import { TouchableOpacity, StyleSheet, GestureResponderEvent } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -15,11 +15,6 @@ import Settings from './src/screens/Settings';
 import { theme } from './theme';
 
 const Tab = createBottomTabNavigator();
-
-interface CustomTabButtonProps {
-  children?: React.ReactNode;
-  onPress: (e: GestureResponderEvent) => void;
-}
 
 export default function BottomTabNavigator() {
   return (
@@ -54,6 +49,13 @@ export default function BottomTabNavigator() {
         name="Univent"
         component={UniventHome}
         options={{
+          headerTitle: 'Univent',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontSize: 22,
+            marginVertical: 15,
+            fontWeight: 'bold',
+          },
           tabBarIcon: ({ color, size }) => (
             <FontAwesome6 name="globe" size={size} color={color} />
           ),
@@ -66,6 +68,13 @@ export default function BottomTabNavigator() {
         name="My Events"
         component={MyEvents}
         options={{
+          headerTitle: 'My Events',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontSize: 22,
+            marginVertical: 15,
+            fontWeight: 'bold',
+          },
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="event" size={(size + 2)} color={color} />
           )
@@ -78,7 +87,18 @@ export default function BottomTabNavigator() {
         name="CreateEvent"
         component={CreateEvent}
         options={{
-          tabBarIcon: (props) => <CustomTabButton {...props} onPress={() => { }} />,
+          headerTitle: 'Enter event details',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontSize: 24,
+            marginTop: 15,
+            fontWeight: 'bold',
+          },
+          tabBarIcon: ({ color, size }) => (
+            <View style={styles.customTabButton}>
+              <FontAwesome5 name="plus" size={20} color={theme.colorBackgroundDark} />
+            </View>
+          )
         }}
       />
 
@@ -109,26 +129,13 @@ export default function BottomTabNavigator() {
   )
 }
 
-const CustomTabButton: React.FC<CustomTabButtonProps> = ({ children, onPress }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={styles.customTabButton}
-  >
-    <FontAwesome5 name="plus" size={20} color={theme.colorBackgroundDark} />
-  </TouchableOpacity>
-);
-
 const styles = StyleSheet.create({
   customTabButton: {
-    top: 0,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colorTaskbarYellow,
     width: 60,
     height: 60,
     borderRadius: 48,
-    shadowColor: theme.colorWhite,
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 10 },
   },
 });
