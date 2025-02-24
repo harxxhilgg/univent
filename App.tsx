@@ -10,7 +10,6 @@ import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
 import * as Font from 'expo-font';
-import 'setimmediate';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -23,6 +22,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
+  // load fonts 
   useEffect(() => {
     async function loadFonts() {
       await Font.loadAsync({
@@ -38,7 +38,7 @@ export default function App() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000FF" />
+        <ActivityIndicator size="large" color={theme.colorFontDark} />
       </View>
     )
   }
@@ -50,8 +50,8 @@ export default function App() {
           <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Auth" component={AuthScreen} />
-              <Stack.Screen name="Signup" component={Signup} />
+              {/* <Stack.Screen name="Auth" component={AuthScreen} /> */}
+              {/* <Stack.Screen name="Signup" component={Signup} /> */}
               <Stack.Screen name="Main" component={BottomTabNavigator} />
             </Stack.Navigator>
           </NavigationContainer>
