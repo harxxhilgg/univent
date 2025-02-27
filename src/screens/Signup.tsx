@@ -1,4 +1,4 @@
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Image, Platform, Keyboard, TextInput, TouchableOpacity } from 'react-native';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Image, Platform, Keyboard, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
@@ -6,16 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { api } from '../../univent-backend/src/utils/api';
 import Toast from 'react-native-toast-message';
+import { TextInput as TextInputPaper } from 'react-native-paper';
 
 const Signup = () => {
   const navigation = useNavigation<AuthScreenNavigationProp>();
 
-  const [nameFieldActive, setNameFieldActive] = useState(theme.colorTransparentLightGray);
-  const [inputFieldActive, setInputFieldActive] = useState(theme.colorTransparentLightGray);
-  const [passwordFieldActive, setPasswordFieldActive] = useState(theme.colorTransparentLightGray);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isFocused, setIsFocused] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [secureTextEntry, setsecureTextEntry] = useState(true);
 
   const showToastFillFields = () => {
     Toast.show({
@@ -81,40 +82,53 @@ const Signup = () => {
             style={styles.logo}
           />
           <View style={styles.inputContainer}>
-            <TextInput
-              placeholder="Name"
-              placeholderTextColor={theme.colorFontGray}
-              style={[styles.inputField, { borderColor: nameFieldActive }]}
-              keyboardType='default'
-              autoCorrect={false}
-              onFocus={() => setNameFieldActive(theme.colorFontLight)}
-              onBlur={() => setNameFieldActive(theme.colorTransparentLightGray)}
+            <TextInputPaper
+              keyboardType="default"
+              label="Username"
               value={username}
               onChangeText={(text) => setUsername(text)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.input}
+              mode="outlined"
+              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+              textColor={theme.colorFontLight}
+              outlineStyle={{ borderRadius: 14 }}
             />
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor={theme.colorFontGray}
-              style={[styles.inputField, { borderColor: inputFieldActive }]}
-              keyboardType='email-address'
+            <TextInputPaper
+              keyboardType="email-address"
               autoCapitalize='none'
-              autoCorrect={false}
-              onFocus={() => setInputFieldActive(theme.colorFontLight)}
-              onBlur={() => setInputFieldActive(theme.colorTransparentLightGray)}
+              label="Email"
               value={email}
               onChangeText={(text) => setEmail(text)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.input}
+              mode="outlined"
+              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+              textColor={theme.colorFontLight}
+              outlineStyle={{ borderRadius: 14 }}
             />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor={theme.colorFontGray}
-              secureTextEntry={true}
+            <TextInputPaper
+              keyboardType="default"
               autoCapitalize='none'
-              autoCorrect={false}
-              style={[styles.inputField, { borderColor: passwordFieldActive }]}
-              onFocus={() => setPasswordFieldActive(theme.colorFontLight)}
-              onBlur={() => setPasswordFieldActive(theme.colorTransparentLightGray)}
+              label="Password"
               value={password}
               onChangeText={(text) => setPassword(text)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.input}
+              mode="outlined"
+              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+              textColor={theme.colorFontLight}
+              outlineStyle={{ borderRadius: 14 }}
+              secureTextEntry={secureTextEntry}
+              right={
+                <TextInputPaper.Icon
+                  icon={secureTextEntry ? 'eye' : 'eye-off'}
+                  onPress={() => setsecureTextEntry(!secureTextEntry)}
+                />
+              }
             />
           </View>
           <TouchableOpacity style={styles.SignupBtn} onPress={handleSignUp}>
@@ -151,16 +165,11 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: "85%",
-    gap: 12,
+    gap: 6
   },
-  inputField: {
-    paddingVertical: 12,
+  input: {
     fontSize: 16,
     color: theme.colorFontLight,
-    borderWidth: 1,
-    borderColor: theme.colorLightGray,
-    borderRadius: 12,
-    paddingLeft: 14,
   },
   SignupBtn: {
     marginTop: 14,
