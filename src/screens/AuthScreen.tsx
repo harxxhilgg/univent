@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Image, StyleSheet, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
 import { useContext, useEffect, useState } from 'react';
@@ -8,16 +8,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { UserContext } from '../context/UserContext';
+import { TextInput as TextInputPaper } from 'react-native-paper';
 
 const AuthScreen = () => {
   const { setUser } = useContext(UserContext);
 
   const navigation = useNavigation<AuthScreenNavigationProp>();
 
-  const [inputFieldActive, setInputFieldActive] = useState(theme.colorTransparentLightGray);
-  const [passwordFieldActive, setPasswordFieldActive] = useState(theme.colorTransparentLightGray);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isFocused, setIsFocused] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [secureTextEntry, setsecureTextEntry] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const showToastSuccess = () => {
@@ -163,30 +165,40 @@ const AuthScreen = () => {
             style={styles.logo}
           />
           <View style={styles.inputContainer}>
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor={theme.colorFontGray}
-              style={[styles.inputField, { borderColor: inputFieldActive }]}
-              keyboardType='email-address'
+            <TextInputPaper
+              keyboardType="email-address"
               autoCapitalize='none'
-              autoCorrect={false}
-              onFocus={() => setInputFieldActive(theme.colorFontLight)}
-              onBlur={() => setInputFieldActive(theme.colorTransparentLightGray)}
+              label="Email"
               value={email}
               onChangeText={(text) => setEmail(text)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.input}
+              mode="outlined"
+              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+              textColor={theme.colorFontLight}
+              outlineStyle={{ borderRadius: 14 }}
             />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor={theme.colorFontGray}
-              secureTextEntry={true}
-              keyboardType='default'
+            <TextInputPaper
+              keyboardType="default"
               autoCapitalize='none'
-              autoCorrect={false}
-              style={[styles.inputField, { borderColor: passwordFieldActive }]}
-              onFocus={() => setPasswordFieldActive(theme.colorFontLight)}
-              onBlur={() => setPasswordFieldActive(theme.colorTransparentLightGray)}
+              label="Password"
               value={password}
               onChangeText={(text) => setPassword(text)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.input}
+              mode="outlined"
+              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+              textColor={theme.colorFontLight}
+              outlineStyle={{ borderRadius: 14 }}
+              secureTextEntry={secureTextEntry}
+              right={
+                <TextInputPaper.Icon
+                  icon={secureTextEntry ? 'eye' : 'eye-off'}
+                  onPress={() => setsecureTextEntry(!secureTextEntry)}
+                />
+              }
             />
           </View>
           <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
@@ -225,14 +237,9 @@ const styles = StyleSheet.create({
     marginTop: -40,
     marginBottom: -10
   },
-  inputField: {
-    paddingVertical: 12,
+  input: {
     fontSize: 16,
     color: theme.colorFontLight,
-    borderWidth: 1,
-    borderColor: theme.colorLightGray,
-    borderRadius: 12,
-    paddingLeft: 14,
   },
   inputContainer: {
     width: "85%",
