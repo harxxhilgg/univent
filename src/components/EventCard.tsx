@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { theme } from '../../theme';
 import CustomText from './CustomText';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface EventAPI {
   id: number;
@@ -38,11 +40,11 @@ const calculteTimeUntil = (eventDate: string, eventTime: string) => {
   if (diffDays < 0) return 'Event Ended';
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Tomorrow';
-  if (diffDays < 7) return `${diffDays} days left`;
-  if (diffDays === 7) return '1 week left';
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks left`;
-  if (diffDays < 59) return `1 month left`;
-  return `${Math.floor(diffDays / 30)} months left`;
+  return `${diffDays} days left`;
+  // if (diffDays === 7 || 8 || 9 || 10 || 11 || 12 || 13) return '1 week left';
+  // if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks left`;
+  // if (diffDays < 59) return `1 month left`;
+  // return `${Math.floor(diffDays / 30)} months left`;
 };
 
 const isEventEnded = (eventDate: string, eventTime: string) => {
@@ -66,6 +68,7 @@ const formatTime = (timeString: string) => {
 export default function EventCard({ event, hideEndedEvents = false }: EventCardProps) {
   const [timeUntil, setTimeUntil] = useState('');
   const [isEnded, setIsEnded] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
     const checkEventStatus = () => {
@@ -95,7 +98,35 @@ export default function EventCard({ event, hideEndedEvents = false }: EventCardP
           <CustomText style={styles.month}>{date.month}</CustomText>
           <CustomText style={styles.day}>{date.day}</CustomText>
         </View>
-        <Image source={{ uri: event.image_url }} style={styles.image} />
+        {!isImageLoaded ? (
+          <View style={styles.imageWrapper}>
+            <ShimmerPlaceholder
+              style={styles.skeletonImage}
+              LinearGradient={LinearGradient}
+              shimmerColors={['#333', '#444', '#333']}
+            />
+            <Image
+              source={{ uri: event.image_url }}
+              style={styles.hiddenImage}
+              onLoad={() => setIsImageLoaded(true)}
+              onError={(e) => {
+                console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
+                setIsImageLoaded(true);
+              }}
+            />
+          </View>
+        ) : (
+          <Image
+            source={{ uri: event.image_url }}
+            style={styles.image}
+            onLoad={() => setIsImageLoaded(true)}
+            onError={(e) => {
+              console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
+              setIsImageLoaded(true);
+            }}
+          />
+        )
+        }
         {event.is_paid ? (
           <View style={styles.paidTag}>
             <CustomText style={styles.paidText}>$ Paid</CustomText>
@@ -166,6 +197,23 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     marginBottom: 1
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: 200
+  },
+  skeletonImage: {
+    width: '100%',
+    height: 200,
+    backgroundColor: theme.colorSlightDark,
+    borderRadius: 18
+  },
+  hiddenImage: {
+    width: '100%',
+    height: 200,
+    position: 'absolute',
+    opacity: 0
   },
   image: {
     width: '100%',
