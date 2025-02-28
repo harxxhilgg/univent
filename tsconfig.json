@@ -5,7 +5,8 @@
     "skipLibCheck": true,
     "strict": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noEmit": true
   },
   "extends": "expo/tsconfig.base",
   "include": ["src/**/*", "index.ts", "src/types/**/*"],
