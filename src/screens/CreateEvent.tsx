@@ -8,11 +8,11 @@ import {
   TouchableWithoutFeedback,
   View,
   TouchableOpacity,
-  Image,
   ActivityIndicator
 } from "react-native";
 import CustomText from "../components/CustomText";
 import { theme } from "../../theme";
+import { Image } from "expo-image";
 import { TextInput as TextInputPaper } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
@@ -335,7 +335,11 @@ const CreateEvent = () => {
 
             <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
               {selectedImage ? (
-                <Image source={{ uri: selectedImage }} style={styles.image} />
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.image}
+                  cachePolicy='memory-disk'
+                />
               ) : (
                 <View style={styles.placeholder}>
                   <Ionicons name="image" size={30} color={theme.colorLightGray} />
