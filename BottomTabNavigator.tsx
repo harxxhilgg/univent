@@ -87,7 +87,7 @@ export default function BottomTabNavigator() {
         name="CreateEvent"
         component={CreateEvent}
         options={{
-          headerTitle: 'Enter event details',
+          headerTitle: 'Create event',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontSize: 24,
