@@ -80,7 +80,6 @@ const AuthScreen = () => {
     setLoading(true);
 
     try {
-      // console.log('Starting login attempt...');
       console.log('Request details: ', {
         url: `${API_URL}/auth/login`,
         // body: { email, password } --- uncomment for debug
@@ -96,9 +95,6 @@ const AuthScreen = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      // console.log('Response status: ', response.status);
-      // console.log('Response headers: ', response.headers);
-
       const data = await response.json();
       console.log(`Response data: ${data.message}, ID: ${data.user.id}`);
 
@@ -107,22 +103,18 @@ const AuthScreen = () => {
         showToastFailure();
         setLoading(false);
         return;
-      }
-
-      // console.log('Login successful, storing token...');
+      };
 
       // store token
-
       try {
-        // console.log('Token stored successfully');
         await AsyncStorage.setItem("authToken", data.token);
-        setUser(data.user); // looged in user's data
+        setUser(data.user); // set user's data
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
         showToastFailure();
         setLoading(false);
         return;
-      }
+      };
 
       showToastSuccess();
       setLoading(false);
@@ -135,18 +127,53 @@ const AuthScreen = () => {
       });
 
       // check network error
-
       if (err instanceof TypeError && err.message.includes('Network req failed')) {
         console.log('Network error detected. Please check:');
         console.log('1. Device and server are on same network');
         console.log('2. Server is running and accessfible');
         console.log('3. IP address is correct');
-      }
+      };
 
       showToastFailure();
       setLoading(false);
     } finally {
       setLoading(false);
+    };
+  };
+
+  const showToastSomethingIsWrong = () => {
+    Toast.show({
+      autoHide: true,
+      visibilityTime: 3000,
+      type: 'error',
+      text1: 'Something is wrong with the app!',
+      text2: 'Please restart the app.',
+    });
+  };
+
+  const handleGuestLogin = async () => {
+
+    setLoading(true);
+
+    try {
+      const data = {
+        user: {
+          username: "Guest",
+          email: "user.guest@univent.com"
+        },
+      };
+
+      setUser(data.user);
+
+      try {
+        navigation.replace("Main");
+      } catch (err) {
+        console.error(err);
+        showToastSomethingIsWrong();
+      }
+    } catch (err) {
+      console.error(err);
+      showToastSomethingIsWrong();
     }
   }
 
@@ -209,6 +236,14 @@ const AuthScreen = () => {
             )}
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.guestLoginBtn} onPress={handleGuestLogin} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color={theme.colorFontLight} style={styles.activityIndicator} />
+            ) : (
+              <CustomText style={styles.guestLoginBtnText}>Guest Login</CustomText>
+            )}
+          </TouchableOpacity>
+
           <View style={styles.newAccContainer}>
             <TouchableOpacity style={styles.signUpBtn} onPress={() => navigation.navigate('Signup')}>
               <CustomText style={styles.SignupBtnText}>Create new account</CustomText>
@@ -245,6 +280,9 @@ const styles = StyleSheet.create({
     width: "85%",
     gap: 12,
   },
+  activityIndicator: {
+    paddingVertical: 3,
+  },
   loginBtn: {
     marginTop: 14,
     backgroundColor: theme.colorTaskbarYellow,
@@ -252,11 +290,21 @@ const styles = StyleSheet.create({
     width: "85%",
     borderRadius: 20
   },
-  activityIndicator: {
-    paddingVertical: 3,
-  },
   loginBtnText: {
     color: theme.colorFontDark,
+    textAlign: "center",
+    letterSpacing: 1,
+    fontWeight: '700'
+  },
+  guestLoginBtn: {
+    marginVertical: 14,
+    backgroundColor: theme.colorSlightDark,
+    paddingVertical: 6,
+    width: "85%",
+    borderRadius: 20
+  },
+  guestLoginBtnText: {
+    color: theme.colorTaskbarYellow,
     textAlign: "center",
     letterSpacing: 1,
     fontWeight: '700'
@@ -264,7 +312,7 @@ const styles = StyleSheet.create({
   newAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
-    marginTop: 20,
+    marginBottom: 20,
     width: "85%",
   },
   signUpBtn: {
