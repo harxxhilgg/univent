@@ -253,9 +253,9 @@ const CreateEvent = () => {
               <CustomText style={styles.textWhite}>Guest users cannot create events</CustomText>
               <CustomText style={styles.textWhite}>
                 Please
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.navigate("Auth")}> log in </CustomText>
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")}> log in </CustomText>
                 or
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.navigate("Signup")}> sign up </CustomText>
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")}> sign up </CustomText>
                 to create your own event
               </CustomText>
             </View>
