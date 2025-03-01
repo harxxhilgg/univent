@@ -8,7 +8,8 @@ import {
   TouchableWithoutFeedback,
   View,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions
 } from "react-native";
 import CustomText from "../components/CustomText";
 import { theme } from "../../theme";
@@ -22,10 +23,14 @@ import Toast from "react-native-toast-message";
 import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
 import { API_URL } from "../../univent-backend/src/utils/api";
+import { useNavigation } from "@react-navigation/native";
+import { AuthScreenNavigationProp } from "../../App";
+
+const { width } = Dimensions.get('window');
 
 const CreateEvent = () => {
   const { user } = useContext(UserContext);
-
+  const navigation = useNavigation<AuthScreenNavigationProp>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFocused, setIsFocused] = useState(false);
   const [title, setTitle] = useState("");
@@ -95,21 +100,22 @@ const CreateEvent = () => {
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync(); // take media perms
 
     if (status !== "granted") {
-      showToastPermissionDeny();
-      return;
+      showToastPermissionDeny(); // if perms denied, show the error
+      return; // terminate
     };
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
+      mediaTypes: "images", // other options as well liveimages or videos
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 1,
+      quality: 0.7, // image compress, on iOS, .bmp and .png, then this will be ignored, on Android, it works for all file types
     });
 
     if (!result.canceled) {
+      console.log(result.assets[0]); // CHECK THIS !!!
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
       console.log("Selected image URI: ", imageUri);
@@ -239,137 +245,156 @@ const CreateEvent = () => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flexContainer}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.inputContainer}>
 
-            <TextInputPaper
-              keyboardType="email-address"
-              label="Email"
-              value={user?.email || "usersemailwillbehere@example.com"}
-              editable={false}
-              selectTextOnFocus={false}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 12 }}
-            />
-
-            <View style={styles.infoTextConatiner}>
-              <MaterialCommunityIcons name="information-variant" size={24} color={theme.colorGreen} />
-              <CustomText style={styles.userEmailText}>This email will be used for event creation and this is uneditable.</CustomText>
+          {user.email === 'user.guest@univent.com' ? (
+            <View style={styles.centerContainer}>
+              <Image source={require('../../assets/logos/restriction.png')} style={styles.accessDenyIcon} />
+              <CustomText style={[styles.textWhite, styles.guestAccessTitleText]}>Feature Unavailable</CustomText>
+              <CustomText style={styles.textWhite}>Guest users cannot create events</CustomText>
+              <CustomText style={styles.textWhite}>
+                Please
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.navigate("Auth")}> log in </CustomText>
+                or
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.navigate("Signup")}> sign up </CustomText>
+                to create your own event
+              </CustomText>
             </View>
+          ) : (
+            <>
+              <View style={styles.inputContainer}>
 
-            <TextInputPaper
-              keyboardType="default"
-              label="Title"
-              value={title}
-              onChangeText={(text) => setTitle(text)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 12 }}
-              multiline={true}
-              numberOfLines={2}
-            />
-
-            <TextInputPaper
-              keyboardType="default"
-              label="Organizer"
-              value={organizer}
-              onChangeText={(text) => setOrganizer(text)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 12 }}
-            />
-
-            <View style={styles.pickerContainer}>
-              {/* Date */}
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTimeInput}>
-                <CustomText style={styles.input}>{eventDate || "Select Date"}</CustomText>
-              </TouchableOpacity>
-
-              {showDatePicker && (
-                <DateTimePicker
-                  value={eventDate ? new Date(eventDate) : new Date()}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "inline" : "calendar"}
-                  onChange={handleDateChange}
+                <TextInputPaper
+                  keyboardType="email-address"
+                  label="Email"
+                  value={user?.email || "usersemailwillbehere@example.com"}
+                  editable={false}
+                  selectTextOnFocus={false}
+                  style={styles.input}
+                  mode="outlined"
+                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  textColor={theme.colorFontLight}
+                  outlineStyle={{ borderRadius: 12 }}
                 />
-              )}
 
-              {/* Time */}
-              <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.dateTimeInput}>
-                <CustomText style={styles.input}>{eventTime || "Select Time"}</CustomText>
-              </TouchableOpacity>
-
-              {showTimePicker && (
-                <DateTimePicker
-                  value={new Date()}
-                  mode="time"
-                  display={Platform.OS === "ios" ? "spinner" : "clock"}
-                  onChange={handleTimeChange}
-                />
-              )}
-            </View>
-
-            <TextInputPaper
-              keyboardType="default"
-              label="Location"
-              value={location}
-              onChangeText={(text) => setLocation(text)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 12 }}
-            />
-
-            <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
-              {selectedImage ? (
-                <Image
-                  source={{ uri: selectedImage }}
-                  style={styles.image}
-                  cachePolicy='memory-disk'
-                />
-              ) : (
-                <View style={styles.placeholder}>
-                  <Ionicons name="image" size={30} color={theme.colorLightGray} />
-                  <CustomText style={styles.placeholderText}>Select image</CustomText>
+                <View style={styles.infoTextConatiner}>
+                  <MaterialCommunityIcons name="information-variant" size={24} color={theme.colorGreen} />
+                  <CustomText style={styles.userEmailText}>This email will be used for event creation and this is uneditable.</CustomText>
                 </View>
-              )}
-            </TouchableOpacity>
 
-            <View style={styles.toggleContainer}>
-              <CustomText style={styles.toggleLabel}>Is event paid?</CustomText>
-              <ToggleSwitch
-                isOn={isPaid}
-                onColor={theme.colorGreen}
-                offColor={theme.colorSlightDark}
-                labelStyle={{ color: theme.colorFontLight, fontWeight: 'bold' }}
-                size='medium'
-                onToggle={(isOn) => setIsPaid(isOn)}
-              />
-            </View>
+                <TextInputPaper
+                  keyboardType="default"
+                  label="Title"
+                  value={title}
+                  onChangeText={(text) => setTitle(text)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  style={styles.input}
+                  mode="outlined"
+                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  textColor={theme.colorFontLight}
+                  outlineStyle={{ borderRadius: 12 }}
+                  multiline={true}
+                  numberOfLines={2}
+                />
 
-            <TouchableOpacity style={styles.submitBtn} onPress={handleEventCreate} disabled={loading} >
-              {loading ? (
-                <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-              ) : (
-                <CustomText style={styles.submitBtnText}>Create form</CustomText>
-              )}
-            </TouchableOpacity>
+                <TextInputPaper
+                  keyboardType="default"
+                  label="Organizer"
+                  value={organizer}
+                  onChangeText={(text) => setOrganizer(text)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  style={styles.input}
+                  mode="outlined"
+                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  textColor={theme.colorFontLight}
+                  outlineStyle={{ borderRadius: 12 }}
+                />
 
-          </View>
-          <View style={styles.emptyContainer}></View>
+                <View style={styles.pickerContainer}>
+                  {/* Date */}
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTimeInput}>
+                    <CustomText style={styles.input}>{eventDate || "Select Date"}</CustomText>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={eventDate ? new Date(eventDate) : new Date()}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "inline" : "calendar"}
+                      onChange={handleDateChange}
+                    />
+                  )}
+
+                  {/* Time */}
+                  <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.dateTimeInput}>
+                    <CustomText style={styles.input}>{eventTime || "Select Time"}</CustomText>
+                  </TouchableOpacity>
+
+                  {showTimePicker && (
+                    <DateTimePicker
+                      value={new Date()}
+                      mode="time"
+                      display={Platform.OS === "ios" ? "spinner" : "clock"}
+                      onChange={handleTimeChange}
+                    />
+                  )}
+                </View>
+
+                <TextInputPaper
+                  keyboardType="default"
+                  label="Location"
+                  value={location}
+                  onChangeText={(text) => setLocation(text)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  style={styles.input}
+                  mode="outlined"
+                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  textColor={theme.colorFontLight}
+                  outlineStyle={{ borderRadius: 12 }}
+                />
+
+                <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+                  {selectedImage ? (
+                    <Image
+                      source={{ uri: selectedImage }}
+                      style={styles.image}
+                      cachePolicy='memory-disk'
+                    />
+                  ) : (
+                    <View style={styles.placeholder}>
+                      <Ionicons name="image" size={30} color={theme.colorLightGray} />
+                      <CustomText style={styles.placeholderText}>Select image</CustomText>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.toggleContainer}>
+                  <CustomText style={styles.toggleLabel}>Is event paid?</CustomText>
+                  <ToggleSwitch
+                    isOn={isPaid}
+                    onColor={theme.colorGreen}
+                    offColor={theme.colorSlightDark}
+                    labelStyle={{ color: theme.colorFontLight, fontWeight: 'bold' }}
+                    size='medium'
+                    onToggle={(isOn) => setIsPaid(isOn)}
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.submitBtn} onPress={handleEventCreate} disabled={loading} >
+                  {loading ? (
+                    <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                  ) : (
+                    <CustomText style={styles.submitBtnText}>Create form</CustomText>
+                  )}
+                </TouchableOpacity>
+
+              </View>
+              <View style={styles.emptyContainer}></View>
+            </>
+          )}
+
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -380,13 +405,37 @@ export default CreateEvent;
 
 const styles = StyleSheet.create({
   flexContainer: {
-    flex: 1,
+    flex: 1
   },
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
     backgroundColor: theme.colorBackgroundDark,
     paddingBottom: 30,
+  },
+  centerContainer: {
+    width: width < 450 ? "90%" : "85%",
+    top: "15%",
+    alignItems: "center"
+  },
+  accessDenyIcon: {
+    resizeMode: 'cover',
+    width: 150,
+    height: 150,
+    marginBottom: 10,
+  },
+  guestAccessTitleText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 4,
+    marginBottom: 50
+  },
+  textWhite: {
+    color: theme.colorFontLight
+  },
+  inlineBtn: {
+    color: theme.colorBrightRed,
+    fontWeight: "bold"
   },
   inputContainer: {
     marginTop: "6%",
