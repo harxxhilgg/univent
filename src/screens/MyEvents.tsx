@@ -13,17 +13,49 @@ const MyEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
+
+  const fetchWithTimeout = (url: string, timeout: number) => {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error("Request timed out ⏳"));
+      }, timeout);
+
+      fetch(url)
+        .then((response) => {
+          clearTimeout(timer); // clearing timeout if req succeeds
+          resolve(response);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
+  };
+
   const fetchEventsByUser = useCallback(async () => {
-    return fetch(`${API_URL}/events/user/${user.email}`)
-      .then(res => res.json())
-      .then(data => setEvents(data))
-      .catch(err => console.error('Error fetching events: ', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    try {
+      const response: any = await fetchWithTimeout(`${API_URL}/events/user/${user.email}`, 7000);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setEvents(data);
+    } catch (err) {
+      console.error("Error fetching events: ", err);
+    };
+  }, [user.email]);
 
   useEffect(() => {
-    fetchEventsByUser();
-  }, [fetchEventsByUser])
+    fetchEventsByUser(); // initial fetch
+
+    // const interval = setInterval(() => {
+    //   fetchEventsByUser();
+    // }, 60000); // refresh every 1 min
+
+    // return () => clearInterval(interval); // clean interval on unmount
+  }, [fetchEventsByUser]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -88,6 +120,7 @@ const styles = StyleSheet.create({
   },
   noEventsText: {
     color: theme.colorFontLight,
-    fontSize: 18
+    fontSize: 18,
+    fontWeight: "bold"
   }
 })
