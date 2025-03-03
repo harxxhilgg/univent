@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     width: "80%",
     paddingVertical: 28,
     paddingHorizontal: 28,
-    gap: 10,
+    gap: 0,
     borderRadius: 28,
     alignItems: 'center',
     marginTop: "10%"
@@ -101,9 +101,11 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     width: 150,
     height: 150,
+    marginBottom: 10
   },
   usernameText: {
-    fontSize: 24
+    fontSize: 26,
+    fontWeight: "bold"
   },
   emailText: {
     fontSize: 16
