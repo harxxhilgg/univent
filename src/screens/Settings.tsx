@@ -58,7 +58,11 @@ const Settings = () => {
         <View style={styles.userDataContainer}>
           <Image source={require('../../assets/logos/userProfile.png')} style={styles.userProfile} />
           <CustomText style={[styles.userDetails, styles.usernameText]}>{user?.username || 'User Name'}</CustomText>
-          <CustomText style={[styles.userDetails, styles.emailText]}>{user?.email || 'testemail@example.com'}</CustomText>
+          {user.email === 'user.guest@univent.com' ? (
+            <View>{null}</View>
+          ) : (
+            <CustomText style={[styles.userDetails, styles.emailText]}>{user?.email || 'testemail@example.com'}</CustomText>
+          )}
         </View>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} disabled={loading}>
           {loading ? (
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     marginTop: "auto",
-    marginBottom: "25%",
+    marginBottom: "28%",
     paddingVertical: 6,
     backgroundColor: theme.colorTaskbarYellow,
     borderRadius: 20,
