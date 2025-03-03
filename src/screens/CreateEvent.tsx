@@ -84,7 +84,7 @@ const CreateEvent = () => {
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const formattedDate = selectedDate.toISOString().split("T")[0]; // 2025-03-12
       setEventDate(formattedDate);
     }
   };
@@ -92,8 +92,8 @@ const CreateEvent = () => {
   const handleTimeChange = (event: any, selectedTime?: Date) => {
     setShowTimePicker(false);
     if (selectedTime) {
-      const hours = selectedTime.getHours().toString().padStart(2, "0");
-      const minutes = selectedTime.getMinutes().toString().padStart(2, "0");
+      const hours = selectedTime.getHours().toString().padStart(2, "0"); // 18
+      const minutes = selectedTime.getMinutes().toString().padStart(2, "0"); // 27
       const seconds = "00";
       setEventTime(`${hours}:${minutes}:${seconds}`);
     }
@@ -115,7 +115,9 @@ const CreateEvent = () => {
     });
 
     if (!result.canceled) {
-      console.log(result.assets[0]); // CHECK THIS !!!
+      // result.assets[0]
+      // {"assetId": null, "base64": null, "duration": null, "exif": null, "fileName": "4a62b3d3-400b-4c95-90e3-a2eb04f9722c.jpeg", "fileSize": 184640, "height": 2250, "mimeType": "image/jpeg", "rotation": null, "type": "image", "uri": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540harshil0%252Funivent/ImagePicker/4a62b3d3-400b-4c95-90e3-a2eb04f9722c.jpeg", "width": 4000}
+
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
       console.log("Selected image URI: ", imageUri);
@@ -434,8 +436,14 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight
   },
   inlineBtn: {
-    color: theme.colorBrightRed,
-    fontWeight: "bold"
+    color: theme.colorRed,
+    fontWeight: "bold",
+    textShadowColor: theme.colorRed,
+    textShadowOffset: {
+      width: 0,
+      height: 0
+    },
+    textShadowRadius: 20
   },
   inputContainer: {
     marginTop: "6%",
