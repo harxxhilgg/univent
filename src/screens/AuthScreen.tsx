@@ -21,6 +21,7 @@ const AuthScreen = () => {
   const [password, setPassword] = useState("");
   const [secureTextEntry, setsecureTextEntry] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [GuestLoading, setGuestLoading] = useState(false);
 
   const showToastSuccess = () => {
     Toast.show({
@@ -236,8 +237,8 @@ const AuthScreen = () => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestLoginBtn} onPress={handleGuestLogin} disabled={loading}>
-            {loading ? (
+          <TouchableOpacity style={styles.guestLoginBtn} onPress={handleGuestLogin} disabled={GuestLoading}>
+            {GuestLoading ? (
               <ActivityIndicator color={theme.colorFontLight} style={styles.activityIndicator} />
             ) : (
               <CustomText style={styles.guestLoginBtnText}>Guest Login</CustomText>
@@ -245,7 +246,10 @@ const AuthScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.newAccContainer}>
-            <TouchableOpacity style={styles.signUpBtn} onPress={() => navigation.navigate('Signup')}>
+            <TouchableOpacity style={styles.signUpBtn} onPress={() => {
+              navigation.navigate('Signup');
+              setGuestLoading(true);
+            }}>
               <CustomText style={styles.SignupBtnText}>Create new account</CustomText>
             </TouchableOpacity>
           </View>
