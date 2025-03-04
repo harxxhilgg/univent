@@ -9,6 +9,7 @@ import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
+
 export interface Event {
   id: number;
   title: string;
@@ -24,18 +25,56 @@ export interface Event {
 
 const { width } = Dimensions.get('window');
 
+const isEventHappeningNow = (eventDate: string, eventTime: string) => {
+  const now = new Date();
+  const [hours, minutes, seconds] = eventTime.split(':').map(Number);
+
+  const eventStart = new Date(eventDate);
+  eventStart.setHours(hours, minutes, seconds, 0);
+
+  const eventEnd = new Date(eventStart);
+  eventEnd.setHours(eventStart.getHours() + 2);
+
+  return now >= eventStart && now <= eventEnd;
+};
+
 const DiscoverEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const userContext = useContext(UserContext);
 
+  const fetchWithTimeout = (url: string, timeout: number) => {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error("Request timed out ⏳"));
+      }, timeout);
+
+      fetch(url)
+        .then((response) => {
+          clearTimeout(timer);
+          resolve(response);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
+  };
+
   const fetchEvents = useCallback(async () => {
-    return fetch(`${API_URL}/events/getAllEvents`)
-      .then(res => res.json())
-      .then(data => setEvents(data))
-      .catch(err => console.error('Error fetching events: ', err));
+    try {
+      const response: any = await fetchWithTimeout(`${API_URL}/events/getAllEvents`, 7000);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setEvents(data);
+    } catch (err) {
+      console.error("Error fetching events: ", err);
+    }
   }, []);
+
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
@@ -47,7 +86,11 @@ const DiscoverEvents = () => {
 
   if (!userContext) {
     return null;
-  };
+  }
+
+  const hasCurrentEvents = events.some((event) =>
+    isEventHappeningNow(event.event_date, event.event_time)
+  );
 
   return (
     <KeyboardAvoidingView
@@ -58,7 +101,7 @@ const DiscoverEvents = () => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          indicatorStyle='white'
+          indicatorStyle="white"
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -73,20 +116,18 @@ const DiscoverEvents = () => {
         >
           <View style={styles.container}>
             <View style={styles.searchBarContainer}>
-              {
-                isFocused ? (
-                  <>
-                    <TouchableOpacity onPress={() => {
-                      setIsFocused(false);
-                      Keyboard.dismiss();
-                    }}>
-                      <Feather name="arrow-left" size={20} color={theme.colorWhite} style={styles.searchBarBackButton} />
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <Octicons name="search" size={18} color={theme.colorLightGray} style={styles.searchIcon} />
-                )
-              }
+              {isFocused ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsFocused(false);
+                    Keyboard.dismiss();
+                  }}
+                >
+                  <Feather name="arrow-left" size={20} color={theme.colorWhite} style={styles.searchBarBackButton} />
+                </TouchableOpacity>
+              ) : (
+                <Octicons name="search" size={18} color={theme.colorLightGray} style={styles.searchIcon} />
+              )}
               <TextInput
                 style={styles.searchBar}
                 placeholder="Search for the events..."
@@ -95,43 +136,32 @@ const DiscoverEvents = () => {
                 onBlur={() => setIsFocused(false)}
               />
             </View>
-            <View>
-              <CustomText style={styles.headerCurrentEvents}>Current Events</CustomText>
-            </View >
-            <ScrollView
-              horizontal={true}
-              scrollEnabled
-              style={styles.CurrentEvents}
-              indicatorStyle='white'
-              showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}
-            >
-              <CurrentEvents
-                time="10:00 PM"
-                location="Dubai"
-                title="Gullie Dubai Summer Social: Founders x Investors x Operators"
-                organizer="Gullie Global Community Events"
-                imageUrl="https://media.istockphoto.com/id/821463698/photo/microphone-over-the-abstract-blurred-photo-of-conference-hall-or-seminar-room-with-attendee.jpg?s=2048x2048&w=is&k=20&c=ldyPYc4cvOouhmNiDfxjxSR0seFLDmVY0zET27XTNEI="
-                isPaid
-              />
-              <CurrentEvents
-                time="10:00 PM"
-                location="Dubai"
-                title="Gullie Dubai Summer Social: Founders x Investors x Operators"
-                organizer="Gullie Global Community Events"
-                imageUrl="https://c4.wallpaperflare.com/wallpaper/178/707/772/slender-man-wallpaper-preview.jpg"
-                isPaid={false}
-              />
-            </ScrollView>
+            {hasCurrentEvents && (
+              <>
+                <View>
+                  <CustomText style={styles.headerCurrentEvents}>Current Events</CustomText>
+                </View>
+                <ScrollView
+                  horizontal={true}
+                  scrollEnabled
+                  style={styles.CurrentEvents}
+                  indicatorStyle="white"
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {events.map((event) => (
+                    <CurrentEvents key={event.id} event={event} hideEndedEvents={true} />
+                  ))}
+                </ScrollView>
+              </>
+            )}
             <View>
               <View>
                 <CustomText style={styles.headerUpcomingEvent}>Upcoming events</CustomText>
               </View>
-              {
-                events.map(event => (
-                  <EventCard key={event.id} event={event} hideEndedEvents={true} />
-                ))
-              }
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} hideEndedEvents={true} />
+              ))}
             </View>
           </View>
           <View style={styles.emptyContainer}></View>
@@ -149,19 +179,19 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    alignItems: "center",
+    alignItems: 'center',
     backgroundColor: theme.colorBackgroundDark,
     paddingBottom: 30,
   },
   container: {
     flex: 1,
     backgroundColor: theme.colorBackgroundDark,
-    width: "94%",
+    width: '94%',
   },
   searchBarContainer: {
     marginTop: 10,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colorSlightDark,
     borderWidth: 1,
     borderColor: theme.colorLightGray,
@@ -172,16 +202,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: theme.colorFontLight
+    color: theme.colorFontLight,
   },
   searchIcon: {
-    position: "absolute",
+    position: 'absolute',
     left: 20,
   },
   searchBarBackButton: {
-    position: "absolute",
+    position: 'absolute',
     left: -27,
-    top: -10
+    top: -10,
   },
   headerCurrentEvents: {
     color: theme.colorFontLight,
@@ -193,7 +223,7 @@ const styles = StyleSheet.create({
   },
   CurrentEvents: {
     height: 280,
-    marginBottom: -10
+    marginBottom: -10,
   },
   headerUpcomingEvent: {
     color: theme.colorFontLight,
@@ -204,6 +234,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   emptyContainer: {
-    marginVertical: 50
-  }
+    marginVertical: 50,
+  },
 });
