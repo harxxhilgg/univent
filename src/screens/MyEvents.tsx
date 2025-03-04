@@ -1,12 +1,12 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { RefreshControl } from 'react-native-gesture-handler'
-import { theme } from '../../theme'
-import { Event } from './UniventHome'
-import { API_URL } from '../../univent-backend/src/utils/api'
-import { UserContext } from '../context/UserContext'
-import EventCard from '../components/EventCard'
-import CustomText from '../components/CustomText'
+import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { RefreshControl } from 'react-native-gesture-handler';
+import { theme } from '../../theme';
+import { Event } from './UniventHome';
+import { API_URL } from '../../univent-backend/src/utils/api';
+import { UserContext } from '../context/UserContext';
+import EventCard from '../components/EventCard';
+import CustomText from '../components/CustomText';
 
 const MyEvents = () => {
   const { user } = useContext(UserContext);
