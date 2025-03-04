@@ -41,10 +41,6 @@ const calculteTimeUntil = (eventDate: string, eventTime: string) => {
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Tomorrow';
   return `${diffDays} days left`;
-  // if (diffDays === 7 || 8 || 9 || 10 || 11 || 12 || 13) return '1 week left';
-  // if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks left`;
-  // if (diffDays < 59) return `1 month left`;
-  // return `${Math.floor(diffDays / 30)} months left`;
 };
 
 const isEventEnded = (eventDate: string, eventTime: string) => {
@@ -61,7 +57,7 @@ const formatTime = (timeString: string) => {
   return date.toLocaleString('en-US', {
     hour: 'numeric',
     minute: 'numeric',
-    hour12: true
+    hour12: false
   });
 };
 
@@ -154,7 +150,7 @@ export default function EventCard({ event, hideEndedEvents = false }: EventCardP
 const styles = StyleSheet.create({
   container: {
     marginTop: 6,
-    marginBottom: -10
+    marginBottom: -15
   },
   card: {
     borderRadius: 12,
