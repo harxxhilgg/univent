@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: 'bold',
     marginLeft: 16,
-    marginTop: width > 450 ? 24 : 14,
+    marginTop: width > 450 ? 24 : 20,
     marginBottom: 6,
   },
   emptyContainer: {
