@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column-reverse",
     marginTop: 20,
+    marginBottom: 20,
     width: "85%",
   },
   LoginBtn: {
