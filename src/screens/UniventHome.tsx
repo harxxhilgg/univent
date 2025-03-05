@@ -108,8 +108,8 @@ const DiscoverEvents = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={theme.colorWhite}
-              colors={[theme.colorWhite]}
+              tintColor={theme.colorTaskbarYellow}
+              colors={[theme.colorTaskbarYellow]}
               progressBackgroundColor={theme.colorSlightDark}
             />
           }
