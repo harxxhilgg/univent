@@ -38,7 +38,7 @@ const isEventHappeningNow = (eventDate: string, eventTime: string) => {
   return now >= eventStart && now <= eventEnd;
 };
 
-const DiscoverEvents = () => {
+const UniventHome = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -171,7 +171,7 @@ const DiscoverEvents = () => {
   );
 };
 
-export default DiscoverEvents;
+export default UniventHome;
 
 const styles = StyleSheet.create({
   flexContainer: {
