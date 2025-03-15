@@ -136,7 +136,7 @@ export default function CurrentEvents({ event, hideEndedEvents = true }: Current
           <View style={styles.timeContainer}>
             {isHappeningNow && (
               <View style={styles.timeUntilContainer}>
-                <CustomText style={styles.timeUntilText}>Happening Now</CustomText>
+                <CustomText style={styles.timeUntilText}>Going on</CustomText>
               </View>
             )}
             <CustomText style={styles.timeLocationText}>
