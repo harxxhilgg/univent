@@ -85,7 +85,7 @@ export const createEvent = async (req: Request, res: Response) => {
       INSERT INTO
         events (title, organizer, event_date, event_time, location, image_url, is_paid, created_by_email)
       VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8)
+        ($1, $2, $3::DATE, $4, $5, $6, $7, $8)
       RETURNING *;
       `,
       [
@@ -115,11 +115,19 @@ export const getAllEvents = async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       SELECT
-        *
+        id,
+        title,
+        organizer,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
       FROM
         events
       ORDER BY
-        event_date ASC;
+        event_date ASC; 
       `
     );
     res.json(result.rows);
@@ -136,7 +144,15 @@ export const getEventsByUser = async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       SELECT
-        *
+        id,
+        title,
+        organizer,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
       FROM
         events
       WHERE
