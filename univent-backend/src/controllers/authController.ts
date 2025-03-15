@@ -127,3 +127,24 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).send("Server error");
   }
 };
+
+export const deleteAccount = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    const result = await pool.query(
+      `
+      DELETE FROM
+        users
+      WHERE
+        email = $1
+      `,
+      [email]
+    );
+    console.log(`query result: ${result}`);
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
