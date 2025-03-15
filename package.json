@@ -10,6 +10,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@babel/helpers": "^7.26.10",
+    "@babel/runtime": "^7.26.10",
     "@expo/config-plugins": "^9.0.15",
     "@expo/metro-runtime": "~4.0.1",
     "@expo/prebuild-config": "^8.0.26",
