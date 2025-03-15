@@ -120,6 +120,13 @@ export default function BottomTabNavigator() {
         name="Settings"
         component={Settings}
         options={{
+          headerTitle: 'Settings',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontSize: 22,
+            marginVertical: 15,
+            fontWeight: 'bold',
+          },
           tabBarIcon: ({ color, size }) => (
             <FontAwesome5 name="cog" size={size} color={color} />
           ),
