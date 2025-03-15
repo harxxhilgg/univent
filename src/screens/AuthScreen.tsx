@@ -1,7 +1,7 @@
 import { View, TouchableOpacity, Image, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +20,7 @@ const AuthScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secureTextEntry, setsecureTextEntry] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
   const [GuestLoading, setGuestLoading] = useState(false);
 
   const showToastSuccess = () => {
@@ -57,20 +57,21 @@ const AuthScreen = () => {
     });
   };
 
-  useEffect(() => {
-    const testConnection = async () => {
-      try {
-        console.log('Testing API connection...');
-        const response = await fetch(`${API_URL}`);
-        const data = await response.json();
-        console.log('API test successful:', data);
-      } catch (error) {
-        console.error('API test failed: ', error);
-      }
-    };
+  // check test connection
+  // useEffect(() => {
+  //   const testConnection = async () => {
+  //     try {
+  //       console.log('Testing API connection...');
+  //       const response = await fetch(`${API_URL}`);
+  //       const data = await response.json();
+  //       console.log('API test successful:', data);
+  //     } catch (error) {
+  //       console.error('API test failed: ', error);
+  //     }
+  //   };
 
-    testConnection();
-  }, []);
+  //   testConnection();
+  // }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -78,13 +79,12 @@ const AuthScreen = () => {
       return;
     };
 
-    setLoading(true);
+    setLoginLoading(true);
 
     try {
       console.log('Request details: ', {
         url: `${API_URL}/auth/login`,
-        // body: { email, password } --- uncomment for debug
-        body: { email }
+        body: { email } // do not use password in production
       });
 
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -102,7 +102,7 @@ const AuthScreen = () => {
       if (!response.ok) {
         console.log('Login failed: ', data);
         showToastFailure();
-        setLoading(false);
+        setLoginLoading(false);
         return;
       };
 
@@ -113,12 +113,12 @@ const AuthScreen = () => {
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
         showToastFailure();
-        setLoading(false);
+        setLoginLoading(false);
         return;
       };
 
       showToastSuccess();
-      setLoading(false);
+      setLoginLoading(false);
       navigation.replace("Main");
     } catch (err) {
       console.error('Login error: ', {
@@ -136,9 +136,8 @@ const AuthScreen = () => {
       };
 
       showToastFailure();
-      setLoading(false);
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
     };
   };
 
@@ -152,11 +151,21 @@ const AuthScreen = () => {
     });
   };
 
+  const showToastGuestLoginSuccess = () => {
+    Toast.show({
+      autoHide: true,
+      visibilityTime: 1500,
+      type: 'success',
+      text1: 'Logged in as a guest!'
+    });
+  };
+
   const handleGuestLogin = async () => {
 
-    setLoading(true);
+    setGuestLoading(true);
 
     try {
+      // setting up guest data
       const data = {
         user: {
           username: "Guest",
@@ -167,7 +176,10 @@ const AuthScreen = () => {
       setUser(data.user);
 
       try {
+        console.log(`Logged in as a guest, email: ${data.user.email}`);
         navigation.replace("Main");
+        showToastGuestLoginSuccess();
+        setGuestLoading(false);
       } catch (err) {
         console.error(err);
         showToastSomethingIsWrong();
@@ -175,6 +187,8 @@ const AuthScreen = () => {
     } catch (err) {
       console.error(err);
       showToastSomethingIsWrong();
+    } finally {
+      setGuestLoading(false);
     }
   }
 
@@ -229,8 +243,8 @@ const AuthScreen = () => {
               }
             />
           </View>
-          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
-            {loading ? (
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loginLoading}>
+            {loginLoading ? (
               <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
             ) : (
               <CustomText style={styles.loginBtnText}>Log in</CustomText>
