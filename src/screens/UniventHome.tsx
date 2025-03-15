@@ -30,7 +30,7 @@ const isEventHappeningNow = (eventDate: string, eventTime: string) => {
   const now = new Date();
   const [hours, minutes, seconds] = eventTime.split(':').map(Number);
 
-  const eventStart = new Date(eventDate); // 2025-03-14T00:00:00.000Z
+  const eventStart = new Date(eventDate); // 2025-03-14
   eventStart.setHours(hours, minutes, seconds, 0);
 
   const eventEnd = new Date(eventStart);
