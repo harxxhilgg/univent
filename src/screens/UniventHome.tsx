@@ -9,6 +9,7 @@ import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
+import { TouchableRipple } from 'react-native-paper';
 
 export interface Event {
   id: number;
@@ -29,7 +30,7 @@ const isEventHappeningNow = (eventDate: string, eventTime: string) => {
   const now = new Date();
   const [hours, minutes, seconds] = eventTime.split(':').map(Number);
 
-  const eventStart = new Date(eventDate);
+  const eventStart = new Date(eventDate); // 2025-03-14T00:00:00.000Z
   eventStart.setHours(hours, minutes, seconds, 0);
 
   const eventEnd = new Date(eventStart);
@@ -38,7 +39,7 @@ const isEventHappeningNow = (eventDate: string, eventTime: string) => {
   return now >= eventStart && now <= eventEnd;
 };
 
-const UniventHome = () => {
+const UniventHome = ({ navigation }: { navigation: any }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -160,7 +161,14 @@ const UniventHome = () => {
                 <CustomText style={styles.headerUpcomingEvent}>Upcoming events</CustomText>
               </View>
               {events.map((event) => (
-                <EventCard key={event.id} event={event} hideEndedEvents={true} />
+                // passing whole event obejct as prop to EventDetails screen
+                <TouchableRipple
+                  key={event.id}
+                  onPress={() => navigation.navigate('EventDetails', { event })}
+                  rippleColor={theme.colorGray}
+                >
+                  <EventCard event={event} hideEndedEvents={true} />
+                </TouchableRipple>
               ))}
             </View>
           </View>
