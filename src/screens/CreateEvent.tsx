@@ -85,6 +85,7 @@ const CreateEvent = () => {
     setShowDatePicker(false);
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split("T")[0]; // 2025-03-12
+      console.log(formattedDate);
       setEventDate(formattedDate);
     }
   };
@@ -174,7 +175,7 @@ const CreateEvent = () => {
 
     try {
       const imageUrl = await uploadImage(selectedImage);
-      console.log("Image URL before sending to create: ", imageUrl);
+      // console.log("Image URL before sending to create: ", imageUrl);
 
       const eventData = {
         title,
@@ -201,10 +202,10 @@ const CreateEvent = () => {
         body: JSON.stringify(eventData),
       });
 
-      console.log("Response status: ", response.status);
-      console.log("Response headers: ", Object.fromEntries(response.headers.entries()));
+      // console.log("Response status: ", response.status);
+      // console.log("Response headers: ", Object.fromEntries(response.headers.entries()));
       const responseText = await response.text();
-      console.log("Response text: ", responseText);
+      // console.log("Response text: ", responseText);
 
       if (!response.ok) {
         console.log('Event creation failed: ', responseText);
@@ -223,6 +224,7 @@ const CreateEvent = () => {
       setLocation("");
       setSelectedImage(null);
       setIsPaid(false);
+      // console.log(`eventDate: ${eventDate}`); // true date only, no UTC
     } catch (err) {
       console.error('Event creation error: ', {
         name: err instanceof Error ? err.name : 'Unknown',
@@ -248,7 +250,7 @@ const CreateEvent = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
 
-          {user.email === 'user.guest@univent.com' ? (
+          {user?.email === 'user.guest@univent.com' ? (
             <View style={styles.centerContainer}>
               <Image source={require('../../assets/logos/restriction.png')} style={styles.accessDenyIcon} />
               <CustomText style={[styles.textWhite, styles.guestAccessTitleText]}>Feature Unavailable</CustomText>
@@ -335,7 +337,11 @@ const CreateEvent = () => {
 
                   {showTimePicker && (
                     <DateTimePicker
-                      value={new Date()}
+                      value={
+                        eventDate
+                          ? new Date(`${eventDate}T${eventTime || '00:00:00'}`)
+                          : new Date()
+                      }
                       mode="time"
                       display={Platform.OS === "ios" ? "spinner" : "clock"}
                       onChange={handleTimeChange}
