@@ -8,6 +8,7 @@ import { createStackNavigator, StackNavigationProp } from '@react-navigation/sta
 import AuthScreen from './src/screens/AuthScreen';
 import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
+import EventDetails from './src/screens/EventDetails';
 import { useEffect, useState } from 'react';
 import * as Font from 'expo-font';
 
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   Auth: undefined;
   Signup: undefined;
   Main: undefined;
+  EventDetails: undefined;
 }
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -50,14 +52,27 @@ export default function App() {
           <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {/* <Stack.Screen name="Auth" component={AuthScreen} /> */}
-              {/* <Stack.Screen name="Signup" component={Signup} /> */}
+              <Stack.Screen name="Auth" component={AuthScreen} />
+              <Stack.Screen name="Signup" component={Signup} />
               <Stack.Screen name="Main" component={BottomTabNavigator} />
+              <Stack.Screen name="EventDetails" component={EventDetails} options={() => ({
+                headerShown: true,
+                headerTitle: "Event Details",
+                headerStyle: {
+                  backgroundColor: theme.colorBackgroundDark,
+                },
+                headerTintColor: theme.colorTaskbarYellow,
+                headerTitleStyle: {
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  letterSpacing: 0.5
+                }
+              })} />
             </Stack.Navigator>
           </NavigationContainer>
         </GestureHandlerRootView>
       </UserProvider>
-      <Toast />
+      <Toast position='top' />
     </>
   );
 }
@@ -76,3 +91,4 @@ const styles = StyleSheet.create({
 export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList, "Auth">;
 export type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, "Signup">;
 export type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, "Main">;
+export type EventDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, "EventDetails">;
