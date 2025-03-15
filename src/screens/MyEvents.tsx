@@ -7,8 +7,9 @@ import { API_URL } from '../../univent-backend/src/utils/api';
 import { UserContext } from '../context/UserContext';
 import EventCard from '../components/EventCard';
 import CustomText from '../components/CustomText';
+import { TouchableRipple } from 'react-native-paper';
 
-const MyEvents = () => {
+const MyEvents = ({ navigation }: { navigation: any }) => {
   const { user } = useContext(UserContext);
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,8 +74,8 @@ const MyEvents = () => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={theme.colorWhite}
-          colors={[theme.colorWhite]}
+          tintColor={theme.colorTaskbarYellow}
+          colors={[theme.colorTaskbarYellow]}
           progressBackgroundColor={theme.colorSlightDark}
         />
       }
@@ -82,7 +83,13 @@ const MyEvents = () => {
       <View style={styles.container}>
         {events.length > 0 ? (
           events.map(event => (
-            <EventCard key={event.id} event={event} hideEndedEvents={true} />
+            <TouchableRipple
+              key={event.id}
+              onPress={() => navigation.navigate('EventDetails', { event })}
+              rippleColor={theme.colorGray}
+            >
+              <EventCard event={event} hideEndedEvents={true} />
+            </TouchableRipple>
           ))
         ) : (
           <View style={styles.noEventsTextContainer}>
