@@ -17,6 +17,8 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secureTextEntry, setsecureTextEntry] = useState(true);
+  const [isValid, setIsValid] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const showToastFillFields = () => {
     Toast.show({
@@ -47,6 +49,29 @@ const Signup = () => {
     });
   };
 
+  const validateUsername = (username: string) => {
+    const regex = /^[a-z0-9._]+$/;
+    return regex.test(username);
+  };
+
+  const handleUsernameChange = (username: string) => {
+    const isValidUsername = validateUsername(username);
+    const isLengthValid = username.length >= 7;
+
+    setUsername(username);
+
+    if (!isValidUsername) {
+      setIsValid(false);
+      setErrorMessage("username can only contain lowercase letters, numbers, '.' and '_'");
+    } else if (!isLengthValid) {
+      setIsValid(false);
+      setErrorMessage("username must be at least 7 characters long.");
+    } else {
+      setIsValid(true);
+      setErrorMessage("");
+    };
+  };
+
   const handleSignUp = async () => {
     if (!username || !email || !password) {
       showToastFillFields();
@@ -59,7 +84,7 @@ const Signup = () => {
         email,
         password,
       });
-      console.log(response);
+      console.log(`User created with username ${response.data.username} and email ${response.data.email}`);
 
       showToastSignupSuccess();
       navigation.navigate('Auth');
@@ -84,9 +109,10 @@ const Signup = () => {
           <View style={styles.inputContainer}>
             <TextInputPaper
               keyboardType="default"
+              autoCapitalize='none'
               label="Username"
               value={username}
-              onChangeText={(text) => setUsername(text)}
+              onChangeText={handleUsernameChange}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               style={styles.input}
@@ -95,6 +121,9 @@ const Signup = () => {
               textColor={theme.colorFontLight}
               outlineStyle={{ borderRadius: 14 }}
             />
+            {!isValid && (
+              <CustomText style={styles.errorUsernameText}>{errorMessage}</CustomText>
+            )}
             <TextInputPaper
               keyboardType="email-address"
               autoCapitalize='none'
@@ -170,6 +199,11 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     color: theme.colorFontLight,
+  },
+  errorUsernameText: {
+    color: theme.colorRed,
+    paddingHorizontal: 10,
+    fontSize: 15
   },
   SignupBtn: {
     marginTop: 14,
