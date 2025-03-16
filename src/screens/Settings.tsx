@@ -69,7 +69,7 @@ const Settings = () => {
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
-      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem("authToken");
       navigation.replace('Auth');
       showToastLogoutSuccess();
       setLogoutLoading(false);
