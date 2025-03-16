@@ -33,7 +33,6 @@ function AppContent() {
           "Lato-Regular": require("./assets/fonts/Lato-Regular.ttf"),
           "Lato-Bold": require("./assets/fonts/Lato-Bold.ttf"),
         });
-        console.log('Fonts loaded successfully');
         setFontsLoaded(true);
       } catch (error) {
         console.error('Font loading error:', error);
@@ -42,8 +41,6 @@ function AppContent() {
 
     loadFonts();
   }, []);
-
-  console.log('AppContent render - fontsLoaded:', fontsLoaded, 'isLoading:', isLoading, 'initialRoute:', initialRoute);
 
   if (!fontsLoaded || isLoading) {
     return (

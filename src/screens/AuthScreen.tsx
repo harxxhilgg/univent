@@ -117,7 +117,6 @@ const AuthScreen = () => {
           username: decoded.username,
           email: decoded.email
         });
-        console.log(data);
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
         showToastFailure();
@@ -184,7 +183,6 @@ const AuthScreen = () => {
       setUser(data.user);
 
       try {
-        console.log(`Logged in as a guest, email: ${data.user.email}`);
         navigation.replace("Main");
         showToastGuestLoginSuccess();
         setGuestLoading(false);

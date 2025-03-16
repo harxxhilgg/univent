@@ -38,12 +38,8 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState<'Auth' | 'Main'>('Auth');
 
-  console.log('UserProvider initialized');
-
   useEffect(() => {
-    console.log('useEffect triggered');
     async function checkAuth() {
-      console.log('Starting auth check');
       const timeout = setTimeout(() => {
         if (isLoading) {
           somethingWentWrong();
@@ -53,28 +49,19 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
       }, 5000);
 
       try {
-        console.log('Attempting to get token from AsyncStorage');
         const authToken = await AsyncStorage.getItem('authToken');
-        console.log('Retrieved token:', authToken);
 
         if (authToken) {
           const decoded = decodeJwtPayload(authToken);
-          console.log('Decoded token:', decoded);
 
           if (decoded && decoded.userId && decoded.username && decoded.email) {
             const currentTime = Math.floor(Date.now() / 1000);
-            console.log('Current time:', currentTime, 'Token exp:', decoded.exp);
+            console.log(`token will be expired after: ${currentTime}/${decoded.exp}`)
 
             if (decoded.exp && decoded.exp < currentTime) {
-              console.log('Token expired');
               await AsyncStorage.removeItem('authToken');
               setInitialRoute('Auth');
             } else {
-              console.log('Token valid, setting user:', {
-                id: decoded.userId,
-                username: decoded.username,
-                email: decoded.email,
-              });
               setUser({
                 id: decoded.userId,
                 username: decoded.username,
@@ -87,7 +74,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
             setInitialRoute('Auth');
           }
         } else {
-          console.log('No token found');
           setInitialRoute('Auth');
         }
       } catch (err) {
@@ -95,7 +81,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
         setInitialRoute('Auth');
       } finally {
         clearTimeout(timeout);
-        console.log('Auth check complete, initialRoute:', initialRoute);
         setIsLoading(false);
       }
     }
