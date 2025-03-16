@@ -49,9 +49,13 @@ export const signup = async (req: Request, res: Response) => {
       [username, email, hashedPassword]
     );
 
-    // JWT token
+    // JWT token with userId, username, email
     const token = jwt.sign(
-      { userId: result.rows[0].id },
+      {
+        userId: result.rows[0].id,
+        username: result.rows[0].username,
+        email: result.rows[0].email,
+      },
       process.env.JWT_SECRET as string,
       {
         expiresIn: "7d",
@@ -113,9 +117,17 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res.json({
       message: "Login successful",
