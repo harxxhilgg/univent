@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
+import { decodeJwtPayload } from '../context/UserProvider';
 
 const AuthScreen = () => {
   const { setUser } = useContext(UserContext);
@@ -109,7 +110,14 @@ const AuthScreen = () => {
       // store token
       try {
         await AsyncStorage.setItem("authToken", data.token);
-        setUser(data.user); // set user's data
+        // setUser(data.user); // set user's data
+        const decoded = decodeJwtPayload(data.token);
+        setUser({
+          id: decoded.userId,
+          username: decoded.username,
+          email: decoded.email
+        });
+        console.log(data);
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
         showToastFailure();
