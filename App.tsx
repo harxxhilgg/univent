@@ -9,8 +9,9 @@ import AuthScreen from './src/screens/AuthScreen';
 import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import EventDetails from './src/screens/EventDetails';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import * as Font from 'expo-font';
+import { UserContext } from './src/context/UserContext';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -21,59 +22,71 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export default function App() {
+function AppContent() {
+  const { isLoading, initialRoute } = useContext(UserContext);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  // load fonts 
   useEffect(() => {
     async function loadFonts() {
-      await Font.loadAsync({
-        "Lato-Regular": require("./assets/fonts/Lato-Regular.ttf"),
-        "Lato-Bold": require("./assets/fonts/Lato-Bold.ttf"),
-      });
-      setFontsLoaded(true);
+      try {
+        await Font.loadAsync({
+          "Lato-Regular": require("./assets/fonts/Lato-Regular.ttf"),
+          "Lato-Bold": require("./assets/fonts/Lato-Bold.ttf"),
+        });
+        console.log('Fonts loaded successfully');
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('Font loading error:', error);
+      }
     }
 
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
+  console.log('AppContent render - fontsLoaded:', fontsLoaded, 'isLoading:', isLoading, 'initialRoute:', initialRoute);
+
+  if (!fontsLoaded || isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colorFontDark} />
       </View>
-    )
+    );
   }
 
   return (
-    <>
-      <UserProvider>
-        <GestureHandlerRootView style={styles.gestureHandlerRootView}>
-          <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Auth" component={AuthScreen} />
-              <Stack.Screen name="Signup" component={Signup} />
-              <Stack.Screen name="Main" component={BottomTabNavigator} />
-              <Stack.Screen name="EventDetails" component={EventDetails} options={() => ({
-                headerShown: true,
-                headerTitle: "Event Details",
-                headerStyle: {
-                  backgroundColor: theme.colorBackgroundDark,
-                },
-                headerTintColor: theme.colorTaskbarYellow,
-                headerTitleStyle: {
-                  fontSize: 22,
-                  fontWeight: "bold",
-                  letterSpacing: 0.5
-                }
-              })} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </GestureHandlerRootView>
-      </UserProvider>
+    <GestureHandlerRootView style={styles.gestureHandlerRootView}>
+      <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName={initialRoute}
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="Auth" component={AuthScreen} />
+          <Stack.Screen name="Signup" component={Signup} />
+          <Stack.Screen name="Main" component={BottomTabNavigator} />
+          <Stack.Screen
+            name="EventDetails"
+            component={EventDetails}
+            options={() => ({
+              headerShown: true,
+              headerTitle: "Event Details",
+              headerStyle: { backgroundColor: theme.colorBackgroundDark },
+              headerTintColor: theme.colorTaskbarYellow,
+              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+            })}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <AppContent />
       <Toast position='top' />
-    </>
+    </UserProvider>
   );
 }
 
