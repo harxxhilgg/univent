@@ -123,7 +123,7 @@ export default function BottomTabNavigator() {
           headerTitle: 'Settings',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontSize: 22,
+            fontSize: 24,
             marginVertical: 15,
             fontWeight: 'bold',
           },
