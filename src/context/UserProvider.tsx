@@ -56,7 +56,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
           if (decoded && decoded.userId && decoded.username && decoded.email) {
             const currentTime = Math.floor(Date.now() / 1000);
-            console.log(`token will be expired after: ${currentTime}/${decoded.exp}`)
+            console.log(`session found, token expires in ${currentTime}/${decoded.exp}`);
 
             if (decoded.exp && decoded.exp < currentTime) {
               await AsyncStorage.removeItem('authToken');
