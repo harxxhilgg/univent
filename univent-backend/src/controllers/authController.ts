@@ -160,3 +160,62 @@ export const deleteAccount = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { id, username, email } = req.body;
+
+    const emailCheck = await pool.query(
+      `
+      SELECT
+        id, email
+      FROM
+        users
+      WHERE
+        email = $1
+      AND
+        id != $2
+      `,
+      [email, id]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+
+    const usernameCheck = await pool.query(
+      `
+      SELECT
+        id, username
+      FROM
+        users
+      WHERE
+        username = $1
+      AND
+        id != $2
+      `,
+      [username, id]
+    );
+    if (usernameCheck.rows.length > 0) {
+      return res.status(400).json({ error: "Username already taken" });
+    }
+
+    const updateUser = await pool.query(
+      `
+      UPDATE
+        users
+      SET
+        username = $1, email = $2
+      WHERE
+        id = $3
+      RETURNING
+        id, username, email
+      `,
+      [username, email, id]
+    );
+
+    res.json(updateUser.rows[0]);
+  } catch (err) {
+    console.error("Profile update error: ", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
