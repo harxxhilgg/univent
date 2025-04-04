@@ -394,7 +394,7 @@ const CreateEvent = () => {
                   {loading ? (
                     <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                   ) : (
-                    <CustomText style={styles.submitBtnText}>Create form</CustomText>
+                    <CustomText style={styles.submitBtnText}>Create Event</CustomText>
                   )}
                 </TouchableOpacity>
 
