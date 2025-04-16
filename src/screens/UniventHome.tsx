@@ -1,15 +1,14 @@
-import { TouchableOpacity, View, StyleSheet, TextInput, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
-import Octicons from '@expo/vector-icons/Octicons';
-import Feather from '@expo/vector-icons/Feather';
 import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
 import { API_URL } from '../../univent-backend/src/utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { TouchableRipple } from 'react-native-paper';
+import { ActivityIndicator, Searchbar, TouchableRipple } from 'react-native-paper';
+import axios from 'axios';
 
 export interface Event {
   id: number;
@@ -23,8 +22,6 @@ export interface Event {
   created_by_email: string;
   created_at: string;
 }
-
-const { width } = Dimensions.get('window');
 
 const isEventHappeningNow = (eventDate: string, eventTime: string) => {
   const now = new Date();
@@ -42,8 +39,45 @@ const isEventHappeningNow = (eventDate: string, eventTime: string) => {
 const UniventHome = ({ navigation }: { navigation: any }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const userContext = useContext(UserContext);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
+
+  const searchEvents = async (q: any) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/events/search`, {
+        params: { q }
+      });
+      setEvents(res.data);
+    } catch (err: any) {
+      console.error('Search error: ', err.message);
+    }
+    setLoading(false);
+  }
+
+  const handleClearSearch = () => {
+    setQuery('');
+    setSearchActive(false);
+    fetchEvents();
+    Keyboard.dismiss();
+  };
+
+  // debounce search query
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (query.trim().length > 0) {
+        searchEvents(query.trim());
+      } else {
+        fetchEvents();
+        setSearchActive(false);
+      }
+    }, 400); // delay 0.4 sec
+
+    return () => clearTimeout(delayDebounce);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   const fetchWithTimeout = (url: string, timeout: number) => {
     return new Promise((resolve, reject) => {
@@ -116,29 +150,27 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
           }
         >
           <View style={styles.container}>
-            <View style={styles.searchBarContainer}>
-              {isFocused ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    setIsFocused(false);
-                    Keyboard.dismiss();
-                  }}
-                >
-                  <Feather name="arrow-left" size={20} color={theme.colorWhite} style={styles.searchBarBackButton} />
-                </TouchableOpacity>
-              ) : (
-                <Octicons name="search" size={18} color={theme.colorLightGray} style={styles.searchIcon} />
-              )}
-              <TextInput
-                style={styles.searchBar}
-                placeholder="Search for the events..."
-                placeholderTextColor={theme.colorFontGray}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-              />
-            </View>
+            <Searchbar
+              placeholder='Search events by title'
+              onChangeText={(text) => {
+                setQuery(text);
+                setSearchActive(true);
+              }}
+              value={query}
+              autoCapitalize='sentences'
+              onClearIconPress={handleClearSearch}
+              icon={searchActive ? 'arrow-left' : 'magnify'}
+              style={styles.searchBar}
+              iconColor={searchActive ? theme.colorTaskbarYellow : theme.colorFontGray}
+              placeholderTextColor={theme.colorFontGray}
+              inputStyle={{ color: theme.colorFontLight }}
+              theme={{ colors: { primary: theme.colorTaskbarYellow } }}
+            />
+
+            {loading && <ActivityIndicator animating={true} style={{ marginTop: 20 }} />}
+
             {hasCurrentEvents && (
-              <>
+              <View style={styles.currentEventsContainer}>
                 <View>
                   <CustomText style={styles.headerCurrentEvents}>Current Events</CustomText>
                 </View>
@@ -154,9 +186,9 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
                     <CurrentEvents key={event.id} event={event} hideEndedEvents={true} />
                   ))}
                 </ScrollView>
-              </>
+              </View>
             )}
-            <View>
+            <View style={styles.upcomingEventsCenterContainer}>
               <View>
                 <CustomText style={styles.headerUpcomingEvent}>Upcoming events</CustomText>
               </View>
@@ -196,30 +228,19 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorBackgroundDark,
     width: '94%',
   },
-  searchBarContainer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colorSlightDark,
-    borderWidth: 1,
-    borderColor: theme.colorLightGray,
-    borderRadius: 24,
-    paddingHorizontal: 45,
-  },
   searchBar: {
-    flex: 1,
-    paddingVertical: 12,
+    marginTop: 10,
+    marginBottom: 16,
     fontSize: 16,
-    color: theme.colorFontLight,
+    backgroundColor: theme.colorSlightDark,
+    width: "100%",
+    maxWidth: 500,
+    marginHorizontal: 'auto'
   },
-  searchIcon: {
-    position: 'absolute',
-    left: 20,
-  },
-  searchBarBackButton: {
-    position: 'absolute',
-    left: -27,
-    top: -10,
+  currentEventsContainer: {
+    width: '100%',
+    maxWidth: 500,
+    marginHorizontal: 'auto'
   },
   headerCurrentEvents: {
     color: theme.colorFontLight,
@@ -237,11 +258,15 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight,
     fontSize: 23,
     fontWeight: 'bold',
-    marginLeft: 16,
-    marginTop: width > 450 ? 24 : 20,
-    marginBottom: 6,
+    marginLeft: 10,
+    marginBottom: Platform.OS === 'web' ? 12 : 6
+  },
+  upcomingEventsCenterContainer: {
+    width: "100%",
+    maxWidth: 500,
+    marginHorizontal: "auto"
   },
   emptyContainer: {
     marginVertical: 50,
-  },
+  }
 });
