@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   timeContainer: {
     marginBottom: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 10
   },
   timeUntilContainer: {
     backgroundColor: theme.colorRed,
