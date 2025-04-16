@@ -12,6 +12,7 @@ import EventDetails from './src/screens/EventDetails';
 import { useEffect, useState, useContext } from 'react';
 import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
+import { toastConfig } from './src/configs/toastConfig';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -82,7 +83,7 @@ export default function App() {
   return (
     <UserProvider>
       <AppContent />
-      <Toast position='top' />
+      <Toast position='top' config={toastConfig} />
     </UserProvider>
   );
 }
