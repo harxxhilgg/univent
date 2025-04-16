@@ -174,12 +174,13 @@ export default function EventCard({ event, hideEndedEvents = true }: EventCardPr
 const styles = StyleSheet.create({
   container: {
     marginTop: 6,
-    marginBottom: -15
+    marginBottom: -10,
   },
   card: {
     borderRadius: 12,
     overflow: 'hidden',
-    padding: 10
+    paddingHorizontal: 10,
+    paddingVertical: 4
   },
   dateContainer: {
     position: 'absolute',
