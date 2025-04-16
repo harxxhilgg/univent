@@ -20,4 +20,5 @@ export const theme = {
   colorBackgroundDark: "#080b12",
   colorRichBlue: "#021BC9",
   colorExclusiveYellow: "#FFED29",
+  colorButtonGray: "#3f3f46",
 };
