@@ -6,12 +6,14 @@ import { calculateTimeUntil, getMonthAndDay } from '../components/EventCard';
 import { formatTime } from '../components/EventCard';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useToast } from '../components/useToast';
 
 const EventDetails = ({ route, navigation }: { route: any, navigation: any }) => {
   // getting full event object from navigation params
   const { event } = route.params;
 
   const [timeUntil, setTimeUntil] = useState("");
+  const { showInfo } = useToast();
 
   useEffect(() => {
     setTimeUntil(calculateTimeUntil(event.event_date, event.event_time));
@@ -45,74 +47,77 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
-        <Image source={{ uri: event.image_url }} style={styles.image} />
-        <View style={styles.inlineContainer}>
-          <CustomText style={[styles.textWhite, styles.timeUntilContainer]}> {timeUntil} </CustomText>
-          <CustomText style={[styles.textWhite, styles.timeLocationContainer]}>{formattedTime} • {event.location}</CustomText>
-        </View>
-        <View style={styles.titleDescContainer}>
-          <CustomText style={[styles.textWhite, styles.eventTitleText]}>{event.title}</CustomText>
-          <CustomText style={[styles.textWhite, styles.eventOrganizerText]}>{event.organizer}</CustomText>
-        </View>
-
-        <View style={styles.secondContainer}>
-
-          <View style={styles.eventTypeInlineContainer}>
-            <View style={styles.eventFeeContainer}>
-              <FontAwesome6 name="money-bills" size={24} color={theme.colorTaskbarYellow} />
-            </View>
-            <View style={styles.eventFeeDetailsContainer}>
-              <View>
-                <CustomText style={styles.eventsFeeDetailsText}>Event Fee</CustomText>
-              </View>
-              <View>
-                <CustomText style={styles.eventsFeePaidorFreeText}>{event.is_paid ? "Paid" : "Free"}</CustomText>
-              </View>
-            </View>
+        <View style={styles.container}>
+          <Image source={{ uri: event.image_url }} style={styles.image} />
+          <View style={styles.inlineContainer}>
+            <CustomText style={[styles.textWhite, styles.timeUntilContainer]}> {timeUntil} </CustomText>
+            <CustomText style={[styles.textWhite, styles.timeLocationContainer]}>{formattedTime} • {event.location}</CustomText>
+          </View>
+          <View style={styles.titleDescContainer}>
+            <CustomText style={[styles.textWhite, styles.eventTitleText]}>{event.title}</CustomText>
+            <CustomText style={[styles.textWhite, styles.eventOrganizerText]}>{event.organizer}</CustomText>
           </View>
 
-          <View style={styles.eventDateTimeInlineContainer}>
-            <View style={styles.dateContainer}>
-              <CustomText style={styles.month}>{date.month}</CustomText>
-              <CustomText style={styles.day}>{date.day}</CustomText>
-            </View>
-            <View style={styles.eventDateDetailsContainer}>
-              <View>
-                <CustomText style={styles.eventDateDetailsText}>
-                  {`${formattedWeekday}, ${eventDateMonth.month} ${eventDateMonth.day}`}
-                </CustomText>
-              </View>
-              <View>
-                <CustomText style={styles.eventTimeDetailsText}>
-                  {formattedTime}
-                </CustomText>
-              </View>
-            </View>
-          </View>
+          <View style={styles.secondContainer}>
 
-          <View style={styles.eventLocationInlineContainer}>
-            <View style={styles.eventLocationContainer}>
-              <Entypo name="location" size={28} color={theme.colorTaskbarYellow} />
-            </View>
-            <View style={styles.eventLocationDetailsContainer}>
-              <View>
-                <CustomText style={styles.eventLocationText}>
-                  {event.location}
-                </CustomText>
+            <View style={styles.eventTypeInlineContainer}>
+              <View style={styles.eventFeeContainer}>
+                <FontAwesome6 name="money-bills" size={24} color={theme.colorTaskbarYellow} />
+              </View>
+              <View style={styles.eventFeeDetailsContainer}>
+                <View>
+                  <CustomText style={styles.eventsFeeDetailsText}>Event Fee</CustomText>
+                </View>
+                <View>
+                  <CustomText style={styles.eventsFeePaidorFreeText}>{event.is_paid ? "Paid" : "Free"}</CustomText>
+                </View>
               </View>
             </View>
-          </View>
-        </View >
 
-        <View style={styles.registerContainer}>
-          <TouchableOpacity
-            // onPress={() => {}}
-            style={styles.registerTouchable}
-          >
-            <CustomText style={styles.registerText}>Register</CustomText>
-          </TouchableOpacity>
+            <View style={styles.eventDateTimeInlineContainer}>
+              <View style={styles.dateContainer}>
+                <CustomText style={styles.month}>{date.month}</CustomText>
+                <View style={styles.dayTextContainer}>
+                  <CustomText style={styles.day}>{date.day}</CustomText>
+                </View>
+              </View>
+              <View style={styles.eventDateDetailsContainer}>
+                <View>
+                  <CustomText style={styles.eventDateDetailsText}>
+                    {`${formattedWeekday}, ${eventDateMonth.month} ${eventDateMonth.day}`}
+                  </CustomText>
+                </View>
+                <View>
+                  <CustomText style={styles.eventTimeDetailsText}>
+                    {formattedTime}
+                  </CustomText>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.eventLocationInlineContainer}>
+              <View style={styles.eventLocationContainer}>
+                <Entypo name="location" size={28} color={theme.colorTaskbarYellow} />
+              </View>
+              <View style={styles.eventLocationDetailsContainer}>
+                <View>
+                  <CustomText style={styles.eventLocationText}>
+                    {event.location}
+                  </CustomText>
+                </View>
+              </View>
+            </View>
+          </View >
+
+          <View style={styles.registerContainer}>
+            <TouchableOpacity
+              onPress={() => showInfo(2500, 'Feature yet to be implemented.')}
+              style={styles.registerTouchable}
+            >
+              <CustomText style={styles.registerText}>Register</CustomText>
+            </TouchableOpacity>
+          </View>
         </View>
-
       </ScrollView >
     </View >
   )
@@ -129,7 +134,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorBackgroundDark,
     paddingBottom: 30,
     paddingTop: 10,
-    paddingHorizontal: 20
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+    width: "100%",
+    maxWidth: 500,
+    alignSelf: "center"
   },
   image: {
     width: "100%",
@@ -175,6 +186,7 @@ const styles = StyleSheet.create({
   },
   secondContainer: {
     marginTop: 16,
+    marginBottom: 16,
     padding: 20,
     backgroundColor: theme.colorSlightDark,
     borderRadius: 28 // IBR + PADDING = OBR
@@ -183,7 +195,10 @@ const styles = StyleSheet.create({
     flexDirection: "row"
   },
   eventFeeContainer: {
-    paddingHorizontal: 16,
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 20,
     borderWidth: 1,
     borderColor: theme.colorTaskbarYellow,
@@ -207,6 +222,9 @@ const styles = StyleSheet.create({
     marginTop: 16
   },
   dateContainer: {
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
     paddingTop: 2,
     alignItems: 'center',
     backgroundColor: theme.colorTaskbarYellow,
@@ -221,17 +239,20 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  dayTextContainer: {
+    width: '100%',
+    backgroundColor: theme.colorSlightDark,
+    paddingVertical: 6,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomLeftRadius: 11,
+    borderBottomRightRadius: 11,
+  },
   day: {
+    textAlign: 'center',
     fontSize: 22,
     fontWeight: 'bold',
     color: theme.colorFontLight,
-    backgroundColor: theme.colorSlightDark,
-    paddingHorizontal: 18,
-    paddingVertical: 6,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12
   },
   eventDateDetailsContainer: {
     marginLeft: 16,
@@ -243,14 +264,17 @@ const styles = StyleSheet.create({
   },
   eventTimeDetailsText: {
     color: theme.colorFontGray,
-    fontSize: 16
+    fontSize: 16,
   },
   eventLocationInlineContainer: {
     flexDirection: "row",
     marginTop: 16
   },
   eventLocationContainer: {
-    paddingHorizontal: 16,
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 18,
     borderWidth: 1,
     borderColor: theme.colorTaskbarYellow,
