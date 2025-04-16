@@ -5,6 +5,8 @@ import {
   getAllEvents,
   getEventsByUser,
   uploadImage,
+  search,
+  getLatestEvent,
 } from "../controllers/eventController";
 
 const router = express.Router();
@@ -20,5 +22,7 @@ router.post(
 router.post("/create", createEvent as any);
 router.get("/getAllEvents", getAllEvents);
 router.get("/user/:email", getEventsByUser);
+router.get("/search", search);
+router.get("/getLatestEvent", getLatestEvent);
 
 export default router;
