@@ -10,6 +10,7 @@ import { API_URL } from '../../univent-backend/src/utils/api';
 import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { decodeJwtPayload } from '../context/UserProvider';
+import { useToast } from '../components/useToast';
 
 const AuthScreen = () => {
   const { setUser } = useContext(UserContext);
@@ -23,40 +24,7 @@ const AuthScreen = () => {
   const [secureTextEntry, setsecureTextEntry] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [GuestLoading, setGuestLoading] = useState(false);
-
-  const showToastSuccess = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 1500,
-      type: 'success',
-      text1: 'Logged in succesfully!',
-    });
-  };
-
-  // const showToastUserNotFound = () => {
-  //   Toast.show({
-  //     type: 'info',
-  //     text1: 'This email is not registered with any account!',
-  //   });
-  // };
-
-  const showToastFailure = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Wrong credentials!',
-    });
-  };
-
-  const showToastFillFields = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'info',
-      text1: 'Please fill in all fields'
-    });
-  };
+  const { showSuccess, showError, showInfo } = useToast();
 
   // check test connection
   // useEffect(() => {
@@ -76,7 +44,7 @@ const AuthScreen = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showToastFillFields();
+      showInfo(2500, 'Please fill in all fields.');
       return;
     };
 
@@ -102,7 +70,7 @@ const AuthScreen = () => {
 
       if (!response.ok) {
         console.log('Login failed: ', data);
-        showToastFailure();
+        showError(3000, 'Login failed, please try again.');
         setLoginLoading(false);
         return;
       };
@@ -110,7 +78,6 @@ const AuthScreen = () => {
       // store token
       try {
         await AsyncStorage.setItem("authToken", data.token);
-        // setUser(data.user); // set user's data
         const decoded = decodeJwtPayload(data.token);
         setUser({
           id: decoded.userId,
@@ -119,13 +86,12 @@ const AuthScreen = () => {
         });
       } catch (storageError) {
         console.log('Error storing token: ', storageError);
-        showToastFailure();
+        showError(2500, 'Something went wrong, please try again.');
         setLoginLoading(false);
         return;
       };
 
-      showToastSuccess();
-      setLoginLoading(false);
+      showSuccess(1500, 'Logged in succesfully!');
       navigation.replace("Main");
     } catch (err) {
       console.error('Login error: ', {
@@ -142,7 +108,7 @@ const AuthScreen = () => {
         console.log('3. IP address is correct');
       };
 
-      showToastFailure();
+      showError(3000, 'Wrong credentials');
     } finally {
       setLoginLoading(false);
     };
