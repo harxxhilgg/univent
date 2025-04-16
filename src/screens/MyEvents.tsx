@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { theme } from '../../theme';
@@ -39,7 +39,7 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      };
 
       const data = await response.json();
       setEvents(data);
@@ -116,6 +116,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colorBackgroundDark,
     width: "94%",
+    maxWidth: 500,
+    margin: "auto",
+    marginTop: Platform.OS === 'web' ? 20 : 0
   },
   emptyContainer: {
     marginVertical: 50
