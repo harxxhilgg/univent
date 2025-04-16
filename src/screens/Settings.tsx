@@ -12,100 +12,42 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { TextInput as TextInputPaper } from 'react-native-paper';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import * as Animatable from 'react-native-animatable'
+import { useToast } from '../components/useToast';
 
 const Settings = () => {
   const { user, setUser } = useContext(UserContext);
   const accountSettingsBottomSheetRef = useRef<BottomSheet>(null);
+  const profileSettingsBottomSheetRef = useRef<BottomSheet>(null);
   const navigation = useNavigation<AuthScreenNavigationProp>();
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isBottomSheetAccountOpen, setIsBottomSheetAccountOpen] = useState(false);
+  const [isBottomSheetProfileOpen, setIsBottomSheetProfileOpen] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
-  const [username, setUsername] = useState(user?.username || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [username, setUsername] = useState(user?.username || "username");
+  const [email, setEmail] = useState(user?.email || "email");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFocused, setIsFocused] = useState(false);
   const [isValid, setIsValid] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const scaleAnim = useSharedValue(0);
-
-  useEffect(() => {
-    if (isEditAccDetailsLayoutVisible || isDeleteConfirmationVisible) {
-      scaleAnim.value = withSpring(1, {
-        // damping: 100,
-        stiffness: 100,
-      });
-    } else {
-      scaleAnim.value = withTiming(0, { duration: 1000 });
-    }
-  }, [isEditAccDetailsLayoutVisible, scaleAnim, isDeleteConfirmationVisible]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scaleAnim.value }],
-      opacity: scaleAnim.value
-    };
-  });
-
-  const showToastLogoutSuccess = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 1500,
-      type: 'success',
-      text1: 'Logged out successfully!',
-    });
-  };
-
-  const showToastLogoutFailure = (err: any) => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Log out failed!',
-      text2: err || null,
-    });
-  };
-
-  const showToastDeleteAccountSuccess = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'success',
-      text1: 'Account deleted!'
-    });
-  };
-
-  const showToastDeleteAccountFailure = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Account not deleted!',
-    });
-  };
-
-  const somethingWentWrong = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Something went wrong!',
-    });
-  };
+  const { showSuccess, showError } = useToast();
+  const [countdown, setCountdown] = useState(10);
+  const [canDelete, setCanDelete] = useState(false);
+  const [animation] = useState('lightSpeedIn');
 
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
       await AsyncStorage.removeItem("authToken");
       navigation.replace('Auth');
-      showToastLogoutSuccess();
+      showSuccess(1500, 'Logged out successfully!');
       setLogoutLoading(false);
     } catch (err) {
       console.error("Logout failed: ", err);
       setLogoutLoading(false);
-      showToastLogoutFailure(err);
+      showError(2000, 'Logout failed!', 'Try again later.');
     }
   };
 
@@ -122,25 +64,41 @@ const Settings = () => {
 
       if (res.ok) {
         await AsyncStorage.removeItem("userToken");
-        showToastDeleteAccountSuccess();
+        showSuccess(2000, 'Your account has been permanently deleted.');
         navigation.replace('Auth');
       } else {
-        showToastDeleteAccountFailure();
+        showError(2000, 'Account not deleted!');
       }
     } catch (err) {
       console.log("Account deletion failed: ", err);
-      somethingWentWrong();
+      showError(2000, 'Something went wrong!');
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  const handleSheetChanges = useCallback((index: number) => {
-    setIsBottomSheetOpen(index >= 0);
+  const handleAccountSheetChanges = useCallback((index: number) => {
+    setIsBottomSheetAccountOpen(index >= 0);
   }, []);
 
-  const toggleBottomSheet = () => {
-    if (isBottomSheetOpen) {
+  const handleProfileSheetChanges = useCallback((index: number) => {
+    setIsBottomSheetProfileOpen(index >= 0);
+  }, []);
+
+  const toggleBottomProfileSheet = () => {
+    if (isBottomSheetAccountOpen) accountSettingsBottomSheetRef.current?.close();
+
+    if (isBottomSheetProfileOpen) {
+      profileSettingsBottomSheetRef.current?.close();
+    } else {
+      profileSettingsBottomSheetRef.current?.expand();
+    };
+  };
+
+  const toggleBottomAccountSheet = () => {
+    if (isBottomSheetProfileOpen) profileSettingsBottomSheetRef.current?.close();
+
+    if (isBottomSheetAccountOpen) {
       accountSettingsBottomSheetRef.current?.close();
     } else {
       accountSettingsBottomSheetRef.current?.expand();
@@ -205,6 +163,28 @@ const Settings = () => {
     }
   };
 
+  useEffect(() => {
+    let timer: any;
+
+    if (isDeleteConfirmationVisible) {
+      setCountdown(10);
+      setCanDelete(false);
+
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setCanDelete(true);
+            return 0;
+          }
+          return prev - 1;
+        })
+      }, 1000);
+    };
+
+    return () => clearInterval(timer);
+  }, [isDeleteConfirmationVisible]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -237,20 +217,28 @@ const Settings = () => {
 
           <TouchableOpacity
             style={styles.accountSettingsContainer}
-            onPress={toggleBottomSheet}
+            onPress={toggleBottomProfileSheet}
           >
-            <FontAwesome6 name="gear" size={24} color={theme.colorTaskbarYellow} />
+            <FontAwesome6 name="user-pen" size={20} color={theme.colorTaskbarYellow} style={styles.heroImage} />
+            <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.accountSettingsContainer}
+            onPress={toggleBottomAccountSheet}
+          >
+            <FontAwesome6 name="gear" size={22} color={theme.colorTaskbarYellow} style={styles.heroImage} />
             <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
           </TouchableOpacity>
 
           <BottomSheet
-            ref={accountSettingsBottomSheetRef}
+            ref={profileSettingsBottomSheetRef}
             index={-1}
             enablePanDownToClose={true}
-            snapPoints={['50%']}
-            onChange={handleSheetChanges}
+            snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
+            onChange={handleProfileSheetChanges}
             backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
-            handleIndicatorStyle={{ backgroundColor: theme.colorTaskbarYellow, width: "20%", marginTop: 4 }}
+            handleIndicatorStyle={{ backgroundColor: theme.colorTaskbarYellow, width: "20%", maxWidth: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
 
@@ -265,7 +253,7 @@ const Settings = () => {
                   {deleteLoading ? (
                     <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                   ) : (
-                    <CustomText style={styles.editAccBtnText}>Edit Account</CustomText>
+                    <CustomText style={styles.editAccBtnText}>Edit Profile</CustomText>
                   )}
                 </TouchableOpacity>
               )}
@@ -281,6 +269,20 @@ const Settings = () => {
                   <CustomText style={styles.logoutBtnText}>Log out</CustomText>
                 )}
               </TouchableOpacity>
+
+            </BottomSheetView>
+          </BottomSheet>
+
+          <BottomSheet
+            ref={accountSettingsBottomSheetRef}
+            index={-1}
+            enablePanDownToClose={true}
+            snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
+            onChange={handleAccountSheetChanges}
+            backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            handleIndicatorStyle={{ backgroundColor: theme.colorTaskbarYellow, width: "20%", maxWidth: 100, marginTop: 4 }}
+          >
+            <BottomSheetView style={styles.bottomSheetContainer}>
 
               {user?.email === "user.guest@univent.com" ? (
                 <View>{null}</View>
@@ -303,10 +305,10 @@ const Settings = () => {
 
           {isDeleteConfirmationVisible && (
             <View style={styles.DeleteAccountOverlay}>
-              <Animated.View style={[styles.DeleteAccountConfirmationContainer, animatedStyle]}>
-                <CustomText style={styles.DeleteAccountConfirmationTitle}>Delete Account</CustomText>
+              <Animatable.View style={styles.DeleteAccountConfirmationContainer} animation={animation} duration={200}>
+                <CustomText style={styles.DeleteAccountConfirmationTitle}>Delete Account?</CustomText>
                 <CustomText style={styles.DeleteAccountConfirmationMessage}>
-                  Are you sure you want to delete your account? This action cannot be undone.
+                  Deleting this account will permanently remove it from Univnet. This action cannot be undone.
                 </CustomText>
                 <View style={styles.DeleteAccountButtonContainer}>
                   <TouchableOpacity
@@ -316,24 +318,31 @@ const Settings = () => {
                     <CustomText style={styles.DeleteAccountCancelButtonText}>Cancel</CustomText>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.DeleteAccountConfirmationButton, styles.DeleteAccountDeleteButton]}
+                    style={[
+                      styles.DeleteAccountConfirmationButton,
+                      styles.DeleteAccountDeleteButton,
+                      !canDelete && { opacity: 0.5 }
+                    ]}
                     onPress={handleDeleteAccount}
+                    disabled={!canDelete}
                   >
-                    <CustomText style={styles.DeleteAccountDeleteButtonText}>Delete</CustomText>
+                    <CustomText style={styles.DeleteAccountDeleteButtonText}>
+                      {canDelete ? 'Yes, Delete' : countdown}
+                    </CustomText>
                   </TouchableOpacity>
                 </View>
-              </Animated.View>
+              </Animatable.View>
             </View>
           )}
 
           {isEditAccDetailsLayoutVisible && (
             <View style={styles.EditAccountOverlay}>
-              <Animated.View style={[styles.EditAccountConfirmationContainer, animatedStyle]}>
+              <Animatable.View style={styles.EditAccountConfirmationContainer} animation={animation} duration={300}>
                 <View style={styles.EditAccountTitleContainer}>
                   <CustomText style={styles.editAccountConfirmationTitle}>Edit Account</CustomText>
                 </View>
                 <TouchableOpacity style={styles.editAccountLayoutCloseIcon} onPress={toggleEditLayout}>
-                  <MaterialCommunityIcons name="close" size={28} color={theme.colorFontGray} />
+                  <MaterialCommunityIcons name="close" size={24} color={theme.colorFontGray} />
                 </TouchableOpacity>
                 <View style={styles.editAccountInputContainer}>
                   <TextInputPaper
@@ -348,7 +357,7 @@ const Settings = () => {
                     mode="outlined"
                     theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorSlightDark } }}
                     textColor={theme.colorFontLight}
-                    outlineStyle={{ borderRadius: 12 }}
+                    outlineStyle={{ borderRadius: 10 }}
                   />
                   {!isValid && (
                     <CustomText style={styles.errorUsernameText}>{errorMessage}</CustomText>
@@ -365,13 +374,13 @@ const Settings = () => {
                     mode="outlined"
                     theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorSlightDark } }}
                     textColor={theme.colorFontLight}
-                    outlineStyle={{ borderRadius: 14 }}
+                    outlineStyle={{ borderRadius: 10 }}
                   />
                 </View>
                 <TouchableOpacity style={styles.editAccountSubmitButton} onPress={handleEditAccount}>
                   <CustomText style={styles.editAccountSubmitButtonText}>Save Changes</CustomText>
                 </TouchableOpacity>
-              </Animated.View>
+              </Animatable.View>
             </View>
           )}
         </ScrollView>
@@ -394,12 +403,13 @@ const styles = StyleSheet.create({
   userDataContainer: {
     backgroundColor: theme.colorSlightDark,
     width: "90%",
+    maxWidth: 500,
     paddingTop: 28,
     paddingBottom: 16,
     paddingHorizontal: 28,
     borderRadius: 28,
     alignItems: 'center',
-    marginTop: "10%",
+    marginTop: Platform.OS === 'web' ? 50 : 10
   },
   editAccountContainer: {
     position: "absolute",
@@ -413,18 +423,19 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     width: 150,
     height: 150,
-    marginBottom: 10,
+    marginBottom: 10
   },
   usernameText: {
     fontSize: 26,
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   emailText: {
-    fontSize: 13,
+    fontSize: 13
   },
   editAccBtn: {
     alignSelf: "center",
     width: "95%",
+    maxWidth: 400,
     marginTop: 10,
     marginBottom: 10,
     paddingVertical: 6,
@@ -433,16 +444,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     shadowOpacity: 0.5,
     shadowRadius: 15,
-    elevation: 5,
+    elevation: 5
   },
   editAccBtnText: {
     color: theme.colorFontDark,
     textAlign: "center",
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   logoutBtn: {
     alignSelf: "center",
     width: "95%",
+    maxWidth: 400,
     marginTop: 10,
     marginBottom: 10,
     paddingVertical: 6,
@@ -451,16 +463,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     shadowOpacity: 0.5,
     shadowRadius: 15,
-    elevation: 5,
+    elevation: 5
   },
   logoutBtnText: {
     color: theme.colorFontDark,
     textAlign: "center",
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   deleteAccountBtn: {
     alignSelf: "center",
     width: "95%",
+    maxWidth: 400,
     marginTop: 10,
     marginBottom: 10,
     paddingVertical: 6,
@@ -469,62 +482,69 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     shadowOpacity: 0.5,
     shadowRadius: 15,
-    elevation: 10,
+    elevation: 10
   },
   deleteAccountBtnText: {
     color: theme.colorFontLight,
     textAlign: "center",
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   activityIndicator: {
-    paddingVertical: 4,
+    paddingVertical: 4
   },
   bottomSheetContainer: {
     flex: 1,
     backgroundColor: theme.colorSlightDark,
-    padding: 16,
+    padding: 16
   },
   accountSettingsContainer: {
     backgroundColor: theme.colorSlightDark,
     width: "90%",
+    maxWidth: 500,
     flexDirection: "row",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 48,
     marginTop: 20,
-    gap: 14,
+    gap: 14
+  },
+  heroImage: {
+    width: 26,
+    alignSelf: "center",
   },
   accountSettingsText: {
     color: theme.colorFontLight,
-    fontSize: 16,
+    fontSize: 16
   },
   DeleteAccountOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 1000
   },
   DeleteAccountConfirmationContainer: {
     backgroundColor: theme.colorSlightDark,
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    width: "80%",
-    maxWidth: 300,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    width: "90%",
+    maxWidth: 350,
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1
   },
   DeleteAccountConfirmationTitle: {
     color: theme.colorFontLight,
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: 'bold'
   },
   DeleteAccountConfirmationMessage: {
-    color: theme.colorFontLight,
+    color: theme.colorLightGray,
     fontSize: 16,
     textAlign: 'center',
-    marginVertical: 20
+    paddingTop: 8,
+    paddingBottom: 10,
+    width: "90%"
   },
   DeleteAccountButtonContainer: {
     flexDirection: 'row',
@@ -533,63 +553,63 @@ const styles = StyleSheet.create({
   },
   DeleteAccountConfirmationButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 24,
+    paddingVertical: 8,
+    borderRadius: 12,
     marginHorizontal: 5,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   DeleteAccountCancelButton: {
-    backgroundColor: theme.colorTaskbarYellow,
-    boxShadow: "0px 0px 30px #faf0cc60",
+    backgroundColor: theme.colorButtonGray,
+    boxShadow: "0px 0px 30px #262626",
   },
   DeleteAccountDeleteButton: {
     backgroundColor: theme.colorRed,
-    boxShadow: "0px 0px 30px #d9303560",
+    boxShadow: "0px 0px 30px #d9303560"
   },
   DeleteAccountCancelButtonText: {
-    color: theme.colorFontDark,
-    fontWeight: 'bold',
+    color: theme.colorWhite,
+    fontWeight: 'bold'
   },
   DeleteAccountDeleteButtonText: {
     color: theme.colorFontLight,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   EditAccountOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 1000
   },
   EditAccountConfirmationContainer: {
     backgroundColor: theme.colorSlightDark,
     borderRadius: 30,
     width: "90%",
     maxWidth: 350,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   EditAccountTitleContainer: {
     width: "100%",
     borderBottomWidth: 1,
     borderBottomColor: theme.colorGray,
-    paddingVertical: 16
+    paddingVertical: 12
   },
   editAccountConfirmationTitle: {
     color: theme.colorFontLight,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center'
   },
   editAccountLayoutCloseIcon: {
     position: "absolute",
-    top: 14,
-    right: 14
+    top: 15,
+    right: 18
   },
   editAccountInputContainer: {
     width: '95%',
     paddingHorizontal: 12,
-    paddingVertical: 16,
-    gap: 10,
+    paddingVertical: 10,
+    gap: 8
   },
   inputField: {
     color: theme.colorFontLight
@@ -602,13 +622,15 @@ const styles = StyleSheet.create({
   editAccountSubmitButton: {
     backgroundColor: theme.colorTaskbarYellow,
     paddingVertical: 4,
-    paddingHorizontal: 20,
-    borderRadius: 24,
+    paddingHorizontal: 12,
+    borderRadius: 12,
     marginBottom: 16,
-    marginTop: 10
+    marginTop: 6,
+    boxShadow: "0px 0px 30px #faf0cc40"
   },
   editAccountSubmitButtonText: {
     textAlign: "center",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    fontSize: 16
   }
 });
