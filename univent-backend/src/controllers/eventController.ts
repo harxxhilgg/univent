@@ -106,7 +106,7 @@ export const createEvent = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error creating event: ", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -157,8 +157,9 @@ export const getEventsByUser = async (req: Request, res: Response) => {
         events
       WHERE
         created_by_email = $1
+        AND (event_date + event_time::interval) >= NOW()
       ORDER BY
-        event_date ASC;
+        event_date ASC, event_time ASC;
       `,
       [email]
     );
@@ -166,6 +167,65 @@ export const getEventsByUser = async (req: Request, res: Response) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const search = async (req: Request, res: Response) => {
+  const { q } = req.query;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        title,
+        organizer,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
+      FROM
+        events
+      WHERE
+        title ILIKE $1
+        AND (event_date + event_time::interval) >= NOW()
+      ORDER BY
+        event_date ASC, event_time ASC;
+      `,
+      [`%${q}%`]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getLatestEvent = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        title,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time
+      FROM
+        events
+      WHERE
+        event_date + event_time::interval >= NOW()
+      ORDER BY
+        event_date ASC, event_time ASC
+      LIMIT 1
+      `
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
