@@ -281,8 +281,10 @@ const CreateEvent = () => {
                 />
 
                 <View style={styles.infoTextConatiner}>
-                  <MaterialCommunityIcons name="information-variant" size={24} color={theme.colorGreen} />
-                  <CustomText style={styles.userEmailText}>This email will be used for event creation and this is uneditable.</CustomText>
+                  <View style={styles.verticalCenterContainer}>
+                    <MaterialCommunityIcons name="information-variant" size={24} color={theme.colorGreen} />
+                  </View>
+                  <CustomText style={styles.userEmailText}>This email will be used for event creation</CustomText>
                 </View>
 
                 <TextInputPaper
@@ -452,8 +454,9 @@ const styles = StyleSheet.create({
     textShadowRadius: 20
   },
   inputContainer: {
-    marginTop: "6%",
+    marginTop: Platform.OS === 'web' ? "2%" : "6%",
     width: "85%",
+    maxWidth: 400,
     padding: 6,
     gap: 10
   },
@@ -466,6 +469,9 @@ const styles = StyleSheet.create({
     borderColor: theme.colorGreen,
     padding: 8,
     gap: 2
+  },
+  verticalCenterContainer: {
+    justifyContent: 'center'
   },
   userEmailText: {
     width: "90%",
@@ -549,6 +555,6 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   emptyContainer: {
-    marginVertical: 100
+    marginVertical: Platform.OS === 'web' ? 0 : 100
   },
 });
