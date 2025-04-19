@@ -161,7 +161,7 @@ export default function EventCard({ event, hideEndedEvents = true }: EventCardPr
             <View style={styles.timeUntilContainer}>
               <CustomText style={styles.timeUntilText}>{timeUntil}</CustomText>
             </View>
-            <CustomText style={styles.timeLocationText}>{formattedTime} • {event.location}</CustomText>
+            <CustomText style={styles.timeLocationText}>{formattedTime}  •  {event.location}</CustomText>
           </View>
           <CustomText style={styles.title} numberOfLines={2}>{event.title}</CustomText>
           <CustomText style={styles.organizer}>{event.organizer}</CustomText>
