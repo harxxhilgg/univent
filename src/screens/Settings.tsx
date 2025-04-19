@@ -321,7 +321,7 @@ const Settings = () => {
                     style={[
                       styles.DeleteAccountConfirmationButton,
                       styles.DeleteAccountDeleteButton,
-                      !canDelete && { opacity: 0.5 }
+                      !canDelete && { opacity: 0.3 }
                     ]}
                     onPress={handleDeleteAccount}
                     disabled={!canDelete}
