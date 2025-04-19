@@ -454,8 +454,8 @@ const styles = StyleSheet.create({
     textShadowRadius: 20
   },
   inputContainer: {
-    marginTop: Platform.OS === 'web' ? "2%" : "6%",
-    width: "85%",
+    marginTop: Platform.OS === 'web' ? "2%" : "0%",
+    width: "90%",
     maxWidth: 400,
     padding: 6,
     gap: 10
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
-    color: theme.colorFontLight,
+    color: theme.colorFontGray,
   },
   dateTimeInput: {
     borderWidth: 0.5,
