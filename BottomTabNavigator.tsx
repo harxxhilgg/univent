@@ -138,7 +138,7 @@ export default function BottomTabNavigator() {
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontSize: 24,
-            marginTop: Platform.OS === 'web' ? 0 : 15,
+            marginVertical: 15,
             fontWeight: 'bold',
           },
           tabBarIcon: ({ color, size }) => (
@@ -155,6 +155,13 @@ export default function BottomTabNavigator() {
         name="Updates"
         component={Updates}
         options={{
+          headerTitle: 'Updates',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontSize: 24,
+            marginVertical: 15,
+            fontWeight: 'bold',
+          },
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="tips-and-updates" size={size} color={color} />
           ),
