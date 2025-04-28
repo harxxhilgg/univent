@@ -10,7 +10,7 @@ import { validateSignup, validateLogin } from "../middlewares/authValiation";
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.json({ message: "Auth API is working!" });
+  res.json({ message: "Auth route is working." });
 });
 
 router.post("/login", validateLogin as any, login as any);
