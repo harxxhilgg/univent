@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "builds": [
+  "outputDirectory": "dist",
+  "routes": [
     {
-      "src": "dist/index.js",
-      "use": "@vercel/node"
+      "src": "/(.*)",
+      "dest": "dist/index.js"
     }
-  ],
-  "outputDirectory": "dist"
+  ]
 }
