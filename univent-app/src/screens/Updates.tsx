@@ -5,7 +5,7 @@ import { RefreshControl } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import axios from 'axios';
-import { API_URL } from '../../univent-backend/src/utils/api';
+import { API_URL } from "../utils/api";
 
 type UpcomingEvent = {
   title: string;

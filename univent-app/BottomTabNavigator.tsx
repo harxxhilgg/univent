@@ -77,7 +77,7 @@ export default function BottomTabNavigator() {
           height: 80,
           backgroundColor: theme.colorSlightDark,
           paddingTop: Platform.OS === 'web' ? 0 : 20,
-          marginHorizontal: width > 1000 ? (width - 500) / 2 : 22,
+          marginHorizontal: Platform.OS === 'web' ? 0 : width > 1000 ? (width - 500) / 2 : 22,
           marginBottom: 28,
           borderRadius: 48,
           overflow: "hidden",
@@ -101,7 +101,7 @@ export default function BottomTabNavigator() {
           headerTitleStyle: {
             fontSize: 22,
             marginVertical: 15,
-            fontWeight: 'bold',
+            fontWeight: 'bold'
           },
           tabBarIcon: ({ color, size }) => (
             <FontAwesome6 name="globe" size={size} color={color} />

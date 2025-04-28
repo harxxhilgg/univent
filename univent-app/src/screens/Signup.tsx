@@ -4,9 +4,9 @@ import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
-import { api } from '../../univent-backend/src/utils/api';
 import Toast from 'react-native-toast-message';
 import { TextInput as TextInputPaper } from 'react-native-paper';
+import { api } from '../utils/api';
 
 const Signup = () => {
   const navigation = useNavigation<AuthScreenNavigationProp>();

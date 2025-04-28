@@ -5,7 +5,7 @@ import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
 import EventCard from '../components/EventCard';
 import CurrentEvents from '../components/CurrentEvents';
-import { API_URL } from '../../univent-backend/src/utils/api';
+import { API_URL } from '../utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { ActivityIndicator, Searchbar, TouchableRipple } from 'react-native-paper';
 import axios from 'axios';
@@ -23,21 +23,10 @@ export interface Event {
   created_at: string;
 }
 
-const isEventHappeningNow = (eventDate: string, eventTime: string) => {
-  const now = new Date();
-  const [hours, minutes, seconds] = eventTime.split(':').map(Number);
-
-  const eventStart = new Date(eventDate); // 2025-03-14
-  eventStart.setHours(hours, minutes, seconds, 0);
-
-  const eventEnd = new Date(eventStart);
-  eventEnd.setHours(eventStart.getHours() + 2);
-
-  return now >= eventStart && now <= eventEnd;
-};
-
 const UniventHome = ({ navigation }: { navigation: any }) => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [currentEvents, setCurrentEvents] = useState<Event[]>([]);
+  const [hasCurrentEvents, setHasCurrentEvents] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const userContext = useContext(UserContext);
   const [query, setQuery] = useState('');
@@ -50,7 +39,8 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       const res = await axios.get(`${API_URL}/events/search`, {
         params: { q }
       });
-      setEvents(res.data);
+      setUpcomingEvents(res.data || []);
+
     } catch (err: any) {
       console.error('Search error: ', err.message);
     }
@@ -79,32 +69,25 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
-  const fetchWithTimeout = (url: string, timeout: number) => {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject(new Error("Request timed out ⏳"));
-      }, timeout);
-
-      fetch(url)
-        .then((response) => {
-          clearTimeout(timer);
-          resolve(response);
-        })
-        .catch((err) => {
-          clearTimeout(timer);
-          reject(err);
-        });
-    });
-  };
-
   const fetchEvents = useCallback(async () => {
     try {
-      const response: any = await fetchWithTimeout(`${API_URL}/events/getAllEvents`, 7000);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setEvents(data);
+      function fetchUpcomingEvents() {
+        return axios.get(`${API_URL}/events/getUpcomingEvents`);
+      };
+
+      function fetchCurrentEvents() {
+        return axios.get(`${API_URL}/events/getCurrentEvents`);
+      };
+
+      Promise.all([fetchUpcomingEvents(), fetchCurrentEvents()])
+        .then(([upcomingEventsResponse, currentEventsResponse]) => {
+          setUpcomingEvents(upcomingEventsResponse.data || []);
+          setCurrentEvents(currentEventsResponse.data || []);
+          setHasCurrentEvents(currentEventsResponse.data?.length > 0);
+        })
+        .catch(err => {
+          console.error('Error fetching events: ', err);
+        })
     } catch (err) {
       console.error("Error fetching events: ", err);
     }
@@ -122,10 +105,6 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   if (!userContext) {
     return null;
   }
-
-  const hasCurrentEvents = events.some((event) =>
-    isEventHappeningNow(event.event_date, event.event_time)
-  );
 
   return (
     <KeyboardAvoidingView
@@ -171,28 +150,26 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
 
             {hasCurrentEvents && (
               <View style={styles.currentEventsContainer}>
-                <View>
-                  <CustomText style={styles.headerCurrentEvents}>Current Events</CustomText>
-                </View>
+                <CustomText style={styles.headerCurrentEvents} bold>Current Events</CustomText>
                 <ScrollView
                   horizontal={true}
                   scrollEnabled
-                  style={styles.CurrentEvents}
                   indicatorStyle="white"
                   showsHorizontalScrollIndicator={false}
                   showsVerticalScrollIndicator={false}
                 >
-                  {events.map((event) => (
-                    <CurrentEvents key={event.id} event={event} hideEndedEvents={true} />
+                  {currentEvents.map((event) => (
+                    <CurrentEvents key={event.id} event={event} />
                   ))}
                 </ScrollView>
               </View>
             )}
+
             <View style={styles.upcomingEventsCenterContainer}>
               <View>
-                <CustomText style={styles.headerUpcomingEvent}>Upcoming events</CustomText>
+                <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Events</CustomText>
               </View>
-              {events.map((event) => (
+              {upcomingEvents.map((event) => (
                 // passing whole event obejct as prop to EventDetails screen
                 <TouchableRipple
                   key={event.id}
@@ -226,11 +203,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colorBackgroundDark,
-    width: '94%',
+    width: '96%'
   },
   searchBar: {
     marginTop: 10,
     marginBottom: 16,
+    paddingHorizontal: 6,
     fontSize: 16,
     backgroundColor: theme.colorSlightDark,
     width: "100%",
@@ -240,26 +218,17 @@ const styles = StyleSheet.create({
   currentEventsContainer: {
     width: '100%',
     maxWidth: 500,
-    marginHorizontal: 'auto'
+    marginHorizontal: "auto"
   },
   headerCurrentEvents: {
     color: theme.colorFontLight,
     fontSize: 23,
-    fontWeight: 'bold',
-    marginLeft: 16,
-    marginTop: 34,
-    marginBottom: 6,
-  },
-  CurrentEvents: {
-    height: 280,
-    marginBottom: -10,
+    marginLeft: 10
   },
   headerUpcomingEvent: {
     color: theme.colorFontLight,
     fontSize: 23,
-    fontWeight: 'bold',
     marginLeft: 10,
-    marginBottom: Platform.OS === 'web' ? 12 : 6
   },
   upcomingEventsCenterContainer: {
     width: "100%",

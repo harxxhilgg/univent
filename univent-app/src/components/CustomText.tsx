@@ -10,7 +10,7 @@ const CustomText: React.FC<CustomTextProps> = ({ bold, style, ...props }) => {
     <Text
       style={[
         styles.text,
-        { fontFamily: bold ? "Lato-Bold" : "Lato-Regular" },
+        { fontFamily: bold ? "Inter-Bold" : "Inter-Regular" },
         style,
       ]}
       {...props}

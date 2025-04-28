@@ -51,7 +51,7 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
           <Image source={{ uri: event.image_url }} style={styles.image} />
           <View style={styles.inlineContainer}>
             <CustomText style={[styles.textWhite, styles.timeUntilContainer]}> {timeUntil} </CustomText>
-            <CustomText style={[styles.textWhite, styles.timeLocationContainer]}>{formattedTime} • {event.location}</CustomText>
+            <CustomText style={[styles.textWhite, styles.timeLocationContainer]}>{formattedTime}  •  {event.location}</CustomText>
           </View>
           <View style={styles.titleDescContainer}>
             <CustomText style={[styles.textWhite, styles.eventTitleText]}>{event.title}</CustomText>
@@ -69,16 +69,16 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
                   <CustomText style={styles.eventsFeeDetailsText}>Event Fee</CustomText>
                 </View>
                 <View>
-                  <CustomText style={styles.eventsFeePaidorFreeText}>{event.is_paid ? "Paid" : "Free"}</CustomText>
+                  <CustomText style={styles.eventsFeePaidorFreeText} bold>{event.is_paid ? "Paid" : "Free"}</CustomText>
                 </View>
               </View>
             </View>
 
             <View style={styles.eventDateTimeInlineContainer}>
               <View style={styles.dateContainer}>
-                <CustomText style={styles.month}>{date.month}</CustomText>
+                <CustomText style={styles.month} bold>{date.month}</CustomText>
                 <View style={styles.dayTextContainer}>
-                  <CustomText style={styles.day}>{date.day}</CustomText>
+                  <CustomText style={styles.day} bold>{date.day}</CustomText>
                 </View>
               </View>
               <View style={styles.eventDateDetailsContainer}>
@@ -88,7 +88,7 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
                   </CustomText>
                 </View>
                 <View>
-                  <CustomText style={styles.eventTimeDetailsText}>
+                  <CustomText style={styles.eventTimeDetailsText} bold>
                     {formattedTime}
                   </CustomText>
                 </View>
@@ -101,7 +101,7 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
               </View>
               <View style={styles.eventLocationDetailsContainer}>
                 <View>
-                  <CustomText style={styles.eventLocationText}>
+                  <CustomText style={styles.eventLocationText} bold>
                     {event.location}
                   </CustomText>
                 </View>
@@ -119,7 +119,7 @@ const EventDetails = ({ route, navigation }: { route: any, navigation: any }) =>
           </View>
         </View>
       </ScrollView >
-    </View >
+    </View>
   )
 }
 
@@ -144,13 +144,12 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 200,
+    height: 250,
     borderRadius: 12
   },
   inlineContainer: {
     marginTop: 16,
-    flexDirection: "row",
-    left: "0%",
+    flexDirection: "row"
   },
   textWhite: {
     color: theme.colorFontLight
@@ -171,12 +170,10 @@ const styles = StyleSheet.create({
   },
   titleDescContainer: {
     paddingVertical: 14,
-    paddingHorizontal: 4,
-    gap: 4
+    paddingHorizontal: 4
   },
   eventTitleText: {
     fontSize: 20,
-    fontWeight: "bold",
     letterSpacing: 0.5
   },
   eventOrganizerText: {
@@ -185,11 +182,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   secondContainer: {
-    marginTop: 16,
     marginBottom: 16,
     padding: 20,
     backgroundColor: theme.colorSlightDark,
-    borderRadius: 28 // IBR + PADDING = OBR
+    borderRadius: 28
   },
   eventTypeInlineContainer: {
     flexDirection: "row"
@@ -214,8 +210,7 @@ const styles = StyleSheet.create({
   },
   eventsFeePaidorFreeText: {
     color: theme.colorTaskbarYellow,
-    fontSize: 20,
-    fontWeight: "bold"
+    fontSize: 20
   },
   eventDateTimeInlineContainer: {
     flexDirection: "row",
@@ -234,10 +229,9 @@ const styles = StyleSheet.create({
   },
   month: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: theme.colorFontDark,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.3
   },
   dayTextContainer: {
     width: '100%',
@@ -246,13 +240,12 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
     borderBottomLeftRadius: 11,
-    borderBottomRightRadius: 11,
+    borderBottomRightRadius: 11
   },
   day: {
     textAlign: 'center',
     fontSize: 22,
-    fontWeight: 'bold',
-    color: theme.colorFontLight,
+    color: theme.colorFontLight
   },
   eventDateDetailsContainer: {
     marginLeft: 16,
@@ -263,8 +256,8 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   eventTimeDetailsText: {
-    color: theme.colorFontGray,
-    fontSize: 16,
+    color: theme.colorTaskbarYellow,
+    fontSize: 16
   },
   eventLocationInlineContainer: {
     flexDirection: "row",
@@ -286,20 +279,18 @@ const styles = StyleSheet.create({
   },
   eventLocationText: {
     color: theme.colorFontLight,
-    fontSize: 18,
+    fontSize: 18
   },
   registerContainer: {
     marginTop: "auto"
   },
   registerTouchable: {
     backgroundColor: theme.colorTaskbarYellow,
-    paddingVertical: 10,
+    paddingVertical: 8,
     alignItems: "center",
-    borderRadius: 24,
-    boxShadow: "0px 0px 30px #faf0cc80"
+    borderRadius: 24
   },
   registerText: {
-    color: theme.colorFontDark,
-    fontWeight: "bold",
+    color: theme.colorFontDark
   },
 });

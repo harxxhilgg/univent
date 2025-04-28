@@ -49,30 +49,6 @@ export const calculateTimeUntil = (eventDate: string, eventTime: string) => {
   return `${diffDays} days left`;
 };
 
-const isEventEnded = (eventDate: string, eventTime: string) => {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-
-  if (todayStr > eventDate) {
-    return true;
-  }
-  if (todayStr < eventDate) {
-    return false;
-  }
-
-  const [eventHours, eventMinutes, eventSeconds] = eventTime.split(":").map(Number);
-  const now = new Date();
-  const currentHours = now.getHours();
-  const currentMinutes = now.getMinutes();
-  const currentSeconds = now.getSeconds();
-
-  return (
-    currentHours > eventHours ||
-    (currentHours === eventHours && currentMinutes < eventMinutes) ||
-    (currentHours === eventHours && currentMinutes === eventMinutes && currentSeconds < eventSeconds)
-  );
-};
-
 export const formatTime = (timeString: string) => {
   const [hours, minutes] = timeString.split(':');
   const date = new Date();
@@ -85,15 +61,12 @@ export const formatTime = (timeString: string) => {
   });
 };
 
-export default function EventCard({ event, hideEndedEvents = true }: EventCardProps) {
+export default function EventCard({ event }: EventCardProps) {
   const [timeUntil, setTimeUntil] = useState('');
-  const [isEnded, setIsEnded] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
     const checkEventStatus = () => {
-      const ended = isEventEnded(event.event_date, event.event_time);
-      setIsEnded(ended);
       setTimeUntil(calculateTimeUntil(event.event_date, event.event_time));
     };
 
@@ -104,10 +77,6 @@ export default function EventCard({ event, hideEndedEvents = true }: EventCardPr
     return () => clearInterval(timer);
   }, [event.event_date, event.event_time]);
 
-  if (hideEndedEvents && isEnded) {
-    return null;
-  }
-
   const date = getMonthAndDay(event.event_date);
   const formattedTime = formatTime(event.event_time);
 
@@ -115,8 +84,8 @@ export default function EventCard({ event, hideEndedEvents = true }: EventCardPr
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.dateContainer}>
-          <CustomText style={styles.month}>{date.month}</CustomText>
-          <CustomText style={styles.day}>{date.day}</CustomText>
+          <CustomText style={styles.month} bold>{date.month}</CustomText>
+          <CustomText style={styles.day} bold>{date.day}</CustomText>
         </View>
         {!isImageLoaded ? (
           <View style={styles.imageWrapper}>
@@ -147,15 +116,9 @@ export default function EventCard({ event, hideEndedEvents = true }: EventCardPr
           />
         )
         }
-        {event.is_paid ? (
-          <View style={styles.paidTag}>
-            <CustomText style={styles.paidText}>$ Paid</CustomText>
-          </View>
-        ) : (
-          <View style={styles.freeTag}>
-            <CustomText style={styles.freeText}>$ Free</CustomText>
-          </View>
-        )}
+        <View style={[styles.eventTypeTag, event.is_paid ? styles.eventPaid : styles.eventFree]}>
+          <CustomText style={styles.eventTypeText} bold>$ {event.is_paid ? "Paid" : "Free"}</CustomText>
+        </View>
         <View style={styles.contentContainer}>
           <View style={styles.timeContainer}>
             <View style={styles.timeUntilContainer}>
@@ -184,7 +147,7 @@ const styles = StyleSheet.create({
   },
   dateContainer: {
     position: 'absolute',
-    top: 20,
+    top: 15,
     left: 20,
     backgroundColor: theme.colorFontLight,
     paddingTop: 2,
@@ -201,14 +164,12 @@ const styles = StyleSheet.create({
   },
   month: {
     fontSize: 13,
-    fontWeight: 'bold',
     color: theme.colorFontDark,
     textTransform: 'uppercase',
     letterSpacing: 2,
   },
   day: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: theme.colorFontLight,
     backgroundColor: theme.colorBackgroundDark,
     paddingHorizontal: 16,
@@ -241,38 +202,29 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     borderRadius: 18
   },
-  paidTag: {
+  eventPaid: {
+    backgroundColor: theme.colorExclusivePink
+  },
+  eventFree: {
+    backgroundColor: theme.colorExclusiveYellow
+  },
+  eventTypeTag: {
     position: 'absolute',
-    top: 20,
+    top: 15,
     right: 20,
-    backgroundColor: theme.colorExclusivePink,
     borderRadius: 24,
-    paddingHorizontal: 12,
+    paddingHorizontal: 12
   },
-  paidText: {
+  eventTypeText: {
     color: theme.colorFontDark,
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  freeTag: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: theme.colorExclusiveYellow,
-    borderRadius: 24,
-    paddingHorizontal: 12,
-  },
-  freeText: {
-    color: theme.colorFontDark,
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 14
   },
   contentContainer: {
-    padding: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 10
   },
   timeContainer: {
-    marginBottom: 8,
-    flex: 1,
+    marginBottom: 3,
     flexDirection: "row",
     justifyContent: "space-between"
   },
@@ -296,7 +248,6 @@ const styles = StyleSheet.create({
   title: {
     color: theme.colorFontLight,
     fontSize: 16,
-    marginBottom: 4,
     lineHeight: 22,
   },
   organizer: {

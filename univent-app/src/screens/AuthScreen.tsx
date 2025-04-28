@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-import { API_URL } from '../../univent-backend/src/utils/api';
+import { API_URL } from '../utils/api';
 import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { decodeJwtPayload } from '../context/UserProvider';
@@ -25,22 +25,6 @@ const AuthScreen = () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [GuestLoading, setGuestLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
-
-  // check test connection
-  // useEffect(() => {
-  //   const testConnection = async () => {
-  //     try {
-  //       console.log('Testing API connection...');
-  //       const response = await fetch(`${API_URL}`);
-  //       const data = await response.json();
-  //       console.log('API test successful:', data);
-  //     } catch (error) {
-  //       console.error('API test failed: ', error);
-  //     }
-  //   };
-
-  //   testConnection();
-  // }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {

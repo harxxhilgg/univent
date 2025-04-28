@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { theme } from '../../theme';
 import { Event } from './UniventHome';
-import { API_URL } from '../../univent-backend/src/utils/api';
+import { API_URL } from "../utils/api";
 import { UserContext } from '../context/UserContext';
 import EventCard from '../components/EventCard';
 import CustomText from '../components/CustomText';
@@ -93,7 +93,7 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
           ))
         ) : (
           <View style={styles.noEventsTextContainer}>
-            <CustomText style={styles.noEventsText}>No events found.</CustomText>
+            <CustomText style={styles.noEventsText} bold>No events found.</CustomText>
           </View>
         )
         }
@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
   },
   noEventsText: {
     color: theme.colorFontLight,
-    fontSize: 18,
-    fontWeight: "bold"
+    fontSize: 18
   }
 })

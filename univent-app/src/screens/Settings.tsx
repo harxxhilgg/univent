@@ -7,7 +7,7 @@ import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { UserContext } from '../context/UserContext';
-import { API_URL } from '../../univent-backend/src/utils/api';
+import { API_URL } from "../utils/api";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -207,7 +207,7 @@ const Settings = () => {
               </TouchableOpacity>
             )}
             <Image source={require('../../assets/logos/userProfile.png')} style={styles.userProfile} />
-            <CustomText style={[styles.userDetails, styles.usernameText]}>{user?.username || 'User Name'}</CustomText>
+            <CustomText style={[styles.userDetails, styles.usernameText]} bold>{user?.username || 'User Name'}</CustomText>
             {user.email === 'user.guest@univent.com' ? (
               <View>{null}</View>
             ) : (
@@ -253,7 +253,7 @@ const Settings = () => {
                   {deleteLoading ? (
                     <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                   ) : (
-                    <CustomText style={styles.editAccBtnText}>Edit Profile</CustomText>
+                    <CustomText style={styles.editAccBtnText} bold>Edit Profile</CustomText>
                   )}
                 </TouchableOpacity>
               )}
@@ -266,7 +266,7 @@ const Settings = () => {
                 {logoutLoading ? (
                   <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                 ) : (
-                  <CustomText style={styles.logoutBtnText}>Log out</CustomText>
+                  <CustomText style={styles.logoutBtnText} bold>Log out</CustomText>
                 )}
               </TouchableOpacity>
 
@@ -295,7 +295,7 @@ const Settings = () => {
                   {deleteLoading ? (
                     <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                   ) : (
-                    <CustomText style={styles.deleteAccountBtnText}>Delete Account</CustomText>
+                    <CustomText style={styles.deleteAccountBtnText} bold>Delete Account</CustomText>
                   )}
                 </TouchableOpacity>
               )}
@@ -315,7 +315,7 @@ const Settings = () => {
                     style={[styles.DeleteAccountConfirmationButton, styles.DeleteAccountCancelButton]}
                     onPress={toggleDeleteConfirmation}
                   >
-                    <CustomText style={styles.DeleteAccountCancelButtonText}>Cancel</CustomText>
+                    <CustomText style={styles.DeleteAccountCancelButtonText} bold>Cancel</CustomText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
@@ -326,7 +326,7 @@ const Settings = () => {
                     onPress={handleDeleteAccount}
                     disabled={!canDelete}
                   >
-                    <CustomText style={styles.DeleteAccountDeleteButtonText}>
+                    <CustomText style={styles.DeleteAccountDeleteButtonText} bold>
                       {canDelete ? 'Yes, Delete' : countdown}
                     </CustomText>
                   </TouchableOpacity>
@@ -427,7 +427,6 @@ const styles = StyleSheet.create({
   },
   usernameText: {
     fontSize: 26,
-    fontWeight: "bold"
   },
   emailText: {
     fontSize: 13
@@ -440,7 +439,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 6,
     backgroundColor: theme.colorLightGray,
-    boxShadow: "0px 0px 30px #090b1150",
     borderRadius: 20,
     shadowOpacity: 0.5,
     shadowRadius: 15,
@@ -448,8 +446,7 @@ const styles = StyleSheet.create({
   },
   editAccBtnText: {
     color: theme.colorFontDark,
-    textAlign: "center",
-    fontWeight: 'bold'
+    textAlign: "center"
   },
   logoutBtn: {
     alignSelf: "center",
@@ -459,7 +456,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 6,
     backgroundColor: theme.colorTaskbarYellow,
-    boxShadow: "0px 0px 30px #faf0cc50",
     borderRadius: 20,
     shadowOpacity: 0.5,
     shadowRadius: 15,
@@ -467,8 +463,7 @@ const styles = StyleSheet.create({
   },
   logoutBtnText: {
     color: theme.colorFontDark,
-    textAlign: "center",
-    fontWeight: 'bold'
+    textAlign: "center"
   },
   deleteAccountBtn: {
     alignSelf: "center",
@@ -478,16 +473,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 6,
     backgroundColor: theme.colorRed,
-    boxShadow: "0px 0px 30px #d9303550",
-    borderRadius: 20,
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10
+    borderRadius: 20
   },
   deleteAccountBtnText: {
     color: theme.colorFontLight,
-    textAlign: "center",
-    fontWeight: 'bold'
+    textAlign: "center"
   },
   activityIndicator: {
     paddingVertical: 4
@@ -549,7 +539,7 @@ const styles = StyleSheet.create({
   DeleteAccountButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '100%'
   },
   DeleteAccountConfirmationButton: {
     flex: 1,
@@ -559,20 +549,18 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   DeleteAccountCancelButton: {
-    backgroundColor: theme.colorButtonGray,
-    boxShadow: "0px 0px 30px #262626",
+    backgroundColor: theme.colorButtonGray
   },
   DeleteAccountDeleteButton: {
-    backgroundColor: theme.colorRed,
-    boxShadow: "0px 0px 30px #d9303560"
+    backgroundColor: theme.colorRed
   },
   DeleteAccountCancelButtonText: {
-    color: theme.colorWhite,
-    fontWeight: 'bold'
+    fontSize: 14,
+    color: theme.colorWhite
   },
   DeleteAccountDeleteButtonText: {
-    color: theme.colorFontLight,
-    fontWeight: 'bold'
+    fontSize: 14,
+    color: theme.colorFontLight
   },
   EditAccountOverlay: {
     ...StyleSheet.absoluteFillObject,

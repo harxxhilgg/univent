@@ -22,7 +22,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Toast from "react-native-toast-message";
 import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
-import { API_URL } from "../../univent-backend/src/utils/api";
+import { API_URL } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
 
@@ -253,13 +253,13 @@ const CreateEvent = () => {
           {user?.email === 'user.guest@univent.com' ? (
             <View style={styles.centerContainer}>
               <Image source={require('../../assets/logos/restriction.png')} style={styles.accessDenyIcon} />
-              <CustomText style={[styles.textWhite, styles.guestAccessTitleText]}>Feature Unavailable</CustomText>
+              <CustomText style={[styles.textWhite, styles.guestAccessTitleText]} bold>Feature Unavailable</CustomText>
               <CustomText style={styles.textWhite}>Guest users cannot create events</CustomText>
               <CustomText style={styles.textWhite}>
                 Please
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")}> log in </CustomText>
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")} bold> log in </CustomText>
                 or
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")}> sign up </CustomText>
+                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")} bold> sign up </CustomText>
                 to create your own event
               </CustomText>
             </View>
@@ -396,7 +396,7 @@ const CreateEvent = () => {
                   {loading ? (
                     <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
                   ) : (
-                    <CustomText style={styles.submitBtnText}>Create Event</CustomText>
+                    <CustomText style={styles.submitBtnText} bold>Create Event</CustomText>
                   )}
                 </TouchableOpacity>
 
@@ -436,7 +436,6 @@ const styles = StyleSheet.create({
   },
   guestAccessTitleText: {
     fontSize: 22,
-    fontWeight: "bold",
     marginTop: 4,
     marginBottom: 50
   },
@@ -445,7 +444,6 @@ const styles = StyleSheet.create({
   },
   inlineBtn: {
     color: theme.colorRed,
-    fontWeight: "bold",
     textShadowColor: theme.colorRed,
     textShadowOffset: {
       width: 0,
@@ -476,11 +474,11 @@ const styles = StyleSheet.create({
   userEmailText: {
     width: "90%",
     color: theme.colorGreen,
-    fontSize: 13,
+    fontSize: 13
   },
   input: {
     fontSize: 16,
-    color: theme.colorFontGray,
+    color: theme.colorFontGray
   },
   dateTimeInput: {
     borderWidth: 0.5,
@@ -489,7 +487,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: theme.colorBackgroundDark,
+    backgroundColor: theme.colorBackgroundDark
   },
   pickerContainer: {
     marginTop: 4,
@@ -505,21 +503,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 0.5,
     borderColor: theme.colorLightGray,
-    overflow: "hidden",
+    overflow: "hidden"
   },
   placeholder: {
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   placeholderText: {
     color: theme.colorLightGray,
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 5
   },
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
+    resizeMode: "cover"
   },
   toggleContainer: {
     flexDirection: "row",
@@ -531,12 +529,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: theme.colorLightGray,
     borderRadius: 12,
-    backgroundColor: theme.colorBackgroundDark,
+    backgroundColor: theme.colorBackgroundDark
   },
   toggleLabel: {
     color: theme.colorFontLight,
-    fontSize: 16,
-    fontWeight: 'bold'
+    fontSize: 16
   },
   submitBtn: {
     marginTop: 14,
@@ -546,13 +543,12 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   activityIndicator: {
-    paddingVertical: 3,
+    paddingVertical: 3
   },
   submitBtnText: {
     color: theme.colorFontDark,
     textAlign: "center",
-    letterSpacing: 1,
-    fontWeight: '700'
+    letterSpacing: 1
   },
   emptyContainer: {
     marginVertical: Platform.OS === 'web' ? 0 : 100

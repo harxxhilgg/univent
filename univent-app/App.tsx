@@ -31,8 +31,8 @@ function AppContent() {
     async function loadFonts() {
       try {
         await Font.loadAsync({
-          "Lato-Regular": require("./assets/fonts/Lato-Regular.ttf"),
-          "Lato-Bold": require("./assets/fonts/Lato-Bold.ttf"),
+          "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
+          "Inter-Bold": require("./assets/fonts/Inter-Bold.ttf"),
         });
         setFontsLoaded(true);
       } catch (error) {
