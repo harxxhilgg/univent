@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts"
+    "build": "tsc -p tsconfig.json",
+    "prestart": "npm run build",
+    "dev": "dotenv -e .env.dev -- nodemon src/index.ts",
+    "prod": "npm run build && dotenv -e .env.prod -- node dist/index.js",
+    "start": "npm run prod"
   },
   "keywords": [],
   "author": "",
@@ -34,7 +37,8 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.0",
     "@types/pg": "^8.11.11",
-    "@vercel/node": "^5.1.14",
+    "@vercel/node": "^4.0.0",
+    "dotenv-cli": "^8.0.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
