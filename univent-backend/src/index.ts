@@ -8,28 +8,33 @@ import eventRoutes from "./routes/eventRoutes";
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const environment = process.env.NODE_ENV || "development";
+const CLIENT_URL =
+  process.env.CLIENT_URL || (environment === "production" ? "" : "*");
+
+console.log(`(index) environment: ${environment.toUpperCase()}`);
+
+app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: CLIENT_URL,
     credentials: true,
   })
 );
-app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Univent backend is up");
+  res.send("Univent backend is up.");
 });
-
 app.get("/api", (req, res) => {
-  res.json({ message: "API root is working" });
+  res.json({ message: "API endpoint is working." });
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 
-export default app;
+app.listen(PORT, () => {
+  console.log("Server running on port:", PORT);
+});
 
-if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+export default app;
