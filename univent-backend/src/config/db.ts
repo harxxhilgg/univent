@@ -1,42 +1,48 @@
 import { Pool } from "pg";
 import dotenv from "dotenv";
-// import { API_URL } from "../utils/api";
 
 dotenv.config();
 
-// const pool = new Pool({
-//   user: process.env.DB_USER,
-//   host: process.env.DB_HOST,
-//   database: process.env.DB_NAME,
-//   password: process.env.DB_PASSWORD,
-//   port: Number(process.env.DB_PORT),
-// });
+const environment = process.env.NODE_ENV || "production";
+const isProduction = environment === "production";
+
+console.log(`(db) environment: ${environment.toUpperCase()}`);
+
+const poolConfig = isProduction
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    }
+  : {
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: Number(process.env.DB_PORT),
+      ssl: false,
+    };
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ...poolConfig,
+  connectionTimeoutMillis: 5000,
 });
 
 const verifyConnection = async () => {
   try {
-    const client = await pool.connect();
-    console.log("connected to postgresql.");
+    const client: any = await pool.connect();
     client.release();
   } catch (err) {
-    console.error("postgresql connection error: ", err);
+    console.error("PostgreSQL Connection Error: ", err);
+    process.exit(1);
   }
 };
 
-if (!process.env.VERCEL) {
+if (!isProduction) {
   verifyConnection();
 }
 
-// pool
-//   .connect()
-//   .then(() => console.log("Connected to PostgreSQL"))
-//   .then(() => console.log(`API is accessible at: ${API_URL}`))
-//   .catch((err) => console.error("PostgrSQL connection error: ", err));
+pool.on("error", (err) => {
+  console.error("Database Pool Error: ", err);
+});
 
 export default pool;
