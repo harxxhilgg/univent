@@ -10,18 +10,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const environment = process.env.NODE_ENV || "development";
-const CLIENT_URL =
-  process.env.CLIENT_URL || (environment === "production" ? "" : "*");
+const CLIENT_URL = process.env.CLIENT_URL;
 
 console.log(`(index) environment: ${environment.toUpperCase()}`);
 
-app.use(express.json());
 app.use(
   cors({
     origin: CLIENT_URL,
     credentials: true,
   })
 );
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Univent backend is up.");
