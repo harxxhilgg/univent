@@ -127,7 +127,68 @@ export const getAllEvents = async (req: Request, res: Response) => {
       FROM
         events
       ORDER BY
-        event_date ASC; 
+        event_date ASC,
+        event_time ASC;
+      `
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching on-going events: ", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getCurrentEvents = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        title,
+        organizer,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
+      FROM
+        events
+      WHERE
+        (event_date + event_time)::timestamp BETWEEN NOW() - INTERVAL '2 hours' AND NOW()
+      ORDER BY
+        event_date ASC,
+        event_time ASC;
+      `
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching on-going events: ", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUpcomingEvents = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        title,
+        organizer,
+        event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
+      FROM
+        events
+      WHERE
+        (event_date + event_time)::timestamp >= NOW()
+      ORDER BY
+        event_date ASC,
+        event_time ASC;
       `
     );
     res.json(result.rows);
