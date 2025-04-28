@@ -11,7 +11,9 @@ console.log(`(db) environment: ${environment.toUpperCase()}`);
 const poolConfig = isProduction
   ? {
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }
   : {
       user: process.env.DB_USER,
@@ -24,7 +26,6 @@ const poolConfig = isProduction
 
 const pool = new Pool({
   ...poolConfig,
-  connectionTimeoutMillis: 5000,
 });
 
 const verifyConnection = async () => {
@@ -33,16 +34,11 @@ const verifyConnection = async () => {
     client.release();
   } catch (err) {
     console.error("PostgreSQL Connection Error: ", err);
-    process.exit(1);
   }
 };
 
 if (!isProduction) {
   verifyConnection();
 }
-
-pool.on("error", (err) => {
-  console.error("Database Pool Error: ", err);
-});
 
 export default pool;
