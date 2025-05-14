@@ -7,7 +7,7 @@ import { TextInput as TextInputPaper } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome6, Octicons } from "@expo/vector-icons";
 import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
 import { API_URL } from "../utils/api";
@@ -205,16 +205,18 @@ const CreateEvent = () => {
 
           {user?.email === 'user.guest@univent.com' ? (
             <View style={styles.guestContainer}>
-              <Image source={require('../../assets/icons/create_event_warning.png')} style={styles.accessDenyIcon} />
-              <CustomText style={[styles.textWhite, styles.guestAccessTitleText]} bold>Feature Unavailable</CustomText>
-              <CustomText style={styles.textWhite}>Guest users cannot create event.</CustomText>
-              <CustomText style={styles.textWhite}>
-                Please either
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")} bold> log in </CustomText>
-                or
-                <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")} bold> sign up </CustomText>
-                to create your own event.
-              </CustomText>
+              <Octicons name="blocked" size={100} color={theme.colorRed} style={styles.accessDenyIcon} />
+              <View style={styles.guestAccountTextContainer}>
+                <CustomText style={[styles.textWhite, styles.guestAccessTitleText]} bold>Feature Unavailable</CustomText>
+                <CustomText style={styles.textWhite} semibold>Guest users cannot create event.</CustomText>
+                <CustomText style={styles.textWhite}>
+                  Please either
+                  <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")} bold> log in </CustomText>
+                  or
+                  <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")} bold> sign up </CustomText>
+                  to create your own event.
+                </CustomText>
+              </View>
             </View>
           ) : (
             <>
@@ -382,16 +384,18 @@ const styles = StyleSheet.create({
     paddingBottom: 100
   },
   guestContainer: {
-    top: "20%",
-    alignItems: "center",
+    top: "30%",
+    alignItems: "center"
   },
   accessDenyIcon: {
-    width: 120,
-    height: 120,
-    marginBottom: 10
+    marginBottom: 24
+  },
+  guestAccountTextContainer: {
+    width: "70%",
+    maxWidth: 300
   },
   guestAccessTitleText: {
-    fontSize: 20,
+    fontSize: 24,
     marginBottom: 18
   },
   textWhite: {
