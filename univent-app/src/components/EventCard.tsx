@@ -81,73 +81,57 @@ export default function EventCard({ event }: EventCardProps) {
   const formattedTime = formatTime(event.event_time);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.dateContainer}>
-          <CustomText style={styles.month} bold>{date.month}</CustomText>
-          <CustomText style={styles.day} bold>{date.day}</CustomText>
-        </View>
-        {!isImageLoaded ? (
-          <View style={styles.imageWrapper}>
-            <ShimmerPlaceholder
-              style={styles.skeletonImage}
-              LinearGradient={LinearGradient}
-              shimmerColors={['#333', '#444', '#333']}
-            />
-            <Image
-              source={{ uri: event.image_url }}
-              style={styles.hiddenImage}
-              onLoad={() => setIsImageLoaded(true)}
-              onError={(e) => {
-                console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
-                setIsImageLoaded(true);
-              }}
-            />
-          </View>
-        ) : (
-          <Image
-            source={{ uri: event.image_url }}
-            style={styles.image}
-            onLoad={() => setIsImageLoaded(true)}
-            onError={(e) => {
-              console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
-              setIsImageLoaded(true);
-            }}
+    <View style={styles.card}>
+      <View style={styles.dateContainer}>
+        <CustomText style={styles.month} bold>{date.month}</CustomText>
+        <CustomText style={styles.day} bold>{date.day}</CustomText>
+      </View>
+      <View style={styles.imageWrapper}>
+        {!isImageLoaded && (
+          <ShimmerPlaceholder
+            style={styles.skeletonImage}
+            LinearGradient={LinearGradient}
+            shimmerColors={['#333', '#444', '#333']}
           />
-        )
-        }
-        <View style={[styles.eventTypeTag, event.is_paid ? styles.eventPaid : styles.eventFree]}>
-          <CustomText style={styles.eventTypeText} bold>$ {event.is_paid ? "Paid" : "Free"}</CustomText>
-        </View>
-        <View style={styles.contentContainer}>
-          <View style={styles.timeContainer}>
-            <View style={styles.timeUntilContainer}>
-              <CustomText style={styles.timeUntilText}>{timeUntil}</CustomText>
-            </View>
-            <CustomText style={styles.timeLocationText}>{formattedTime}  •  {event.location}</CustomText>
+        )}
+        <Image
+          source={{ uri: event.image_url }}
+          alt='Event Image'
+          style={isImageLoaded ? styles.image : styles.hiddenImage}
+          onLoad={() => setIsImageLoaded(true)}
+          onError={(e) => {
+            console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
+            setIsImageLoaded(true);
+          }}
+        />
+      </View>
+
+      <View style={[styles.eventTypeTag, event.is_paid ? styles.eventPaid : styles.eventFree]}>
+        <CustomText style={styles.eventTypeText} bold>$ {event.is_paid ? "Paid" : "Free"}</CustomText>
+      </View>
+      <View style={styles.contentContainer}>
+        <View style={styles.timeContainer}>
+          <View style={styles.timeUntilContainer}>
+            <CustomText style={styles.timeUntilText}>{timeUntil}</CustomText>
           </View>
-          <CustomText style={styles.title} numberOfLines={2}>{event.title}</CustomText>
-          <CustomText style={styles.organizer}>{event.organizer}</CustomText>
+          <CustomText style={styles.timeLocationText}>{formattedTime}  •  {event.location}</CustomText>
         </View>
+        <CustomText style={styles.title} numberOfLines={2}>{event.title}</CustomText>
+        <CustomText style={styles.organizer}>{event.organizer}</CustomText>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 6,
-    marginBottom: -10,
-  },
   card: {
-    borderRadius: 12,
     overflow: 'hidden',
     paddingHorizontal: 10,
-    paddingVertical: 4
+    paddingVertical: 10
   },
   dateContainer: {
     position: 'absolute',
-    top: 15,
+    top: 20,
     left: 20,
     backgroundColor: theme.colorFontLight,
     paddingTop: 2,
@@ -163,10 +147,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4
   },
   month: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: theme.colorFontDark,
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   day: {
     fontSize: 16,
@@ -177,7 +161,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderBottomRightRadius: 10
   },
   imageWrapper: {
     position: 'relative',
@@ -210,48 +194,46 @@ const styles = StyleSheet.create({
   },
   eventTypeTag: {
     position: 'absolute',
-    top: 15,
+    top: 20,
     right: 20,
     borderRadius: 24,
-    paddingHorizontal: 12
+    paddingHorizontal: 14
   },
   eventTypeText: {
     color: theme.colorFontDark,
-    fontSize: 14
+    fontSize: 12
   },
   contentContainer: {
     paddingHorizontal: 8,
-    paddingVertical: 10
+    paddingTop: 10
   },
   timeContainer: {
-    marginBottom: 3,
+    marginBottom: 8,
     flexDirection: "row",
     justifyContent: "space-between"
   },
   timeUntilContainer: {
+    justifyContent: "center",
     backgroundColor: theme.colorRichBlue,
-    alignSelf: 'flex-start',
-    borderRadius: 24,
-    paddingVertical: 2,
-    paddingHorizontal: 12,
-    marginBottom: 4,
+    borderRadius: 48,
+    paddingHorizontal: 16
   },
   timeUntilText: {
     color: theme.colorFontLight,
-    fontSize: 12,
+    fontSize: 11
   },
   timeLocationText: {
     color: theme.colorTaskbarYellow,
-    fontSize: 14,
-    padding: 2,
+    fontSize: 13,
+    padding: 2
   },
   title: {
     color: theme.colorFontLight,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 22
   },
   organizer: {
     color: theme.colorFontGray,
-    fontSize: 13,
-  },
+    fontSize: 12
+  }
 });
