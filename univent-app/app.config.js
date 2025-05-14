@@ -8,32 +8,51 @@ require('dotenv').config({
 
 export default {
   expo: {
-    name: "univent",
+    name: "Univent",
     slug: "univent",
-    version: "1.0.0",
+    version: "0.1.0",
     orientation: "portrait",
-    icon: "./assets/system/noBgColorText.png",
+    icon: "./assets/icons/splash-icon-light.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     splash: {
-      image: "./assets/system/noBgColorText.png",
+      image: "./assets/icons/splash-icon-light.png",
+      imageWidth: 200,
       resizeMode: "contain",
       backgroundColor: "#080b12"
     },
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      icon: {
+        dark: "./assets/icons/ios-dark.png",
+        light: "./assets/icons/ios-light.png",
+        tinted: "./assets/icons/ios-tinted.png"
+      }
     },
     android: {
+      softwareKeyboardLayoutMode: "pan",
       adaptiveIcon: {
-        foregroundImage: "./assets/system/noBgColorText.png",
-        backgroundColor: "#080b12"
+        foregroundImage: "./assets/icons/adaptive-icon.png",
+        monochromeImage: "./assets/icons/adaptive-icon.png",
+        backgroundColor: "#ffffff"
       },
       package: "com.univent.app"
     },
     web: {
-      favicon: "./assets/system/favicon.png"
+      favicon: "./assets/icons/favicon-32x32.png"
     },
-    plugins: ["expo-font"],
+    plugins: [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/icons/splash-icon-light.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#080b12"
+        }
+      ]
+    ],
     extra: {
       API_URL: process.env.API_URL,
       NODE_ENV: process.env.NODE_ENV,
