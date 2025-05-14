@@ -83,14 +83,14 @@ const Updates = () => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={theme.colorTaskbarYellow}
-          colors={[theme.colorTaskbarYellow]}
+          tintColor={theme.colorWhite}
+          colors={[theme.colorWhite]}
           progressBackgroundColor={theme.colorSlightDark}
         />
       }
     >
       <View style={styles.container}>
-        <TouchableOpacity onPress={toggleExpand} style={styles.upcomingTouchable}>
+        <View style={styles.upcomingTouchable}>
           <View style={styles.headerRow}>
             <CustomText style={styles.headerText}>
               {
@@ -101,11 +101,13 @@ const Updates = () => {
                     : 'No upcoming event'
               }
             </CustomText>
-            <Ionicons
-              name={expanded ? 'chevron-up' : 'chevron-down'}
-              size={22}
-              color={theme.colorTaskbarYellow}
-            />
+            <TouchableOpacity onPress={toggleExpand} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              <Ionicons
+                name={expanded ? 'chevron-up' : 'chevron-down'}
+                size={22}
+                color={theme.colorTaskbarYellow}
+              />
+            </TouchableOpacity>
           </View>
 
           {expanded && event && (
@@ -113,7 +115,7 @@ const Updates = () => {
               <CustomText style={styles.eventDetailsTitle}>{event.title}</CustomText>
             </View>
           )}
-        </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   )
