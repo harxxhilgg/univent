@@ -3,14 +3,15 @@ import { Text, TextProps, StyleSheet } from "react-native";
 
 interface CustomTextProps extends TextProps {
   bold?: boolean;
+  semibold?: boolean;
 }
 
-const CustomText: React.FC<CustomTextProps> = ({ bold, style, ...props }) => {
+const CustomText: React.FC<CustomTextProps> = ({ bold, semibold, style, ...props }) => {
   return (
     <Text
       style={[
         styles.text,
-        { fontFamily: bold ? "Inter-Bold" : "Inter-Regular" },
+        { fontFamily: bold ? "Inter-Bold" : semibold ? "Inter-SemiBold" : "Inter-Regular" },
         style,
       ]}
       {...props}
