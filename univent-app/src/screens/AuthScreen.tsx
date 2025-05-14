@@ -35,10 +35,10 @@ const AuthScreen = () => {
     setLoginLoading(true);
 
     try {
-      console.log('Request details: ', {
-        url: `${API_URL}/auth/login`,
-        body: { email } // do not use password in production
-      });
+      // console.log('Request details: ', { // ! DEBUG ONLY
+      //   url: `${API_URL}/auth/login`,
+      //   body: { email } // do not use password in production
+      // });
 
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -50,7 +50,7 @@ const AuthScreen = () => {
       });
 
       const data = await response.json();
-      console.log(`Response data: ${data.message}, ID: ${data.user.id}`);
+      // console.log(`Response data: ${data.message}, ID: ${data.user.id}`); // ! DEBUG ONLY
 
       if (!response.ok) {
         console.log('Login failed: ', data);
