@@ -1,4 +1,4 @@
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { theme } from '../../theme';
@@ -8,41 +8,26 @@ import { UserContext } from '../context/UserContext';
 import EventCard from '../components/EventCard';
 import CustomText from '../components/CustomText';
 import { TouchableRipple } from 'react-native-paper';
+import axios from 'axios';
 
 const MyEvents = ({ navigation }: { navigation: any }) => {
   const { user } = useContext(UserContext);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-
-
-  const fetchWithTimeout = (url: string, timeout: number) => {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject(new Error("Request timed out ⏳"));
-      }, timeout);
-
-      fetch(url)
-        .then((response) => {
-          clearTimeout(timer); // clearing timeout if req succeeds
-          resolve(response);
-        })
-        .catch((err) => {
-          clearTimeout(timer);
-          reject(err);
-        });
-    });
-  };
 
   const fetchEventsByUser = useCallback(async () => {
     try {
-      const response: any = await fetchWithTimeout(`${API_URL}/events/user/${user.email}`, 7000);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      function fetchMyEvents() {
+        return axios.get(`${API_URL}/events/user/${user.email}`);
       };
 
-      const data = await response.json();
-      setEvents(data);
+      Promise.all([fetchMyEvents()])
+        .then(([myEventsResponse]) => {
+          setMyEvents(myEventsResponse.data || []);
+        })
+        .catch(err => {
+          console.error('Error fetching events: ', err);
+        })
     } catch (err) {
       console.error("Error fetching events: ", err);
     };
@@ -51,11 +36,11 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
   useEffect(() => {
     fetchEventsByUser(); // initial fetch
 
-    // const interval = setInterval(() => {
-    //   fetchEventsByUser();
-    // }, 60000); // refresh every 1 min
+    const interval = setInterval(() => {
+      fetchEventsByUser();
+    }, 60000); // refresh every 1 min
 
-    // return () => clearInterval(interval); // clean interval on unmount
+    return () => clearInterval(interval); // clean interval on unmount
   }, [fetchEventsByUser]);
 
   const onRefresh = useCallback(() => {
@@ -64,64 +49,62 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
   }, [fetchEventsByUser]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContainer}
-      keyboardShouldPersistTaps="handled"
-      indicatorStyle='white'
-      showsHorizontalScrollIndicator={false}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.colorTaskbarYellow}
-          colors={[theme.colorTaskbarYellow]}
-          progressBackgroundColor={theme.colorSlightDark}
-        />
-      }
-    >
-      <View style={styles.container}>
-        {events.length > 0 ? (
-          events.map(event => (
-            <TouchableRipple
-              key={event.id}
-              onPress={() => navigation.navigate('EventDetails', { event })}
-              rippleColor={theme.colorGray}
-            >
-              <EventCard event={event} hideEndedEvents={true} />
-            </TouchableRipple>
-          ))
-        ) : (
-          <View style={styles.noEventsTextContainer}>
-            <CustomText style={styles.noEventsText} bold>No events found.</CustomText>
-          </View>
-        )
+    <View style={styles.flexContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        indicatorStyle='white'
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colorWhite}
+            colors={[theme.colorWhite]}
+            progressBackgroundColor={theme.colorSlightDark}
+          />
         }
-      </View>
-      <View style={styles.emptyContainer}></View>
-    </ScrollView>
-  )
-}
+      >
+        <View style={styles.container}>
+          {myEvents.length > 0 ? (
+            myEvents.map(event => (
+              <TouchableRipple
+                key={event.id}
+                onPress={() => navigation.navigate('EventDetails', { event })}
+                rippleColor={theme.colorGray}
+              >
+                <EventCard event={event} hideEndedEvents={true} />
+              </TouchableRipple>
+            ))
+          ) : (
+            <View style={styles.noEventsTextContainer}>
+              <CustomText style={styles.noEventsText} semibold>No events found.</CustomText>
+            </View>
+          )
+          }
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
 
 export default MyEvents
 
 const styles = StyleSheet.create({
+  flexContainer: {
+    flex: 1
+  },
   scrollContainer: {
     flexGrow: 1,
-    alignItems: "center",
-    backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    alignItems: 'center',
+    paddingBottom: 130,
+    backgroundColor: theme.colorBackgroundDark
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colorBackgroundDark,
-    width: "94%",
-    maxWidth: 500,
-    margin: "auto",
-    marginTop: Platform.OS === 'web' ? 20 : 0
-  },
-  emptyContainer: {
-    marginVertical: 50
+    width: "100%",
+    maxWidth: 500
   },
   noEventsTextContainer: {
     flex: 1,
@@ -132,4 +115,4 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight,
     fontSize: 18
   }
-})
+});
