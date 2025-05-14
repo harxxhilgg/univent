@@ -4,7 +4,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 import { UserProvider } from './src/context/UserProvider';
 import { theme } from './theme';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
+import { createStackNavigator, StackNavigationProp, TransitionPresets } from '@react-navigation/stack';
 import AuthScreen from './src/screens/AuthScreen';
 import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
@@ -13,6 +13,7 @@ import { useEffect, useState, useContext } from 'react';
 import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
+import { setBackgroundColorAsync } from "expo-system-ui";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -33,6 +34,10 @@ function AppContent() {
         await Font.loadAsync({
           "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
           "Inter-Bold": require("./assets/fonts/Inter-Bold.ttf"),
+          "Inter-SemiBold": require("./assets/fonts/Inter-SemiBold.ttf"),
+          "Dynalight": require("./assets/fonts/Dynalight.ttf"),
+          "ZenOldMincho": require("./assets/fonts/ZenOldMincho.ttf"),
+          "DreamAvenue": require("./assets/fonts/DreamAvenue.ttf")
         });
         setFontsLoaded(true);
       } catch (error) {
@@ -59,18 +64,38 @@ function AppContent() {
           initialRouteName={initialRoute}
           screenOptions={{ headerShown: false }}
         >
-          <Stack.Screen name="Auth" component={AuthScreen} />
-          <Stack.Screen name="Signup" component={Signup} />
-          <Stack.Screen name="Main" component={BottomTabNavigator} />
+          <Stack.Screen
+            name="Auth"
+            component={AuthScreen}
+            options={() => ({
+              ...TransitionPresets.ModalFadeTransition
+            })}
+          />
+          <Stack.Screen
+            name="Signup"
+            component={Signup}
+            options={() => ({
+              ...TransitionPresets.ModalFadeTransition
+            })}
+          />
+          <Stack.Screen
+            name="Main"
+            component={BottomTabNavigator}
+            options={() => ({
+              ...TransitionPresets.ModalFadeTransition
+            })}
+          />
           <Stack.Screen
             name="EventDetails"
             component={EventDetails}
             options={() => ({
               headerShown: true,
               headerTitle: "Event Details",
+              headerBackButtonDisplayMode: "minimal",
               headerStyle: { backgroundColor: theme.colorBackgroundDark },
-              headerTintColor: theme.colorTaskbarYellow,
+              headerTintColor: theme.colorTabBarTint,
               headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+              ...TransitionPresets.ModalFadeTransition
             })}
           />
         </Stack.Navigator>
@@ -80,6 +105,7 @@ function AppContent() {
 }
 
 export default function App() {
+  setBackgroundColorAsync(theme.colorBackgroundDark);
   return (
     <UserProvider>
       <AppContent />
