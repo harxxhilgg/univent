@@ -3,8 +3,8 @@ export const theme = {
   colorBlack: "#000",
   colorRed: "#d93035",
   colorMaroon: "#291315",
-  colorGreen: "#39d78c",
-  colorDarkGreen: "#121b18",
+  colorGreen: "#f2ffe6",
+  colorDarkGreen: "#0c1a00",
   colorTintInactive: "#81868b",
   colorSlightDark: "#181a26",
   colorExclusivePink: "#fe347e",
@@ -20,5 +20,6 @@ export const theme = {
   colorBackgroundDark: "#080b12",
   colorRichBlue: "#021BC9",
   colorExclusiveYellow: "#FFED29",
-  colorButtonGray: "#3f3f46",
+  colorButtonGray: "#595959",
+  colorTabBarTint: "#FBFFFF",
 };
