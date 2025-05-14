@@ -1,16 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  Dimensions
-} from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import CustomText from "../components/CustomText";
 import { theme } from "../../theme";
 import { Image } from "expo-image";
@@ -18,15 +7,14 @@ import { TextInput as TextInputPaper } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Toast from "react-native-toast-message";
+import { FontAwesome6 } from "@expo/vector-icons";
 import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
 import { API_URL } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
-
-const { width } = Dimensions.get('window');
+import { useToast } from "../components/useToast";
+import { LinearGradient } from "expo-linear-gradient";
 
 const CreateEvent = () => {
   const { user } = useContext(UserContext);
@@ -44,42 +32,7 @@ const CreateEvent = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const showToastPermissionDeny = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 3000,
-      type: 'error',
-      text1: 'Media access denied!',
-      text2: 'Please allow media access for Expo Go from your device settings.'
-    });
-  };
-
-  const showToastSuccess = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2000,
-      type: 'success',
-      text1: 'Event created!',
-    });
-  };
-
-  const showToastFillFields = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'info',
-      text1: 'Please fill in all fields'
-    });
-  };
-
-  const showToastFailure = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Event Creation Failure',
-    });
-  };
+  const { showError, showSuccess, showInfo } = useToast();
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
@@ -104,7 +57,7 @@ const CreateEvent = () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync(); // take media perms
 
     if (status !== "granted") {
-      showToastPermissionDeny(); // if perms denied, show the error
+      showError(2500, "Media access denied!", "Please allow media access from your device settings."); // if perms denied, show the error
       return; // terminate
     };
 
@@ -167,7 +120,7 @@ const CreateEvent = () => {
 
   const handleEventCreate = async () => {
     if (!title || !organizer || !eventDate || !eventTime || !location || !selectedImage || isPaid === undefined) {
-      showToastFillFields();
+      showInfo(2500, "Please fill in all fields!");
       return;
     };
 
@@ -209,12 +162,12 @@ const CreateEvent = () => {
 
       if (!response.ok) {
         console.log('Event creation failed: ', responseText);
-        showToastFailure();
+        showError(2500, "Event created failure!");
         return;
       };
 
       const data = JSON.parse(responseText);
-      showToastSuccess();
+      showSuccess(1500, "Event created successfully!");
       console.log("Created event ID: ", data.event.id);
 
       setTitle("");
@@ -239,7 +192,7 @@ const CreateEvent = () => {
         console.log('3. IP address is correct');
       };
 
-      showToastFailure();
+      showError(2500, "Event created failure!");
     } finally {
       setLoading(false);
     };
@@ -251,16 +204,16 @@ const CreateEvent = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
 
           {user?.email === 'user.guest@univent.com' ? (
-            <View style={styles.centerContainer}>
-              <Image source={require('../../assets/logos/restriction.png')} style={styles.accessDenyIcon} />
+            <View style={styles.guestContainer}>
+              <Image source={require('../../assets/icons/create_event_warning.png')} style={styles.accessDenyIcon} />
               <CustomText style={[styles.textWhite, styles.guestAccessTitleText]} bold>Feature Unavailable</CustomText>
-              <CustomText style={styles.textWhite}>Guest users cannot create events</CustomText>
+              <CustomText style={styles.textWhite}>Guest users cannot create event.</CustomText>
               <CustomText style={styles.textWhite}>
-                Please
+                Please either
                 <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Auth")} bold> log in </CustomText>
                 or
                 <CustomText style={styles.inlineBtn} onPress={() => navigation.replace("Signup")} bold> sign up </CustomText>
-                to create your own event
+                to create your own event.
               </CustomText>
             </View>
           ) : (
@@ -282,9 +235,9 @@ const CreateEvent = () => {
 
                 <View style={styles.infoTextConatiner}>
                   <View style={styles.verticalCenterContainer}>
-                    <MaterialCommunityIcons name="information-variant" size={24} color={theme.colorGreen} />
+                    <FontAwesome6 name="circle-exclamation" size={18} color={theme.colorGreen} />
                   </View>
-                  <CustomText style={styles.userEmailText}>This email will be used for event creation</CustomText>
+                  <CustomText style={styles.userEmailText} semibold>This email will be used for event creation</CustomText>
                 </View>
 
                 <TextInputPaper
@@ -296,9 +249,9 @@ const CreateEvent = () => {
                   onBlur={() => setIsFocused(false)}
                   style={styles.input}
                   mode="outlined"
-                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  theme={{ colors: { primary: theme.colorTabBarTint, background: theme.colorBackgroundDark } }}
                   textColor={theme.colorFontLight}
-                  outlineStyle={{ borderRadius: 12 }}
+                  outlineStyle={{ borderRadius: 10 }}
                   multiline={true}
                   numberOfLines={2}
                 />
@@ -312,9 +265,9 @@ const CreateEvent = () => {
                   onBlur={() => setIsFocused(false)}
                   style={styles.input}
                   mode="outlined"
-                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  theme={{ colors: { primary: theme.colorTabBarTint, background: theme.colorBackgroundDark } }}
                   textColor={theme.colorFontLight}
-                  outlineStyle={{ borderRadius: 12 }}
+                  outlineStyle={{ borderRadius: 10 }}
                 />
 
                 <View style={styles.pickerContainer}>
@@ -360,9 +313,9 @@ const CreateEvent = () => {
                   onBlur={() => setIsFocused(false)}
                   style={styles.input}
                   mode="outlined"
-                  theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
+                  theme={{ colors: { primary: theme.colorTabBarTint, background: theme.colorBackgroundDark } }}
                   textColor={theme.colorFontLight}
-                  outlineStyle={{ borderRadius: 12 }}
+                  outlineStyle={{ borderRadius: 10 }}
                 />
 
                 <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
@@ -370,6 +323,7 @@ const CreateEvent = () => {
                     <Image
                       source={{ uri: selectedImage }}
                       style={styles.image}
+                      contentFit="cover"
                       cachePolicy='memory-disk'
                     />
                   ) : (
@@ -384,27 +338,31 @@ const CreateEvent = () => {
                   <CustomText style={styles.toggleLabel}>Is event paid?</CustomText>
                   <ToggleSwitch
                     isOn={isPaid}
-                    onColor={theme.colorGreen}
                     offColor={theme.colorSlightDark}
                     labelStyle={{ color: theme.colorFontLight, fontWeight: 'bold' }}
                     size='medium'
                     onToggle={(isOn) => setIsPaid(isOn)}
                   />
                 </View>
-
-                <TouchableOpacity style={styles.submitBtn} onPress={handleEventCreate} disabled={loading} >
-                  {loading ? (
-                    <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                  ) : (
-                    <CustomText style={styles.submitBtnText} bold>Create Event</CustomText>
-                  )}
-                </TouchableOpacity>
-
               </View>
-              <View style={styles.emptyContainer}></View>
+              <View style={styles.createEventContainer}>
+                <TouchableOpacity style={styles.submitBtn} onPress={handleEventCreate} disabled={loading} >
+                  <LinearGradient
+                    colors={['rgb(210, 255, 238)', 'rgb(255, 255, 255)', 'rgb(210, 255, 238)']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientBackground}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                    ) : (
+                      <CustomText style={styles.submitBtnText} bold>Create Event</CustomText>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
             </>
           )}
-
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -419,30 +377,30 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    alignItems: "center",
     backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    alignItems: "center",
+    paddingBottom: 100
   },
-  centerContainer: {
-    width: width < 450 ? "90%" : "85%",
-    top: "15%",
-    alignItems: "center"
+  guestContainer: {
+    top: "20%",
+    alignItems: "center",
   },
   accessDenyIcon: {
-    resizeMode: 'cover',
-    width: 150,
-    height: 150,
-    marginBottom: 10,
+    width: 120,
+    height: 120,
+    marginBottom: 10
   },
   guestAccessTitleText: {
-    fontSize: 22,
-    marginTop: 4,
-    marginBottom: 50
+    fontSize: 20,
+    marginBottom: 18
   },
   textWhite: {
-    color: theme.colorFontLight
+    color: theme.colorFontLight,
+    textAlign: "center",
+    fontSize: 14
   },
   inlineBtn: {
+    fontSize: 14,
     color: theme.colorRed,
     textShadowColor: theme.colorRed,
     textShadowOffset: {
@@ -453,26 +411,26 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginTop: Platform.OS === 'web' ? "2%" : "0%",
-    width: "90%",
-    maxWidth: 400,
+    width: "93%",
+    maxWidth: 500,
     padding: 6,
     gap: 10
   },
   infoTextConatiner: {
     flex: 1,
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: theme.colorDarkGreen,
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: theme.colorGreen,
-    padding: 8,
-    gap: 2
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 8
   },
   verticalCenterContainer: {
     justifyContent: 'center'
   },
   userEmailText: {
-    width: "90%",
     color: theme.colorGreen,
     fontSize: 13
   },
@@ -481,10 +439,10 @@ const styles = StyleSheet.create({
     color: theme.colorFontGray
   },
   dateTimeInput: {
-    borderWidth: 0.5,
-    borderColor: theme.colorLightGray,
+    borderWidth: 1,
+    borderColor: theme.colorTransparentLightGray,
     padding: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colorBackgroundDark
@@ -497,12 +455,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: "100%",
     height: 150,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: theme.colorBackgroundDark,
     justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: theme.colorLightGray,
+    borderWidth: 1,
+    borderColor: theme.colorTransparentLightGray,
     overflow: "hidden"
   },
   placeholder: {
@@ -516,31 +473,34 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: "100%",
-    resizeMode: "cover"
+    height: "100%"
   },
   toggleContainer: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
     padding: 10,
-    marginTop: 12,
-    borderWidth: 0.5,
-    borderColor: theme.colorLightGray,
-    borderRadius: 12,
-    backgroundColor: theme.colorBackgroundDark
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: theme.colorTransparentLightGray,
+    borderRadius: 10
   },
   toggleLabel: {
     color: theme.colorFontLight,
     fontSize: 16
   },
+  createEventContainer: {
+    display: "flex",
+    marginTop: "auto",
+    width: "90%",
+    maxWidth: 500
+  },
   submitBtn: {
-    marginTop: 14,
-    backgroundColor: theme.colorTaskbarYellow,
+  },
+  gradientBackground: {
     paddingVertical: 6,
-    width: "100%",
-    borderRadius: 20
+    borderRadius: 10,
+    overflow: "hidden"
   },
   activityIndicator: {
     paddingVertical: 3
@@ -551,6 +511,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1
   },
   emptyContainer: {
-    marginVertical: Platform.OS === 'web' ? 0 : 100
-  },
+    marginVertical: 70
+  }
 });
