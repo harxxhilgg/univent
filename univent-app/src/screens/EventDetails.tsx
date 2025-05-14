@@ -49,6 +49,10 @@ const EventDetails = ({ route }: { route: any }) => {
     };
   };
 
+  const handleGuestRegister = () => {
+    showInfo(3000, "Guest users cannot register for events!", "Please Login or Signup to register.");
+  };
+
   return (
     <View style={styles.flexContainer}>
       <ScrollView
@@ -71,6 +75,7 @@ const EventDetails = ({ route }: { route: any }) => {
           </View>
 
           <View style={styles.secondContainer}>
+
             <View style={styles.eventTypeInlineContainer}>
               <View style={styles.eventFeeContainer}>
                 <FontAwesome6 name="money-check-dollar" size={28} color={theme.colorLightGray} />
@@ -111,7 +116,7 @@ const EventDetails = ({ route }: { route: any }) => {
           </View>
 
           <View style={styles.registerContainer}>
-            <TouchableOpacity onPress={handleRegister}>
+            <TouchableOpacity onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}>
               <LinearGradient
                 colors={['rgb(220, 210, 250)', 'rgb(255, 255, 255)', 'rgb(220, 210, 250)']}
                 start={{ x: 0, y: 0 }}
