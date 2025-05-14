@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
-import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useToast } from "../components/useToast";
 
@@ -25,15 +24,6 @@ export function decodeJwtPayload(token: string) {
   };
 };
 
-const somethingWentWrong = () => {
-  Toast.show({
-    autoHide: true,
-    visibilityTime: 2500,
-    type: 'Authentication check timed out!',
-    text1: 'Please try again.',
-  });
-};
-
 export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +34,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
     async function checkAuth() {
       const timeout = setTimeout(() => {
         if (isLoading) {
-          somethingWentWrong();
+          showInfo(2500, "Authentication timed out!", "Please try again.");
           setInitialRoute('Auth');
           setIsLoading(false);
         }
@@ -69,7 +59,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
                 username: decoded.username,
                 email: decoded.email
               });
-              console.log(`session found, token expires in ${currentTime}/${decoded.exp}`);
+              // console.log(`session found, token expires in ${currentTime}/${decoded.exp}`); // ! DEBUG ONLY
               showSuccess(1500, 'Welcome back!');
               setInitialRoute('Main');
             }
