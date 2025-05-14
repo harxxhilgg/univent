@@ -21,12 +21,13 @@ export interface Event {
   is_paid: boolean;
   created_by_email: string;
   created_at: string;
-}
+};
 
 const UniventHome = ({ navigation }: { navigation: any }) => {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [currentEvents, setCurrentEvents] = useState<Event[]>([]);
   const [hasCurrentEvents, setHasCurrentEvents] = useState(false);
+  const [hasSearchData, setHasSearchData] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const userContext = useContext(UserContext);
   const [query, setQuery] = useState('');
@@ -39,7 +40,9 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       const res = await axios.get(`${API_URL}/events/search`, {
         params: { q }
       });
+
       setUpcomingEvents(res.data || []);
+      setHasSearchData(res.data.length === 0);
 
     } catch (err: any) {
       console.error('Search error: ', err.message);
@@ -48,6 +51,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   }
 
   const handleClearSearch = () => {
+    setHasSearchData(false);
     setQuery('');
     setSearchActive(false);
     fetchEvents();
@@ -57,13 +61,15 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   // debounce search query
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      if (query.trim().length > 0) {
-        searchEvents(query.trim());
+      const trimmedQuery = query.trim();
+      if (trimmedQuery.length > 0) {
+        searchEvents(trimmedQuery);
       } else {
+        setHasSearchData(false);
         fetchEvents();
         setSearchActive(false);
       }
-    }, 400); // delay 0.4 sec
+    }, 500); // delay 0.5 sec
 
     return () => clearTimeout(delayDebounce);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,6 +104,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   }, [fetchEvents]);
 
   const onRefresh = useCallback(() => {
+    setHasSearchData(false);
     setRefreshing(true);
     fetchEvents().finally(() => setRefreshing(false));
   }, [fetchEvents]);
@@ -113,7 +120,8 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
+          contentContainerStyle={[styles.scrollContainer]}
+          stickyHeaderIndices={[0]}
           keyboardShouldPersistTaps="handled"
           indicatorStyle="white"
           showsHorizontalScrollIndicator={false}
@@ -122,13 +130,13 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={theme.colorTaskbarYellow}
-              colors={[theme.colorTaskbarYellow]}
+              tintColor={theme.colorWhite}
+              colors={[theme.colorWhite]}
               progressBackgroundColor={theme.colorSlightDark}
             />
           }
         >
-          <View style={styles.container}>
+          <View style={styles.stickyHeader}>
             <Searchbar
               placeholder='Search events by title'
               onChangeText={(text) => {
@@ -142,9 +150,11 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
               style={styles.searchBar}
               iconColor={searchActive ? theme.colorTaskbarYellow : theme.colorFontGray}
               placeholderTextColor={theme.colorFontGray}
-              inputStyle={{ color: theme.colorFontLight }}
+              inputStyle={{ color: theme.colorFontLight, fontSize: 14 }}
               theme={{ colors: { primary: theme.colorTaskbarYellow } }}
             />
+          </View>
+          <View style={styles.container}>
 
             {loading && <ActivityIndicator animating={true} style={{ marginTop: 20 }} />}
 
@@ -166,9 +176,13 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
             )}
 
             <View style={styles.upcomingEventsCenterContainer}>
-              <View>
+
+              {hasSearchData === true && !loading ? (
+                <CustomText style={styles.noEventsFoundText}>No events found</CustomText>
+              ) : (
                 <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Events</CustomText>
-              </View>
+              )}
+
               {upcomingEvents.map((event) => (
                 // passing whole event obejct as prop to EventDetails screen
                 <TouchableRipple
@@ -181,7 +195,6 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
               ))}
             </View>
           </View>
-          <View style={styles.emptyContainer}></View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -193,27 +206,32 @@ export default UniventHome;
 const styles = StyleSheet.create({
   flexContainer: {
     flex: 1,
+    backgroundColor: theme.colorBackgroundDark
   },
   scrollContainer: {
     flexGrow: 1,
     alignItems: 'center',
+    paddingBottom: 110,
+    width: "100%",
+    maxWidth: 500,
+    marginHorizontal: "auto"
+  },
+  stickyHeader: {
     backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    width: '100%',
+    maxWidth: 500,
+    marginHorizontal: "auto",
+    paddingBottom: 12,
+    paddingHorizontal: 12
+  },
+  searchBar: {
+    paddingHorizontal: 8,
+    backgroundColor: theme.colorSlightDark,
+    marginHorizontal: 'auto'
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colorBackgroundDark,
-    width: '96%'
-  },
-  searchBar: {
-    marginTop: 10,
-    marginBottom: 16,
-    paddingHorizontal: 6,
-    fontSize: 16,
-    backgroundColor: theme.colorSlightDark,
-    width: "100%",
-    maxWidth: 500,
-    marginHorizontal: 'auto'
+    width: "98%"
   },
   currentEventsContainer: {
     width: '100%',
@@ -222,20 +240,28 @@ const styles = StyleSheet.create({
   },
   headerCurrentEvents: {
     color: theme.colorFontLight,
-    fontSize: 23,
-    marginLeft: 10
+    fontSize: 20,
+    marginLeft: 14,
+    marginVertical: 6
   },
-  headerUpcomingEvent: {
+  noEventsFoundText: {
+    fontSize: 14,
     color: theme.colorFontLight,
-    fontSize: 23,
-    marginLeft: 10,
+    textAlign: "center"
   },
   upcomingEventsCenterContainer: {
     width: "100%",
     maxWidth: 500,
     marginHorizontal: "auto"
   },
-  emptyContainer: {
-    marginVertical: 50,
+  headerUpcomingEvent: {
+    color: theme.colorFontLight,
+    fontSize: 20,
+    marginLeft: 14,
+    marginVertical: 6
+  },
+  itemsSearchNotFoundText: {
+    color: theme.colorFontLight,
+    fontSize: 16
   }
 });
