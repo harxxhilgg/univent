@@ -1,98 +1,67 @@
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Image, Platform, Keyboard, TouchableOpacity } from 'react-native';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, TouchableOpacity, Text } from 'react-native';
 import React, { useState } from 'react';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
-import Toast from 'react-native-toast-message';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { api } from '../utils/api';
+import { useToast } from '../components/useToast';
+import { Controller, useForm } from "react-hook-form";
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const SignupSchema = z.object({
+  username: z.string()
+    .min(7, "Username must be at least 7 characters")
+    .max(30, "Username must not exceed 30 characters")
+    .regex(
+      /^[a-z0-9][a-z0-9._]*$/,
+      "Username must start with a lowercase letter or number and contain only lowercase letters, numbers, dots (.) or underscores (_)"
+    )
+    .regex(/^(?!.*\.\.)/, "Username cannot contain consecutive dots")
+    .regex(/^(?!.*\.$)/, "Username cannot end with a dot"),
+  email: z.string().regex(
+    /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+    "Invalid email format — use only lowercase letters, numbers, dots, and standard email symbols"
+  ),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Must contain at least one uppcase letter")
+    .regex(/[a-z]/, "Must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Must contain at least one special character")
+});
+
+type FormData = z.infer<typeof SignupSchema>;
 
 const Signup = () => {
   const navigation = useNavigation<AuthScreenNavigationProp>();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isFocused, setIsFocused] = useState(false);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { showError, showSuccess } = useToast();
   const [secureTextEntry, setsecureTextEntry] = useState(true);
-  const [isValid, setIsValid] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const showToastFillFields = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Please fill in all fields',
-    });
-  };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: zodResolver(SignupSchema),
+  });
 
-  const showToastSignupSuccess = () => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'success',
-      text1: 'Account created successfully!',
-      text2: 'Please log in into your account.'
-    });
-  };
-
-  const showToastSignupFailure = (error: any) => {
-    Toast.show({
-      autoHide: true,
-      visibilityTime: 2500,
-      type: 'error',
-      text1: 'Signup Failed!',
-      text2: error.res?.data?.message || "Please try again."
-    });
-  };
-
-  const validateUsername = (username: string) => {
-    const regex = /^[a-z0-9._]+$/;
-    return regex.test(username);
-  };
-
-  const handleUsernameChange = (username: string) => {
-    const isValidUsername = validateUsername(username);
-    const isLengthValid = username.length >= 7;
-
-    setUsername(username);
-
-    if (!isValidUsername) {
-      setIsValid(false);
-      setErrorMessage("username can only contain lowercase letters, numbers, '.' and '_'");
-    } else if (!isLengthValid) {
-      setIsValid(false);
-      setErrorMessage("username must be at least 7 characters long.");
-    } else {
-      setIsValid(true);
-      setErrorMessage("");
-    };
-  };
-
-  const handleSignUp = async () => {
-    if (!username || !email || !password) {
-      showToastFillFields();
-      return;
-    };
-
+  const onSubmit = async (data: FormData) => {
     try {
-      const response = await api.post("/auth/signup", {
-        username,
-        email,
-        password,
-      });
-      console.log(`User created with username ${response.data.username} and email ${response.data.email}`);
-
-      showToastSignupSuccess();
+      const response = await api.post("/auth/signup", data);
+      console.log(`User created: ${response.data.username}`);
+      showSuccess(2500, 'Account created!', 'Please log in');
       navigation.navigate('Auth');
     } catch (error: any) {
       console.error(error);
-      showToastSignupFailure(error);
-    }
-  }
+      showError(2500, 'Signup Failed', error.response?.data?.message || "Please try again");
+    };
+  };
+
+  const toggleSecureEntry = () => setsecureTextEntry(prev => !prev);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -102,78 +71,144 @@ const Signup = () => {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
-          <Image
-            source={require('../../assets/logos/full-logo.png')}
-            style={styles.logo}
-          />
+          <View style={styles.logoContainer}>
+            <Text style={styles.logo}>Univent</Text>
+          </View>
+          <View style={styles.grettingContainer}>
+            <CustomText style={styles.grettingText}>Create your Account</CustomText>
+          </View>
           <View style={styles.inputContainer}>
-            <TextInputPaper
-              keyboardType="default"
-              autoCapitalize='none'
-              label="Username"
-              value={username}
-              onChangeText={handleUsernameChange}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 14 }}
+            <Controller
+              name="username"
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <>
+                  <TextInputPaper
+                    label="Username"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={!!errors.username}
+                    style={styles.input}
+                    mode="outlined"
+                    theme={{
+                      colors: {
+                        primary: theme.colorWhite,
+                        background: theme.colorBackgroundDark
+                      }
+                    }}
+                    textColor={theme.colorFontLight}
+                    outlineStyle={{ borderRadius: 10 }}
+                    autoCapitalize='none'
+                  />
+                  {errors.username && (
+                    <CustomText style={styles.errorText}>
+                      {errors.username.message}
+                    </CustomText>
+                  )}
+                </>
+              )}
             />
-            {!isValid && (
-              <CustomText style={styles.errorUsernameText}>{errorMessage}</CustomText>
-            )}
-            <TextInputPaper
-              keyboardType="email-address"
-              autoCapitalize='none'
-              label="Email"
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 14 }}
+
+            <Controller
+              name="email"
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <>
+                  <TextInputPaper
+                    label="Email"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={!!errors.email}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    style={styles.input}
+                    mode="outlined"
+                    theme={{
+                      colors: {
+                        primary: theme.colorWhite,
+                        background: theme.colorBackgroundDark
+                      }
+                    }}
+                    textColor={theme.colorFontLight}
+                    outlineStyle={{ borderRadius: 10 }}
+                  />
+                  {errors.email && (
+                    <CustomText style={styles.errorText}>
+                      {errors.email.message}
+                    </CustomText>
+                  )}
+                </>
+              )}
             />
-            <TextInputPaper
-              keyboardType="default"
-              autoCapitalize='none'
-              label="Password"
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.input}
-              mode="outlined"
-              theme={{ colors: { primary: theme.colorTaskbarYellow, background: theme.colorBackgroundDark } }}
-              textColor={theme.colorFontLight}
-              outlineStyle={{ borderRadius: 14 }}
-              secureTextEntry={secureTextEntry}
-              right={
-                <TextInputPaper.Icon
-                  icon={secureTextEntry ? 'eye' : 'eye-off'}
-                  onPress={() => setsecureTextEntry(!secureTextEntry)}
-                />
-              }
+
+            <Controller
+              name="password"
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <>
+                  <TextInputPaper
+                    label="Password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={!!errors.password}
+                    secureTextEntry={secureTextEntry}
+                    style={styles.input}
+                    mode='outlined'
+                    theme={{
+                      colors: {
+                        primary: theme.colorWhite,
+                        background: theme.colorBackgroundDark
+                      }
+                    }}
+                    textColor={theme.colorFontLight}
+                    outlineStyle={{ borderRadius: 10 }}
+                    right={
+                      <TextInputPaper.Icon
+                        icon={secureTextEntry ? 'eye' : 'eye-off'}
+                        onPress={toggleSecureEntry}
+                      />
+                    }
+                  />
+                  {errors.password && (
+                    <CustomText style={styles.errorText}>
+                      {errors.password.message}
+                    </CustomText>
+                  )}
+                </>
+              )}
             />
           </View>
-          <TouchableOpacity style={styles.SignupBtn} onPress={handleSignUp}>
-            <CustomText style={styles.SignupBtnText}>Sign up</CustomText>
+          <TouchableOpacity style={styles.SignupBtn} onPress={handleSubmit(onSubmit)}>
+            <LinearGradient
+              colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientBackground}
+            >
+              <CustomText style={styles.SignupBtnText} semibold>Sign up</CustomText>
+            </LinearGradient>
           </TouchableOpacity>
           <View style={styles.oldAccContainer}>
-            <TouchableOpacity style={styles.LoginBtn} onPress={() => navigation.navigate('Auth')}>
-              <CustomText style={styles.LoginBtnText}>Log in</CustomText>
+            <TouchableOpacity onPress={() => navigation.replace('Auth')}>
+              <LinearGradient
+                colors={['rgb(250, 250, 250)', 'rgb(210, 238, 255)', 'rgb(250, 250, 250)']}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientBackground}
+              >
+                <CustomText style={styles.LoginBtnText} semibold>Log in</CustomText>
+              </LinearGradient>
             </TouchableOpacity>
             <CustomText style={styles.alreadyUserText}>Already a user?</CustomText>
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   flexContainer: {
@@ -182,67 +217,79 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    backgroundColor: theme.colorBackgroundDark
+  },
+  logoContainer: {
+    marginTop: 110,
+    marginBottom: 90,
+    width: "90%",
+    alignItems: "center",
+    maxWidth: 500
   },
   logo: {
-    width: 400,
-    height: 400,
-    resizeMode: "contain",
-    marginTop: -40,
-    marginBottom: -10
+    fontFamily: "DreamAvenue",
+    fontSize: 60,
+    color: theme.colorFontLight,
+    userSelect: "none"
+  },
+  grettingContainer: {
+    marginBottom: 14,
+    width: "89%",
+    maxWidth: 500
+  },
+  grettingText: {
+    fontFamily: "ZenOldMincho",
+    fontSize: 22,
+    color: theme.colorFontLight
   },
   inputContainer: {
-    width: "85%",
-    gap: 6
+    width: "90%",
+    maxWidth: 500,
+    gap: 6,
+    marginBottom: 6
   },
   input: {
-    fontSize: 16,
-    color: theme.colorFontLight,
+    fontSize: 15,
   },
-  errorUsernameText: {
+  errorText: {
     color: theme.colorRed,
     paddingHorizontal: 10,
-    fontSize: 15
+    fontSize: 13,
+    marginTop: 0,
+    marginBottom: 5
   },
   SignupBtn: {
-    marginTop: 14,
-    backgroundColor: theme.colorTaskbarYellow,
     paddingVertical: 6,
-    width: "85%",
-    borderRadius: 20
+    width: "90%",
+    maxWidth: 500
+  },
+  gradientBackground: {
+    paddingVertical: 8,
+    borderRadius: 10,
+    overflow: "hidden",
+    alignItems: "center",
   },
   SignupBtnText: {
     color: theme.colorFontDark,
-    textAlign: "center",
-    letterSpacing: 1,
-    fontWeight: '700'
+    letterSpacing: 0.5
   },
   oldAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
-    marginTop: 20,
-    marginBottom: 20,
-    width: "85%",
-  },
-  LoginBtn: {
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: theme.colorTaskbarYellow,
-    borderRadius: 20
+    marginBottom: 10,
+    width: "90%",
+    maxWidth: 500
   },
   LoginBtnText: {
-    color: theme.colorTaskbarYellow,
-    textAlign: "center",
-    letterSpacing: 1,
-    fontWeight: '700'
+    color: theme.colorFontDark,
+    letterSpacing: 0.5
   },
   alreadyUserText: {
     color: theme.colorFontGray,
-    fontSize: 14,
+    fontSize: 13,
     textAlign: "center",
-    marginBottom: 6,
-    letterSpacing: 1
+    marginBottom: 5,
+    letterSpacing: 0.5
   }
 });
 
