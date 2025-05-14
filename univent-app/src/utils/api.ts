@@ -10,5 +10,3 @@ export const api = axios.create({
     Accept: "application/json",
   },
 });
-
-console.log("API_URL: ", API_URL);
