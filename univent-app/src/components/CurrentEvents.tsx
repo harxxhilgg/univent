@@ -34,7 +34,6 @@ const formatTime = (timeString: string, eventDate: string) => {
 
 export default function CurrentEvents({ event }: CurrentEventsProps) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-
   const formattedTime = formatTime(event.event_time, event.event_date);
 
   return (
@@ -91,7 +90,6 @@ export default function CurrentEvents({ event }: CurrentEventsProps) {
 const styles = StyleSheet.create({
   card: {
     width: 290,
-    overflow: 'hidden',
     padding: 10
   },
   imageWrapper: {
