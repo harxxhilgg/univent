@@ -145,7 +145,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
     width: "100%",
     maxWidth: 500,
     alignSelf: "center"
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
     borderWidth: 1,
-    borderColor: theme.colorButtonGray,
+    borderColor: theme.colorWhite,
     borderRadius: 12
   },
   eventFeeDetailsContainer: {
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     fontSize: 14
   },
   eventsFeePaidorFreeText: {
-    color: theme.colorLightGray,
+    color: theme.colorFontLight,
     fontSize: 18
   },
   eventDateTimeInlineContainer: {
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorLightGray,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.colorButtonGray,
+    borderColor: theme.colorWhite,
   },
   month: {
     fontSize: 14,
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     fontSize: 18
   },
   eventTimeDetailsText: {
-    color: theme.colorLightGray,
+    color: theme.colorFontLight,
     fontSize: 15
   },
   eventLocationInlineContainer: {
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 18,
     borderWidth: 1,
-    borderColor: theme.colorButtonGray,
+    borderColor: theme.colorWhite,
     borderRadius: 12
   },
   eventLocationDetailsContainer: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     alignSelf: "center"
   },
   eventLocationText: {
-    color: theme.colorLightGray,
+    color: theme.colorFontLight,
     fontSize: 16
   },
   registerContainer: {
