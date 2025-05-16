@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     fontSize: 11
   },
   timeLocationText: {
-    color: theme.colorTaskbarYellow,
+    color: theme.colorLightGray,
     fontSize: 13,
     padding: 2
   },
