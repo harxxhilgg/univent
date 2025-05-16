@@ -271,9 +271,15 @@ export const getLatestEvent = async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       SELECT
+        id,
         title,
+        organizer,
         event_date::TEXT AS event_date, -- ensuring returned as plain text, no time conversions.
-        event_time
+        event_time,
+        location,
+        image_url,
+        is_paid,
+        created_by_email
       FROM
         events
       WHERE
