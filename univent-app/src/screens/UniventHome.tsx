@@ -180,7 +180,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
               {hasSearchData === true && !loading ? (
                 <CustomText style={styles.noEventsFoundText}>No events found</CustomText>
               ) : (
-                <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Events</CustomText>
+                <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Event</CustomText>
               )}
 
               {upcomingEvents.map((event) => (
@@ -244,24 +244,20 @@ const styles = StyleSheet.create({
     marginLeft: 14,
     marginVertical: 6
   },
-  noEventsFoundText: {
-    fontSize: 14,
-    color: theme.colorFontLight,
-    textAlign: "center"
-  },
   upcomingEventsCenterContainer: {
     width: "100%",
     maxWidth: 500,
     marginHorizontal: "auto"
+  },
+  noEventsFoundText: {
+    fontSize: 14,
+    color: theme.colorFontLight,
+    textAlign: "center"
   },
   headerUpcomingEvent: {
     color: theme.colorFontLight,
     fontSize: 20,
     marginLeft: 14,
     marginVertical: 6
-  },
-  itemsSearchNotFoundText: {
-    color: theme.colorFontLight,
-    fontSize: 16
   }
 });
