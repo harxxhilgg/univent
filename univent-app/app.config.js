@@ -27,7 +27,8 @@ export default {
         dark: "./assets/icons/ios-dark.png",
         light: "./assets/icons/ios-light.png",
         tinted: "./assets/icons/ios-tinted.png"
-      }
+      },
+      jsEngine: "hermes"
     },
     android: {
       softwareKeyboardLayoutMode: "pan",
@@ -36,7 +37,8 @@ export default {
         monochromeImage: "./assets/icons/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      package: "com.univent.app"
+      package: "com.univent.app",
+      jsEngine: "hermes"
     },
     web: {
       favicon: "./assets/icons/favicon-32x32.png"
