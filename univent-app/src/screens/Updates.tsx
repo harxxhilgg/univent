@@ -6,12 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import axios from 'axios';
 import { API_URL } from "../utils/api";
-
-type UpcomingEvent = {
-  title: string;
-  event_date: string;
-  event_time: string;
-};
+import { useNavigation } from '@react-navigation/native';
+import { AuthScreenNavigationProp } from '../../App';
+import { Event as UpcomingEvent } from './UniventHome';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -38,6 +35,8 @@ const Updates = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const navigation = useNavigation<AuthScreenNavigationProp>();
 
   const fetchData = async () => {
     setLoading(true);
@@ -92,7 +91,7 @@ const Updates = () => {
       <View style={styles.container}>
         <View style={styles.upcomingTouchable}>
           <View style={styles.headerRow}>
-            <CustomText style={styles.headerText}>
+            <CustomText style={expanded ? styles.headerTextExpanded : styles.headerTextNonExpanded}>
               {
                 loading
                   ? 'Loading...'
@@ -105,14 +104,16 @@ const Updates = () => {
               <Ionicons
                 name={expanded ? 'chevron-up' : 'chevron-down'}
                 size={22}
-                color={theme.colorTaskbarYellow}
+                color={expanded ? theme.colorFontGray : theme.colorWhite}
               />
             </TouchableOpacity>
           </View>
 
           {expanded && event && (
             <View style={styles.eventDetails}>
-              <CustomText style={styles.eventDetailsTitle}>{event.title}</CustomText>
+              <TouchableOpacity onPress={() => navigation.navigate('EventDetails', { event })}>
+                <CustomText style={styles.eventDetailsTitle}>{event.title}</CustomText>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     backgroundColor: theme.colorBackgroundDark,
-    paddingBottom: 30,
+    paddingBottom: 30
   },
   container: {
     flex: 1,
@@ -136,37 +137,41 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 500,
     margin: "auto",
-    marginTop: Platform.OS === 'web' ? 20 : 0,
+    marginTop: Platform.OS === 'web' ? 20 : 0
   },
   upcomingTouchable: {
     backgroundColor: theme.colorSlightDark,
     borderRadius: 28,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    marginTop: 20,
+    marginTop: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 5
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-  headerText: {
+  headerTextExpanded: {
     fontSize: 17,
-    color: theme.colorTaskbarYellow,
+    color: theme.colorFontGray
+  },
+  headerTextNonExpanded: {
+    fontSize: 17,
+    color: theme.colorFontLight
   },
   eventDetails: {
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 0.5,
-    borderTopColor: theme.colorTintInactive,
+    borderTopColor: theme.colorTintInactive
   },
   eventDetailsTitle: {
     fontSize: 15,
-    color: theme.colorWhite,
+    color: theme.colorWhite
   },
 });
