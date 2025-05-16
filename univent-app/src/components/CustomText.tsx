@@ -4,9 +4,10 @@ import { Text, TextProps, StyleSheet } from "react-native";
 interface CustomTextProps extends TextProps {
   bold?: boolean;
   semibold?: boolean;
+  className?: string;
 }
 
-const CustomText: React.FC<CustomTextProps> = ({ bold, semibold, style, ...props }) => {
+const CustomText: React.FC<CustomTextProps> = ({ bold, semibold, style, className, ...props }) => {
   return (
     <Text
       style={[
