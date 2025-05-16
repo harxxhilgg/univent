@@ -14,12 +14,13 @@ import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
 import { setBackgroundColorAsync } from "expo-system-ui";
+import { Event } from './src/screens/UniventHome';
 
 export type RootStackParamList = {
   Auth: undefined;
   Signup: undefined;
   Main: undefined;
-  EventDetails: undefined;
+  EventDetails: { event: Event };
 }
 
 const Stack = createStackNavigator<RootStackParamList>();
