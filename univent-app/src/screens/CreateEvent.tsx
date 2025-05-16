@@ -38,7 +38,6 @@ const CreateEvent = () => {
     setShowDatePicker(false);
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split("T")[0]; // 2025-03-12
-      console.log(formattedDate);
       setEventDate(formattedDate);
     }
   };
@@ -74,14 +73,14 @@ const CreateEvent = () => {
 
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
-      console.log("Selected image URI: ", imageUri);
+      // console.log("Selected image URI: ", imageUri);
     }
   };
 
   const uploadImage = async (uri: string) => {
-    console.log("Uploading image with URI: ", uri);
+    // console.log("Uploading image with URI: ", uri);
     if (!uri) {
-      console.log("No image URI provided, returning null");
+      // console.log("No image URI provided, returning null");
       return null;
     };
 
@@ -103,17 +102,17 @@ const CreateEvent = () => {
       },
     });
 
-    console.log("Upload response status:", response.status);
+    // console.log("Upload response status:", response.status);
     const responseText = await response.text();
-    console.log("Upload response text:", responseText);
+    // console.log("Upload response text:", responseText);
 
     if (!response.ok) {
-      console.log("Upload failed, returning null:", responseText);
+      // console.log("Upload failed, returning null:", responseText);
       return null;
     }
 
     const data = JSON.parse(responseText);
-    console.log("Upload response data:", data);
+    // console.log("Upload response data:", data);
 
     return data.imageUrl || null;
   };
@@ -141,10 +140,10 @@ const CreateEvent = () => {
         created_by_email: user?.email || "usersemailwillbehere@example.com",
       };
 
-      console.log("Req details: ", {
-        url: `${API_URL}/events/create`,
-        body: eventData
-      });
+      // console.log("Req details: ", {
+      //   url: `${API_URL}/events/create`,
+      //   body: eventData
+      // });
 
       const response = await fetch(`${API_URL}/events/create`, {
         method: "POST",
@@ -161,14 +160,15 @@ const CreateEvent = () => {
       // console.log("Response text: ", responseText);
 
       if (!response.ok) {
-        console.log('Event creation failed: ', responseText);
+        // console.log('Event creation failed: ', responseText);
         showError(2500, "Event created failure!");
         return;
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = JSON.parse(responseText);
       showSuccess(1500, "Event created successfully!");
-      console.log("Created event ID: ", data.event.id);
+      // console.log("Created event ID: ", data.event.id);
 
       setTitle("");
       setOrganizer("");
@@ -178,19 +178,20 @@ const CreateEvent = () => {
       setSelectedImage(null);
       setIsPaid(false);
       // console.log(`eventDate: ${eventDate}`); // true date only, no UTC
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      console.error('Event creation error: ', {
-        name: err instanceof Error ? err.name : 'Unknown',
-        message: err instanceof Error ? err.message : 'Unknown error',
-        fullError: err
-      });
+      // console.error('Event creation error: ', {
+      //   name: err instanceof Error ? err.name : 'Unknown',
+      //   message: err instanceof Error ? err.message : 'Unknown error',
+      //   fullError: err
+      // });
 
-      if (err instanceof TypeError && err.message.includes('Network req failed')) {
-        console.log('Network error detected. Please check:');
-        console.log('1. Device and server are on same network');
-        console.log('2. Server is running and accessible');
-        console.log('3. IP address is correct');
-      };
+      // if (err instanceof TypeError && err.message.includes('Network req failed')) {
+      //   console.log('Network error detected. Please check:');
+      //   console.log('1. Device and server are on same network');
+      //   console.log('2. Server is running and accessible');
+      //   console.log('3. IP address is correct');
+      // };
 
       showError(2500, "Event created failure!");
     } finally {
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
     width: "93%",
     maxWidth: 500,
     padding: 6,
-    gap: 10
+    gap: 4
   },
   infoTextConatiner: {
     flex: 1,
@@ -427,6 +428,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorDarkGreen,
     borderWidth: 1,
     borderColor: theme.colorGreen,
+    marginTop: 4,
     paddingVertical: 8,
     paddingHorizontal: 12,
     gap: 8
@@ -442,6 +444,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colorFontGray
   },
+  pickerContainer: {
+    marginTop: 6,
+    gap: 8
+  },
   dateTimeInput: {
     borderWidth: 1,
     borderColor: theme.colorTransparentLightGray,
@@ -451,12 +457,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: theme.colorBackgroundDark
   },
-  pickerContainer: {
-    marginTop: 4,
-    gap: 14
-  },
   imageContainer: {
-    marginTop: 10,
+    marginTop: 8,
     width: "100%",
     height: 150,
     borderRadius: 10,
@@ -465,6 +467,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colorTransparentLightGray,
     overflow: "hidden"
+  },
+  image: {
+    width: "100%",
+    height: "100%"
   },
   placeholder: {
     justifyContent: "center",
@@ -475,16 +481,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5
   },
-  image: {
-    width: "100%",
-    height: "100%"
-  },
   toggleContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     padding: 10,
-    marginTop: 10,
+    marginTop: 6,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: theme.colorTransparentLightGray,
     borderRadius: 10
@@ -499,8 +502,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 500
   },
-  submitBtn: {
-  },
+  submitBtn: {},
   gradientBackground: {
     paddingVertical: 6,
     borderRadius: 10,
@@ -513,8 +515,5 @@ const styles = StyleSheet.create({
     color: theme.colorFontDark,
     textAlign: "center",
     letterSpacing: 1
-  },
-  emptyContainer: {
-    marginVertical: 70
   }
 });
