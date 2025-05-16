@@ -43,6 +43,7 @@ const Settings = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isBottomSheetAccountOpen, setIsBottomSheetAccountOpen] = useState(false);
   const [isBottomSheetProfileOpen, setIsBottomSheetProfileOpen] = useState(false);
+  const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -96,8 +97,9 @@ const Settings = () => {
       } else {
         showError(2000, 'Account not deleted!');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      console.log("Account deletion failed: ", err);
+      // console.log("Account deletion failed: ", err);
       showError(2000, 'Something went wrong!');
     } finally {
       setDeleteLoading(false);
@@ -130,6 +132,10 @@ const Settings = () => {
     } else {
       accountSettingsBottomSheetRef.current?.expand();
     };
+  };
+
+  const toggleLogoutConfirmation = () => {
+    setIsLogoutConfirmationVisible((prev) => !prev);
   };
 
   const toggleDeleteConfirmation = () => {
@@ -232,7 +238,7 @@ const Settings = () => {
               </TouchableOpacity>
             )}
             <FontAwesome name="user-circle-o" size={130} color={theme.colorTransparentLightGray} style={styles.userProfile} />
-            <CustomText style={[styles.userDetails, styles.usernameText]} bold>{user?.username || 'User Name'}</CustomText>
+            <CustomText style={[styles.userDetails, styles.usernameText]} bold>{user?.username || 'Username'}</CustomText>
             {user.email === 'user.guest@univent.com' ? (
               <View>{null}</View>
             ) : (
@@ -292,7 +298,7 @@ const Settings = () => {
               )}
               <TouchableOpacity
                 style={styles.logoutBtn}
-                onPress={handleLogout}
+                onPress={toggleLogoutConfirmation}
                 disabled={logoutLoading}
               >
                 <LinearGradient
@@ -446,13 +452,40 @@ const Settings = () => {
           </PaperModal>
 
           <PaperModal
+            visible={isLogoutConfirmationVisible}
+            onDismiss={toggleLogoutConfirmation}
+            dismissable={true}
+            contentContainerStyle={styles.logoutAccountConfirmationContainer}
+            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.9)' } }}
+          >
+            <CustomText style={styles.logoutAccountConfirmationTitle} semibold>Log out of your Account?</CustomText>
+            <CustomText style={styles.logoutAccountConfirmationMessage}>
+              Logging out will securely end your current session. You can sign back in anytime to access your account.
+            </CustomText>
+            <View style={styles.logoutAccountButtonContainer}>
+              <TouchableOpacity
+                style={[styles.logoutAccountConfirmationButton, styles.logoutAccountCancelButton]}
+                onPress={toggleLogoutConfirmation}
+              >
+                <CustomText style={styles.logoutAccountCancelButtonText} bold>Cancel</CustomText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.logoutAccountConfirmationButton, styles.logoutAccountDeleteButton]}
+                onPress={handleLogout}
+              >
+                <CustomText style={styles.logoutAccountDeleteButtonText} bold>Log out</CustomText>
+              </TouchableOpacity>
+            </View>
+          </PaperModal>
+
+          <PaperModal
             visible={isDeleteConfirmationVisible}
             onDismiss={toggleDeleteConfirmation}
             dismissable={true}
             contentContainerStyle={styles.deleteAccountConfirmationContainer}
             theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.9)' } }}
           >
-            <CustomText style={styles.deleteAccountConfirmationTitle}>Delete Account?</CustomText>
+            <CustomText style={styles.deleteAccountConfirmationTitle} bold>Delete Account?</CustomText>
             <CustomText style={styles.deleteAccountConfirmationMessage}>
               Deleting this account will permanently remove it from Univnet. This action cannot be undone.
             </CustomText>
@@ -512,17 +545,43 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12
   },
-  userDetails: {
-    color: theme.colorFontLight,
-  },
   userProfile: {
     marginBottom: 20
+  },
+  userDetails: {
+    color: theme.colorFontLight,
   },
   usernameText: {
     fontSize: 26
   },
   emailText: {
     fontSize: 13
+  },
+  accountSettingsContainer: {
+    backgroundColor: theme.colorSlightDark,
+    width: "90%",
+    maxWidth: 500,
+    flexDirection: "row",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 48,
+    marginTop: 20,
+    gap: 6
+  },
+  accountSettingsText: {
+    color: theme.colorFontLight,
+    fontSize: 15.5
+  },
+  bottomSheetContainer: {
+    flex: 1,
+    backgroundColor: theme.colorSlightDark,
+    padding: 16
+  },
+  gradientBackground: {
+    paddingVertical: 8,
+    borderRadius: 10,
+    overflow: "hidden",
+    alignItems: "center"
   },
   editAccBtn: {
     alignSelf: "center",
@@ -531,12 +590,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     elevation: 5
-  },
-  gradientBackground: {
-    paddingVertical: 8,
-    borderRadius: 10,
-    overflow: "hidden",
-    alignItems: "center"
   },
   editAccBtnText: {
     color: theme.colorFontDark,
@@ -565,75 +618,6 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     paddingVertical: 4
-  },
-  bottomSheetContainer: {
-    flex: 1,
-    backgroundColor: theme.colorSlightDark,
-    padding: 16
-  },
-  accountSettingsContainer: {
-    backgroundColor: theme.colorSlightDark,
-    width: "90%",
-    maxWidth: 500,
-    flexDirection: "row",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 48,
-    marginTop: 20,
-    gap: 6
-  },
-  accountSettingsText: {
-    color: theme.colorFontLight,
-    fontSize: 15.5
-  },
-  deleteAccountConfirmationContainer: {
-    backgroundColor: theme.colorSlightDark,
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    borderRadius: 22,
-    width: "90%",
-    maxWidth: 350,
-    alignItems: 'center',
-    marginHorizontal: "auto"
-  },
-  deleteAccountConfirmationTitle: {
-    color: theme.colorFontLight,
-    fontSize: 18,
-    fontWeight: 'bold'
-  },
-  deleteAccountConfirmationMessage: {
-    color: theme.colorLightGray,
-    fontSize: 16,
-    textAlign: 'center',
-    paddingTop: 8,
-    paddingBottom: 10,
-    width: "90%"
-  },
-  deleteAccountButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%'
-  },
-  deleteAccountConfirmationButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 12,
-    marginHorizontal: 5,
-    alignItems: 'center'
-  },
-  deleteAccountCancelButton: {
-    backgroundColor: theme.colorButtonGray
-  },
-  deleteAccountDeleteButton: {
-    backgroundColor: theme.colorRed
-  },
-  deleteAccountCancelButtonText: {
-    fontSize: 14,
-    color: theme.colorWhite
-  },
-  deleteAccountDeleteButtonText: {
-    fontSize: 14,
-    color: theme.colorFontLight
   },
   editAccountConfirmationContainer: {
     backgroundColor: theme.colorSlightDark,
@@ -692,31 +676,109 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorButtonGray
   },
   editAccountCancelButtonText: {
-    color: theme.colorFontLight
+    color: theme.colorFontLight,
+    fontSize: 14
   },
   editAccountSaveChangesButton: {
     backgroundColor: theme.colorRed
   },
   editAccountSaveChangesButtonText: {
+    color: theme.colorFontLight,
+    fontSize: 14
+  },
+  logoutAccountConfirmationContainer: {
+    backgroundColor: theme.colorSlightDark,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    width: "90%",
+    maxWidth: 350,
+    alignItems: 'center',
+    marginHorizontal: "auto"
+  },
+  logoutAccountConfirmationTitle: {
+    color: theme.colorFontLight,
+    fontSize: 18
+  },
+  logoutAccountConfirmationMessage: {
+    color: theme.colorLightGray,
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 10,
+    width: "90%"
+  },
+  logoutAccountButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 4
+  },
+  logoutAccountConfirmationButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginHorizontal: 5,
+    alignItems: 'center'
+  },
+  logoutAccountCancelButton: {
+    backgroundColor: theme.colorButtonGray
+  },
+  logoutAccountDeleteButton: {
+    backgroundColor: theme.colorRed
+  },
+  logoutAccountCancelButtonText: {
+    fontSize: 14,
+    color: theme.colorWhite
+  },
+  logoutAccountDeleteButtonText: {
+    fontSize: 14,
     color: theme.colorFontLight
   },
-  errorUsernameText: {
-    color: theme.colorRed,
-    paddingHorizontal: 10,
-    fontSize: 15
+  deleteAccountConfirmationContainer: {
+    backgroundColor: theme.colorSlightDark,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    width: "90%",
+    maxWidth: 350,
+    alignItems: 'center',
+    marginHorizontal: "auto"
   },
-  editAccountSubmitButton: {
-    marginTop: 5,
-    marginBottom: 10
+  deleteAccountConfirmationTitle: {
+    color: theme.colorFontLight,
+    fontSize: 18
   },
-  saveChangesBtnGradient: {
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 16,
+  deleteAccountConfirmationMessage: {
+    color: theme.colorLightGray,
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 10,
+    width: "90%"
   },
-  editAccountSubmitButtonText: {
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16
+  deleteAccountButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%'
+  },
+  deleteAccountConfirmationButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginHorizontal: 5,
+    alignItems: 'center'
+  },
+  deleteAccountCancelButton: {
+    backgroundColor: theme.colorButtonGray
+  },
+  deleteAccountDeleteButton: {
+    backgroundColor: theme.colorRed
+  },
+  deleteAccountCancelButtonText: {
+    fontSize: 14,
+    color: theme.colorWhite
+  },
+  deleteAccountDeleteButtonText: {
+    fontSize: 14,
+    color: theme.colorFontLight
   }
 });
