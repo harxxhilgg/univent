@@ -565,8 +565,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 48,
-    marginTop: 20,
-    gap: 6
+    marginTop: 16
   },
   accountSettingsText: {
     color: theme.colorFontLight,
@@ -669,7 +668,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
     marginBottom: 1,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 12
   },
   editAccountCancelButton: {
