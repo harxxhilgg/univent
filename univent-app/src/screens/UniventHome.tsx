@@ -138,7 +138,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
         >
           <View style={styles.stickyHeader}>
             <Searchbar
-              placeholder='Search events by title'
+              placeholder='Search events by title...'
               onChangeText={(text) => {
                 setQuery(text);
                 setSearchActive(true);
@@ -148,7 +148,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
               onClearIconPress={handleClearSearch}
               icon={searchActive ? 'arrow-left' : 'magnify'}
               style={styles.searchBar}
-              iconColor={searchActive ? theme.colorTaskbarYellow : theme.colorFontGray}
+              iconColor={theme.colorLightGray}
               placeholderTextColor={theme.colorFontGray}
               inputStyle={{ color: theme.colorFontLight, fontSize: 14 }}
               theme={{ colors: { primary: theme.colorTaskbarYellow } }}
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    width: "98%"
+    width: "100%"
   },
   currentEventsContainer: {
     width: '100%',
