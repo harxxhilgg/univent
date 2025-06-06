@@ -1,22 +1,28 @@
 import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Text } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../utils/api';
+import { api } from '../utils/api';
 import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { decodeJwtPayload } from '../context/UserProvider';
 import { useToast } from '../components/useToast';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
+
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
 const AuthScreen = () => {
   const { setUser } = useContext(UserContext);
-
   const navigation = useNavigation<AuthScreenNavigationProp>();
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFocused, setIsFocused] = useState(false);
   const [email, setEmail] = useState("");
@@ -25,74 +31,61 @@ const AuthScreen = () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [GuestLoading, setGuestLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
+  const [failedAttempt, setFailedAttempt] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      showInfo(2500, 'Please fill in all fields.');
-      return;
-    };
+  const defaultForgottenPasswordSize = useSharedValue(12);
 
+  useEffect(() => {
+    defaultForgottenPasswordSize.value = withTiming(failedAttempt ? 14 : 13, { duration: 200 });
+  }, [failedAttempt, defaultForgottenPasswordSize]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    fontSize: defaultForgottenPasswordSize.value
+  }))
+
+  const onLoginSubmit = async (data: LoginFormData) => {
+    const { email, password } = data;
     setLoginLoading(true);
 
     try {
-      // console.log('Request details: ', { // ! DEBUG ONLY
-      //   url: `${API_URL}/auth/login`,
-      //   body: { email } // do not use password in production
-      // });
+      const response = await api.post("/auth/login", { email, password });
 
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const { token } = response.data;
 
-      const data = await response.json();
-      // console.log(`Response data: ${data.message}, ID: ${data.user.id}`); // ! DEBUG ONLY
-
-      if (!response.ok) {
-        console.log('Login failed: ', data);
-        showError(3000, 'Login failed', 'Please try again.');
-        setLoginLoading(false);
-        return;
-      };
-
-      // store token
+      // Store token and decode user data
       try {
-        await AsyncStorage.setItem("authToken", data.token);
-        const decoded = decodeJwtPayload(data.token);
+        await AsyncStorage.setItem("authToken", token);
+        const decoded = decodeJwtPayload(token);
         setUser({
           id: decoded.userId,
           username: decoded.username,
-          email: decoded.email
+          email: decoded.email,
         });
       } catch (storageError) {
-        console.log('Error storing token: ', storageError);
-        showError(2500, 'Something went wrong', 'please try again.');
-        setLoginLoading(false);
+        console.log("Error storing token: ", storageError);
+        showError(2500, "Something went wrong", "Please try again");
         return;
       };
 
-      showSuccess(1500, 'Logged in succesfully!');
+      showSuccess(1500, "Logged in successfully!");
       navigation.replace("Main");
-    } catch (err) {
-      console.error('Login error: ', {
-        name: err instanceof Error ? err.name : 'Unknown',
-        messsage: err instanceof Error ? err.message : 'Unknown error',
-        fullError: err
-      });
+    } catch (error: any) {
+      const status = error.response?.status;
 
-      // check network error
-      if (err instanceof TypeError && err.message.includes('Network req failed')) {
-        console.log('Network error detected. Please check:');
-        console.log('1. Device and server are on same network');
-        console.log('2. Server is running and accessfible');
-        console.log('3. IP address is correct');
+      if (status === 400) {
+        showInfo(2500, "Please fill in all fields");
+      } else if (status === 401 || status === 403) {
+        showError(2500, "Invalid credentials", "Please check your email and password.");
+        setFailedAttempt(true);
+      } else {
+        const status = error.response?.status;
+
+        if (status === 404) {
+          showError(2500, "User not found", "Please check your email");
+        } else {
+          showError(2500, "Something went wrong", "Please try again");
+        };
       };
-
-      showError(3000, 'Wrong credentials');
     } finally {
       setLoginLoading(false);
     };
@@ -112,7 +105,6 @@ const AuthScreen = () => {
       try {
         navigation.replace("Main");
         showSuccess(1500, 'Logged in as a guest!');
-        setGuestLoading(false);
       } catch (err) {
         console.error(err);
         showError(2500, "Something is wrong with the app", "Please restart the app");
@@ -122,8 +114,8 @@ const AuthScreen = () => {
       showError(2500, "Something is wrong with the app", "Please restart the app");
     } finally {
       setGuestLoading(false);
-    }
-  }
+    };
+  };
 
   return (
     <KeyboardAvoidingView
@@ -178,7 +170,7 @@ const AuthScreen = () => {
               }
             />
           </View>
-          <TouchableOpacity onPress={handleLogin} disabled={loginLoading} style={styles.loginBtnContainer}>
+          <TouchableOpacity onPress={() => onLoginSubmit({ email, password })} disabled={loginLoading} style={styles.loginBtnContainer}>
             <LinearGradient
               colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
               start={{ x: 0, y: 1 }}
@@ -207,6 +199,15 @@ const AuthScreen = () => {
               )}
             </LinearGradient>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("ForgottenPassword", { email })}>
+            <AnimatedText style={[animatedStyle, {
+              color: theme.colorFontGray
+            }]}>
+              Forgotten Password?
+            </AnimatedText>
+          </TouchableOpacity>
+
           <View style={styles.newAccContainer}>
             <TouchableOpacity
               onPress={() => {
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     marginTop: 110,
     marginBottom: 90,
-    width: "90%",
+    width: "100%",
     alignItems: "center",
     maxWidth: 500
   },
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
   },
   grettingContainer: {
     marginBottom: 14,
-    width: "89%",
+    width: "93%",
     maxWidth: 500
   },
   grettingText: {
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight
   },
   inputContainer: {
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     gap: 6,
     marginBottom: 12
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3
   },
   loginBtnContainer: {
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     marginBottom: 8
   },
@@ -296,11 +297,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontSize: 15
   },
+  defaultAttempt: {
+    fontSize: 12,
+    color: theme.colorFontGray
+  },
+  failedAttempt: {
+    fontSize: 14,
+    color: theme.colorFontGray
+  },
   newAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
     marginBottom: 10,
-    width: "90%",
+    width: "95%",
     maxWidth: 500
   },
   SignupBtnText: {
