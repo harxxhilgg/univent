@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   userDataContainer: {
     backgroundColor: theme.colorSlightDark,
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     paddingTop: 28,
     paddingBottom: 16,
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   accountSettingsContainer: {
     backgroundColor: theme.colorSlightDark,
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     flexDirection: "row",
     paddingVertical: 14,
@@ -586,7 +586,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: "100%",
     maxWidth: 400,
-    marginTop: 10,
     marginBottom: 10,
     elevation: 5
   },
@@ -609,7 +608,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: "100%",
     maxWidth: 400,
-    marginVertical: 10,
+    marginBottom: 10
   },
   deleteAccountBtnText: {
     color: theme.colorFontLight,
