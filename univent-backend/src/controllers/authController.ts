@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
+import emailService from "./../utils/sendEMail";
 
 export const signup = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
@@ -12,7 +13,7 @@ export const signup = async (req: Request, res: Response) => {
 
   if (!process.env.JWT_SECRET) {
     return res
-      .status(500)
+      .status(502)
       .json({ message: "Internal server error: JWT_SECRET not defined" });
   }
 
@@ -29,8 +30,9 @@ export const signup = async (req: Request, res: Response) => {
       `,
       [email]
     );
+
     if (userExists.rows.length > 0) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res.status(401).json({ message: "Email already registered" });
     }
 
     // Hash password
@@ -40,13 +42,13 @@ export const signup = async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       INSERT INTO
-        users (username, email, password)
+        users (username, email, password, plain_password)
       VALUES
-        ($1, $2, $3)
+        ($1, $2, $3, $4)
       RETURNING
         *;
       `,
-      [username, email, hashedPassword]
+      [username, email, hashedPassword, password]
     );
 
     // JWT token with userId, username, email
@@ -106,14 +108,14 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const user = result.rows[0];
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // JWT token
@@ -217,5 +219,96 @@ export const updateProfile = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Profile update error: ", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        username, plain_password
+      FROM
+        users
+      WHERE email = $1
+      `,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = result.rows[0];
+    const { username, plain_password } = user;
+
+    const subject = `Account Credentials for ${username} | Univent`;
+    const html = `
+    <div style="
+      max-width: 600px;
+      margin: 0 auto;
+      margin-top: 0.5rem;
+      padding: 30px;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    ">
+      <h2 style="color: #333;">Account Credentials</h2>
+
+      <p style="font-size: 16px;">Dear <strong>${username}</strong>,</span>
+
+      <p style="font-size: 16px; color: #555;">Please find your login credentials below:</p>
+
+      <div style="
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        display: flex;
+        width: 60%;
+        justify-content: center;
+        margin: 10px auto;
+      ">
+        <p style="font-size: 15px; margin: 10px 0">
+          <strong>Username:</strong> ${username}<br>
+          <strong>Password:</strong> ${plain_password}
+        </p>
+      </div>
+
+      <p style="font-size: 15px; margin-top: 20px;">
+        Best regards,<br>
+        <strong>Harshil Patel</strong><br>
+        <span style="color: #555; font-style: italic;">dev@univent</span>
+      </p>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+
+      <p style="font-size: 13px; color: #777;">
+        If you have any questions or encounter any issues, please do not hesitate to respond to this email.
+      </p>
+    </div>
+    `;
+
+    // send mail
+    await emailService.sendEmail(email, subject, html);
+
+    return res.status(200).json({
+      message: "Credentials sent via email",
+      user: {
+        username,
+        email,
+        plain_password,
+      },
+    });
+  } catch (err) {
+    console.error("Error in forgotPassword: ", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
