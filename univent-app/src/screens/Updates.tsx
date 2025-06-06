@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colorBackgroundDark,
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     margin: "auto",
     marginTop: Platform.OS === 'web' ? 20 : 0
