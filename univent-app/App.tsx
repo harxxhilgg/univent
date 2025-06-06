@@ -9,6 +9,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import EventDetails from './src/screens/EventDetails';
+import ForgottenPassword from './src/screens/ForgottenPassword';
 import { useEffect, useState, useContext } from 'react';
 import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Signup: undefined;
   Main: undefined;
   EventDetails: { event: Event };
+  ForgottenPassword: { email: string };
 }
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -69,6 +71,19 @@ function AppContent() {
             name="Auth"
             component={AuthScreen}
             options={() => ({
+              ...TransitionPresets.ModalFadeTransition
+            })}
+          />
+          <Stack.Screen
+            name="ForgottenPassword"
+            component={ForgottenPassword}
+            options={() => ({
+              headerShown: true,
+              headerTitle: "",
+              headerBackButtonDisplayMode: "minimal",
+              headerStyle: { backgroundColor: theme.colorBackgroundDark },
+              headerTintColor: theme.colorTabBarTint,
+              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
               ...TransitionPresets.ModalFadeTransition
             })}
           />
@@ -130,3 +145,4 @@ export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList, "
 export type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, "Signup">;
 export type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, "Main">;
 export type EventDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, "EventDetails">;
+export type ForgotPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgottenPassword">;
