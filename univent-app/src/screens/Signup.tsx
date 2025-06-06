@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     marginTop: 110,
     marginBottom: 90,
-    width: "90%",
+    width: "95%",
     alignItems: "center",
     maxWidth: 500
   },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   grettingContainer: {
     marginBottom: 14,
-    width: "89%",
+    width: "93%",
     maxWidth: 500
   },
   grettingText: {
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight
   },
   inputContainer: {
-    width: "90%",
+    width: "95%",
     maxWidth: 500,
     gap: 6,
     marginBottom: 6
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   SignupBtn: {
     paddingVertical: 6,
-    width: "90%",
+    width: "95%",
     maxWidth: 500
   },
   gradientBackground: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column-reverse",
     marginBottom: 10,
-    width: "90%",
+    width: "95%",
     maxWidth: 500
   },
   LoginBtnText: {
