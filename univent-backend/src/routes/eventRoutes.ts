@@ -10,6 +10,7 @@ import {
   getCurrentEvents,
   getAllEvents,
 } from "../controllers/eventController";
+import { verifyToken } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -22,11 +23,12 @@ router.get("/", (req, res) => {
 
 router.post(
   "/upload",
+  verifyToken as any,
   upload.single("image"),
   uploadImage as express.RequestHandler
 );
-router.post("/create", createEvent as any);
-router.get("/getAllEvents", getAllEvents);
+router.post("/create", verifyToken as any, createEvent as any);
+router.get("/getAllEvents", verifyToken as any, getAllEvents);
 router.get("/getUpcomingEvents", getUpcomingEvents);
 router.get("/user/:email", getEventsByUser);
 router.get("/search", search);
