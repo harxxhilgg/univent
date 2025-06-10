@@ -7,18 +7,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 interface EventAPI {
   id: number;
+  title: string;
+  organizer: string;
   event_date: string; // YYYY-MM-DD
   event_time: string; // HH:MM:SS
   location: string;
-  title: string;
-  organizer: string;
   image_url: string;
   is_paid?: boolean;
-}
+};
 
 interface CurrentEventsProps {
   event: EventAPI
-}
+};
 
 const formatTime = (timeString: string, eventDate: string) => {
   const [hours, minutes] = timeString.split(':');
@@ -38,34 +38,27 @@ export default function CurrentEvents({ event }: CurrentEventsProps) {
 
   return (
     <View style={styles.card}>
-      {!isImageLoaded ? (
-        <View style={styles.imageWrapper}>
+      <View style={styles.imageWrapper}>
+        {!isImageLoaded && (
           <ShimmerPlaceholder
+            // @ts-ignore
+            testID="shimmer-placeholder"
             style={styles.skeletonImage}
             LinearGradient={LinearGradient}
             shimmerColors={['#333', '#444', '#333']}
           />
-          <Image
-            source={{ uri: event.image_url }}
-            style={styles.hiddenImage}
-            onLoad={() => setIsImageLoaded(true)}
-            onError={(e) => {
-              console.log('Image load error for event ', event.id, ' : ', e.nativeEvent.error);
-              setIsImageLoaded(true);
-            }}
-          />
-        </View>
-      ) : (
+        )}
         <Image
+          testID="event-image"
           source={{ uri: event.image_url }}
-          style={styles.image}
+          style={isImageLoaded ? styles.image : styles.hiddenImage}
           onLoad={() => setIsImageLoaded(true)}
           onError={(e) => {
             console.log('Image load error for event ', event.id, ' : ', e.nativeEvent.error);
             setIsImageLoaded(true);
           }}
         />
-      )}
+      </View>
 
       <View style={[styles.eventTypeTag, event.is_paid ? styles.eventPaid : styles.eventFree]}>
         <CustomText style={styles.eventTypeText} bold>{event.is_paid ? "Paid" : "Free"}</CustomText>
