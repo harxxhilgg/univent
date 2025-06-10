@@ -75,15 +75,15 @@ const AuthScreen = () => {
       if (status === 400) {
         showInfo(2500, "Please fill in all fields");
       } else if (status === 401 || status === 403) {
-        showError(2500, "Invalid credentials", "Please check your email and password.");
+        showError(3000, "Invalid credentials", "Please check your email and password.");
         setFailedAttempt(true);
       } else {
         const status = error.response?.status;
 
         if (status === 404) {
-          showError(2500, "User not found", "Please check your email");
+          showError(3000, "Incorrect or Invalid email address", "Please check your email and try again");
         } else {
-          showError(2500, "Something went wrong", "Please try again");
+          showError(3000, "Something went wrong", "Please try again");
         };
       };
     } finally {
