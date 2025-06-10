@@ -20,7 +20,6 @@ interface EventAPI {
 
 interface EventCardProps {
   event: EventAPI;
-  hideEndedEvents?: boolean;
 };
 
 export const getMonthAndDay = (dateString: string) => {
@@ -50,15 +49,21 @@ export const calculateTimeUntil = (eventDate: string, eventTime: string) => {
 };
 
 export const formatTime = (timeString: string) => {
-  const [hours, minutes] = timeString.split(':');
-  const date = new Date();
-  date.setHours(parseInt(hours), parseInt(minutes));
+  if (!timeString) return '00:00';
 
-  return date.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: false
-  });
+  try {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes), 0);
+
+    return date.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    });
+  } catch {
+    return '00:00';
+  };
 };
 
 export default function EventCard({ event }: EventCardProps) {
@@ -89,12 +94,15 @@ export default function EventCard({ event }: EventCardProps) {
       <View style={styles.imageWrapper}>
         {!isImageLoaded && (
           <ShimmerPlaceholder
+            // @ts-ignore
+            testID="shimmer-placeholder"
             style={styles.skeletonImage}
             LinearGradient={LinearGradient}
             shimmerColors={['#333', '#444', '#333']}
           />
         )}
         <Image
+          testID="event-image"
           source={{ uri: event.image_url }}
           alt='Event Image'
           style={isImageLoaded ? styles.image : styles.hiddenImage}
