@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import axios from "axios";
 import FormData from "form-data";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-export const uploadToImgBB = async (buffer, filename) => {
+export const uploadToImgBB = async (buffer: any, filename: string) => {
   try {
     if (!buffer || buffer.length === 0) {
       console.error("Invalid or empty buffer provided");
@@ -30,7 +28,7 @@ export const uploadToImgBB = async (buffer, filename) => {
 
     // console.log("ImgBB upload response: ", response.data);
     return response.data.data.url;
-  } catch (err) {
+  } catch (err: any) {
     console.error(
       "ImgBB upload error: ",
       err.response ? err.response.data : err.message
