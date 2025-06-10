@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "dev": "dotenv -e .env.dev -- expo start",
-    "prod": "dotenv -e .env.prod -- expo start"
+    "prod": "dotenv -e .env.prod -- expo start",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@babel/helpers": "^7.26.10",
@@ -24,7 +26,7 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
-    "axios": "^1.8.4",
+    "axios": "^1.9.0",
     "expo": "^52.0.46",
     "expo-constants": "~17.0.8",
     "expo-dev-client": "~5.0.20",
@@ -38,6 +40,7 @@
     "expo-system-ui": "^4.0.9",
     "form-data": "^4.0.2",
     "imgbb-uploader": "^1.5.1",
+    "jest-expo": "~52.0.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.56.1",
@@ -58,12 +61,22 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/react-native": "^13.2.0",
     "@types/react": "~18.3.12",
     "dotenv-cli": "^8.0.0",
     "eslint": "^8.57.0",
     "eslint-config-expo": "~8.0.1",
     "expo-module-scripts": "^4.0.4",
+    "jest": "^29.7.0",
+    "jest-mock-axios": "^4.8.0",
+    "react-test-renderer": "18.3.1",
     "typescript": "^5.3.3"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native|@react-native|expo(nent)?|@expo(nent)?/.*)"
+    ]
+  }
 }
