@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { FontAwesome6, Octicons } from "@expo/vector-icons";
 import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
-import { API_URL } from "../utils/api";
+import { api } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
 import { useToast } from "../components/useToast";
@@ -68,21 +68,15 @@ const CreateEvent = () => {
     });
 
     if (!result.canceled) {
-      // result.assets[0]
-      // {"assetId": null, "base64": null, "duration": null, "exif": null, "fileName": "4a62b3d3-400b-4c95-90e3-a2eb04f9722c.jpeg", "fileSize": 184640, "height": 2250, "mimeType": "image/jpeg", "rotation": null, "type": "image", "uri": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540harshil0%252Funivent/ImagePicker/4a62b3d3-400b-4c95-90e3-a2eb04f9722c.jpeg", "width": 4000}
+      // result.assets[0] for log
 
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
-      // console.log("Selected image URI: ", imageUri);
     }
   };
 
   const uploadImage = async (uri: string) => {
-    // console.log("Uploading image with URI: ", uri);
-    if (!uri) {
-      // console.log("No image URI provided, returning null");
-      return null;
-    };
+    if (!uri) return null;
 
     const formData = new FormData();
     const fileName = uri.split("/").pop() || "event-image.jpg";
@@ -91,44 +85,28 @@ const CreateEvent = () => {
     formData.append("image", {
       uri,
       name: fileName,
-      type: fileType,
+      type: fileType
     } as any);
 
-    const response = await fetch(`${API_URL}/events/upload`, {
-      method: "POST",
-      body: formData,
+    const response = await api.post("/events/upload", formData, {
       headers: {
-        "Accept": "application/json",
+        "Content-Type": "multipart/form-data",
       },
     });
 
-    // console.log("Upload response status:", response.status);
-    const responseText = await response.text();
-    // console.log("Upload response text:", responseText);
-
-    if (!response.ok) {
-      // console.log("Upload failed, returning null:", responseText);
-      return null;
-    }
-
-    const data = JSON.parse(responseText);
-    // console.log("Upload response data:", data);
-
-    return data.imageUrl || null;
+    return response?.data?.imageUrl || null;
   };
+
 
   const handleEventCreate = async () => {
     if (!title || !organizer || !eventDate || !eventTime || !location || !selectedImage || isPaid === undefined) {
       showInfo(2500, "Please fill in all fields!");
       return;
     };
-
     setLoading(true);
 
     try {
       const imageUrl = await uploadImage(selectedImage);
-      // console.log("Image URL before sending to create: ", imageUrl);
-
       const eventData = {
         title,
         organizer,
@@ -139,36 +117,11 @@ const CreateEvent = () => {
         isPaid,
         created_by_email: user?.email || "usersemailwillbehere@example.com",
       };
+      // console.log("event data: ", eventData);
 
-      // console.log("Req details: ", {
-      //   url: `${API_URL}/events/create`,
-      //   body: eventData
-      // });
-
-      const response = await fetch(`${API_URL}/events/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(eventData),
-      });
-
-      // console.log("Response status: ", response.status);
-      // console.log("Response headers: ", Object.fromEntries(response.headers.entries()));
-      const responseText = await response.text();
-      // console.log("Response text: ", responseText);
-
-      if (!response.ok) {
-        // console.log('Event creation failed: ', responseText);
-        showError(2500, "Event created failure!");
-        return;
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const data = JSON.parse(responseText);
+      const response = await api.post("/events/create", eventData);
+      console.log(response?.data);
       showSuccess(1500, "Event created successfully!");
-      // console.log("Created event ID: ", data.event.id);
 
       setTitle("");
       setOrganizer("");
@@ -177,22 +130,8 @@ const CreateEvent = () => {
       setLocation("");
       setSelectedImage(null);
       setIsPaid(false);
-      // console.log(`eventDate: ${eventDate}`); // true date only, no UTC
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      // console.error('Event creation error: ', {
-      //   name: err instanceof Error ? err.name : 'Unknown',
-      //   message: err instanceof Error ? err.message : 'Unknown error',
-      //   fullError: err
-      // });
-
-      // if (err instanceof TypeError && err.message.includes('Network req failed')) {
-      //   console.log('Network error detected. Please check:');
-      //   console.log('1. Device and server are on same network');
-      //   console.log('2. Server is running and accessible');
-      //   console.log('3. IP address is correct');
-      // };
-
+    } catch (err: any) {
+      console.log("Event creation error ", err.response?.data || err.message);
       showError(2500, "Event created failure!");
     } finally {
       setLoading(false);
