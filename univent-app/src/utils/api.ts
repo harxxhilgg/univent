@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Constants from "expo-constants";
 
@@ -10,3 +11,16 @@ export const api = axios.create({
     Accept: "application/json",
   },
 });
+
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem("authToken");
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
