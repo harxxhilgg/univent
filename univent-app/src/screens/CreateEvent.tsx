@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginTop: Platform.OS === 'web' ? "2%" : "0%",
-    width: "100%",
+    width: "95%",
     maxWidth: 500,
     padding: 6,
     gap: 4
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   createEventContainer: {
     display: "flex",
     marginTop: "auto",
-    width: "97%",
+    width: "92%",
     maxWidth: 500
   },
   submitBtn: {},
