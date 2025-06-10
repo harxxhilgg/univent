@@ -43,14 +43,14 @@ const EventDetails = ({ route }: { route: any }) => {
 
   const handleRegister = () => {
     if (event.created_by_email === user.email) {
-      showError(3000, "You cannot register for this event.", "You are the host of this event.");
+      showError(3000, "You cannot register for this event", "You are the host of this event");
     } else {
-      showInfo(3000, "Feature yet to be implemented.");
+      showInfo(3000, "Feature yet to be implemented");
     };
   };
 
   const handleGuestRegister = () => {
-    showInfo(3000, "Guest users cannot register for events!", "Please Login or Signup to register.");
+    showInfo(3000, "Guest users cannot register for events", "Please Login or Signup to register");
   };
 
   return (
@@ -63,7 +63,12 @@ const EventDetails = ({ route }: { route: any }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
-          <Image source={{ uri: event.image_url }} style={styles.image} resizeMode='cover' />
+          <Image
+            testID='event-image'
+            source={{ uri: event.image_url }}
+            style={styles.image}
+            resizeMode='cover'
+          />
           <View style={styles.inlineContainer}>
             <CustomText style={[styles.textWhite, styles.timeUntilContainer]}>{timeUntil}</CustomText>
             <CustomText style={[styles.textWhite, styles.timeLocationContainer]}>{formattedTime}  •  {event.location}</CustomText>
@@ -116,7 +121,10 @@ const EventDetails = ({ route }: { route: any }) => {
           </View>
 
           <View style={styles.registerContainer}>
-            <TouchableOpacity onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}>
+            <TouchableOpacity
+              testID="register-button"
+              onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}
+            >
               <LinearGradient
                 colors={['rgb(220, 210, 250)', 'rgb(255, 255, 255)', 'rgb(220, 210, 250)']}
                 start={{ x: 0, y: 0 }}
