@@ -35,6 +35,18 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   const [loading, setLoading] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
 
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  useEffect(() => {
+    setVisibleCount(5);
+  }, [upcomingEvents]);
+
+  const handleLoadMore = () => {
+    if (visibleCount < upcomingEvents.length) {
+      setVisibleCount(prev => Math.min(prev + 5, upcomingEvents.length));
+    }
+  };
+
   const searchEvents = async (q: any) => {
     setLoading(true);
     try {
@@ -143,7 +155,6 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
           </View>
           <ScrollView
             contentContainerStyle={[styles.scrollContainer]}
-            // stickyHeaderIndices={[0]}
             keyboardShouldPersistTaps="handled"
             indicatorStyle="white"
             showsHorizontalScrollIndicator={false}
@@ -157,6 +168,15 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
                 progressBackgroundColor={theme.colorSlightDark}
               />
             }
+            onScroll={({ nativeEvent }) => {
+              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+              if (
+                layoutMeasurement.height + contentOffset.y >= contentSize.height - 50
+              ) {
+                handleLoadMore();
+              }
+            }}
+            scrollEventThrottle={16}
           >
             <View style={styles.container}>
               {loading && <ActivityIndicator animating={true} style={{ marginTop: 20 }} />}
@@ -183,7 +203,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
                   <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Event</CustomText>
                 )}
 
-                {upcomingEvents.map((event) => (
+                {upcomingEvents.slice(0, visibleCount).map((event) => (
                   // passing whole event obejct as prop to EventDetails screen
                   <TouchableRipple
                     key={event.id}
