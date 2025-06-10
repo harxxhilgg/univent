@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { theme } from './theme';
 import { FontAwesome, Fontisto, Ionicons, Octicons } from '@expo/vector-icons';
-
 // screens
 import UniventHome from './src/screens/UniventHome';
 import MyEvents from './src/screens/MyEvents';
@@ -64,7 +63,7 @@ export default function BottomTabNavigator() {
           height: 80,
           marginHorizontal: Platform.OS === 'web' ? 0 : width > 1000 ? (width - 500) / 2 : 10,
           paddingTop: 20,
-          marginBottom: 4,
+          marginBottom: 2,
           borderRadius: 98,
           overflow: "hidden",
           borderColor: "transparent",
