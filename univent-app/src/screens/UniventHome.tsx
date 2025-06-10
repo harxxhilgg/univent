@@ -28,6 +28,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   const [currentEvents, setCurrentEvents] = useState<Event[]>([]);
   const [hasCurrentEvents, setHasCurrentEvents] = useState(false);
   const [hasSearchData, setHasSearchData] = useState(false);
+  const [showCurrentEvents, setShowCurrentEvents] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const userContext = useContext(UserContext);
   const [query, setQuery] = useState('');
@@ -42,18 +43,19 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       });
 
       setUpcomingEvents(res.data || []);
+      setShowCurrentEvents(false);
       setHasSearchData(res.data.length === 0);
-
     } catch (err: any) {
       console.error('Search error: ', err.message);
     }
     setLoading(false);
-  }
+  };
 
   const handleClearSearch = () => {
     setHasSearchData(false);
     setQuery('');
     setSearchActive(false);
+    setShowCurrentEvents(true);
     fetchEvents();
     Keyboard.dismiss();
   };
@@ -67,6 +69,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       } else {
         setHasSearchData(false);
         fetchEvents();
+        setShowCurrentEvents(true);
         setSearchActive(false);
       }
     }, 500); // delay 0.5 sec
@@ -119,23 +122,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       style={styles.flexContainer}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <ScrollView
-          contentContainerStyle={[styles.scrollContainer]}
-          stickyHeaderIndices={[0]}
-          keyboardShouldPersistTaps="handled"
-          indicatorStyle="white"
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.colorWhite}
-              colors={[theme.colorWhite]}
-              progressBackgroundColor={theme.colorSlightDark}
-            />
-          }
-        >
+        <>
           <View style={styles.stickyHeader}>
             <Searchbar
               placeholder='Search events by title...'
@@ -154,48 +141,62 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
               theme={{ colors: { primary: theme.colorTaskbarYellow } }}
             />
           </View>
-          <View style={styles.container}>
-
-            {loading && <ActivityIndicator animating={true} style={{ marginTop: 20 }} />}
-
-            {hasCurrentEvents && (
-              <View style={styles.currentEventsContainer}>
-                <CustomText style={styles.headerCurrentEvents} bold>Current Events</CustomText>
-                <ScrollView
-                  horizontal={true}
-                  scrollEnabled
-                  indicatorStyle="white"
-                  showsHorizontalScrollIndicator={false}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {currentEvents.map((event) => (
-                    <CurrentEvents key={event.id} event={event} />
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            <View style={styles.upcomingEventsCenterContainer}>
-
-              {hasSearchData === true && !loading ? (
-                <CustomText style={styles.noEventsFoundText}>No events found</CustomText>
-              ) : (
-                <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Event</CustomText>
+          <ScrollView
+            contentContainerStyle={[styles.scrollContainer]}
+            // stickyHeaderIndices={[0]}
+            keyboardShouldPersistTaps="handled"
+            indicatorStyle="white"
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={theme.colorWhite}
+                colors={[theme.colorWhite]}
+                progressBackgroundColor={theme.colorSlightDark}
+              />
+            }
+          >
+            <View style={styles.container}>
+              {loading && <ActivityIndicator animating={true} style={{ marginTop: 20 }} />}
+              {hasCurrentEvents && showCurrentEvents && (
+                <View style={styles.currentEventsContainer}>
+                  <CustomText style={styles.headerCurrentEvents} bold>Current Events</CustomText>
+                  <ScrollView
+                    horizontal={true}
+                    scrollEnabled={true}
+                    indicatorStyle="black"
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {currentEvents.map((event) => (
+                      <CurrentEvents key={event.id} event={event} />
+                    ))}
+                  </ScrollView>
+                </View>
               )}
 
-              {upcomingEvents.map((event) => (
-                // passing whole event obejct as prop to EventDetails screen
-                <TouchableRipple
-                  key={event.id}
-                  onPress={() => navigation.navigate('EventDetails', { event })}
-                  rippleColor={theme.colorGray}
-                >
-                  <EventCard event={event} hideEndedEvents={true} />
-                </TouchableRipple>
-              ))}
+              <View style={styles.upcomingEventsCenterContainer}>
+                {hasSearchData === true && !loading ? (
+                  <CustomText style={styles.noEventsFoundText}>No events found</CustomText>
+                ) : (
+                  <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Event</CustomText>
+                )}
+
+                {upcomingEvents.map((event) => (
+                  // passing whole event obejct as prop to EventDetails screen
+                  <TouchableRipple
+                    key={event.id}
+                    onPress={() => navigation.navigate('EventDetails', { event })}
+                    rippleColor={theme.colorGray}
+                  >
+                    <EventCard event={event} />
+                  </TouchableRipple>
+                ))}
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
@@ -209,9 +210,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorBackgroundDark
   },
   scrollContainer: {
-    flexGrow: 1,
     alignItems: 'center',
-    paddingBottom: 110,
+    paddingBottom: 100,
     width: "100%",
     maxWidth: 500,
     marginHorizontal: "auto"
@@ -221,16 +221,15 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 500,
     marginHorizontal: "auto",
-    paddingBottom: 12,
+    paddingBottom: 10,
     paddingHorizontal: 12
   },
   searchBar: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 2,
     backgroundColor: theme.colorSlightDark,
     marginHorizontal: 'auto'
   },
   container: {
-    flex: 1,
     width: "100%"
   },
   currentEventsContainer: {
@@ -241,7 +240,7 @@ const styles = StyleSheet.create({
   headerCurrentEvents: {
     color: theme.colorFontLight,
     fontSize: 20,
-    marginLeft: 14,
+    paddingHorizontal: 14,
     marginVertical: 6
   },
   upcomingEventsCenterContainer: {
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
     marginHorizontal: "auto"
   },
   noEventsFoundText: {
-    fontSize: 14,
+    fontSize: 16,
     color: theme.colorFontLight,
     textAlign: "center"
   },
