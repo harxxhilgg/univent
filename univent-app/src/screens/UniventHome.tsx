@@ -3,12 +3,13 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
-import EventCard from '../components/EventCard';
-import CurrentEvents from '../components/CurrentEvents';
-import { API_URL } from '../utils/api';
+import { EventCard } from '../components/EventCard';
+import { CurrentEvents } from '../components/CurrentEvents';
+import { api, API_URL } from '../utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { ActivityIndicator, Searchbar, TouchableRipple } from 'react-native-paper';
 import axios from 'axios';
+import { useRef } from 'react';
 
 export interface Event {
   id: number;
@@ -24,6 +25,8 @@ export interface Event {
 };
 
 const UniventHome = ({ navigation }: { navigation: any }) => {
+  const prevUpcomingRef = useRef<Event[]>([]);
+  const prevCurrentRef = useRef<Event[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [currentEvents, setCurrentEvents] = useState<Event[]>([]);
   const [hasCurrentEvents, setHasCurrentEvents] = useState(false);
@@ -34,8 +37,8 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
-
   const [visibleCount, setVisibleCount] = useState(5);
+  const isRefreshingRef = useRef(false);
 
   useEffect(() => {
     setVisibleCount(5);
@@ -53,7 +56,6 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       const res = await axios.get(`${API_URL}/events/search`, {
         params: { q }
       });
-
       setUpcomingEvents(res.data || []);
       setShowCurrentEvents(false);
       setHasSearchData(res.data.length === 0);
@@ -90,25 +92,31 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
+  const areArraysEqual = (arr1: Event[], arr2: Event[]) => {
+    return JSON.stringify(arr1) === JSON.stringify(arr2);
+  };
+
   const fetchEvents = useCallback(async () => {
     try {
-      function fetchUpcomingEvents() {
-        return axios.get(`${API_URL}/events/getUpcomingEvents`);
+      const [upcomingRes, currentRes] = await Promise.all([
+        api.get('/events/getUpcomingEvents'),
+        api.get('/events/getCurrentEvents')
+      ]);
+
+      const newUpcomingData = upcomingRes.data || [];
+      const newCurrentData = currentRes.data || [];
+
+      if (!areArraysEqual(prevUpcomingRef.current, newUpcomingData)) {
+        prevUpcomingRef.current = newUpcomingData;
+        setUpcomingEvents(newUpcomingData);
       };
 
-      function fetchCurrentEvents() {
-        return axios.get(`${API_URL}/events/getCurrentEvents`);
+      if (!areArraysEqual(prevCurrentRef.current, newCurrentData)) {
+        prevCurrentRef.current = newCurrentData;
+        setCurrentEvents(newCurrentData);
+        setHasCurrentEvents(newCurrentData.length > 0);
       };
 
-      Promise.all([fetchUpcomingEvents(), fetchCurrentEvents()])
-        .then(([upcomingEventsResponse, currentEventsResponse]) => {
-          setUpcomingEvents(upcomingEventsResponse.data || []);
-          setCurrentEvents(currentEventsResponse.data || []);
-          setHasCurrentEvents(currentEventsResponse.data?.length > 0);
-        })
-        .catch(err => {
-          console.error('Error fetching events: ', err);
-        })
     } catch (err) {
       console.error("Error fetching events: ", err);
     }
@@ -119,9 +127,14 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   }, [fetchEvents]);
 
   const onRefresh = useCallback(() => {
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
     setHasSearchData(false);
     setRefreshing(true);
-    fetchEvents().finally(() => setRefreshing(false));
+    fetchEvents().finally(() => {
+      setRefreshing(false);
+      isRefreshingRef.current = false
+    });
   }, [fetchEvents]);
 
   if (!userContext) {
