@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
-import { API_URL } from "../utils/api";
+import { api } from "../utils/api";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { TextInput as TextInputPaper, Modal as PaperModal } from 'react-native-paper';
 import { useToast } from '../components/useToast';
@@ -46,6 +46,7 @@ const Settings = () => {
   const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [canDelete, setCanDelete] = useState(false);
   const { showSuccess, showError } = useToast();
@@ -80,29 +81,29 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    setDeleteLoading(true);
-
     setIsDeleteConfirmationVisible(false);
     try {
-      const res = await fetch(`${API_URL}/auth/deleteAccount`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
+      setDeleteLoading(true);
+      setDeleteAccountLoading(true);
+
+      const res = await api.delete('/auth/deleteAccount', {
+        data: { email: user.email }
       });
 
-      if (res.ok) {
+      if (res.status === 200) {
         await AsyncStorage.removeItem("authToken");
-        showSuccess(2000, 'Your account has been permanently deleted.');
+        showSuccess(3000, 'Your account has been permanently deleted.');
         navigation.replace('Auth');
       } else {
-        showError(2000, 'Account not deleted!');
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        showError(3000, 'Account not deleted!');
+      };
+
     } catch (err) {
-      // console.log("Account deletion failed: ", err);
+      console.error(err);
       showError(2000, 'Something went wrong!');
     } finally {
       setDeleteLoading(false);
+      setDeleteAccountLoading(false);
     }
   };
 
@@ -160,27 +161,25 @@ const Settings = () => {
 
   const handleEditAccount = async (data: FormData) => {
     try {
-      const res = await fetch(`${API_URL}/auth/updateProfile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': "application/json" },
-        body: JSON.stringify({
-          id: user.id,
-          username: data.username,
-          email: data.email
-        })
+
+      const response = await api.put('/auth/updateProfile', {
+        id: user.id,
+        username: data.username,
+        email: data.email
       });
 
-      if (res.ok) {
-        const updateUser = await res.json();
+      if (response.status === 200) {
+        const updateUser = response.data;
         setUser(updateUser);
-        showSuccess(2500, 'Profile Updated!');
+        showSuccess(3000, 'Profile Updated');
         handleCloseEditAccountModal();
       } else {
-        showError(2500, "Profile Update Failed!");
-      }
+        showError(3000, "Profile Update Failed");
+      };
+
     } catch (error) {
       console.error("Update error: ", error);
-      showError(2500, "Something went wrong!", "Please try again.");
+      showError(3000, "Something went wrong", "Please try again");
     }
   };
 
@@ -505,9 +504,13 @@ const Settings = () => {
                 onPress={handleDeleteAccount}
                 disabled={!canDelete}
               >
-                <CustomText style={styles.deleteAccountDeleteButtonText} bold>
-                  {canDelete ? 'Yes, Delete' : countdown}
-                </CustomText>
+                {deleteAccountLoading ? (
+                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                ) : (
+                  <CustomText style={styles.deleteAccountDeleteButtonText} bold>
+                    {canDelete ? 'Yes, Delete' : countdown}
+                  </CustomText>
+                )}
               </TouchableOpacity>
             </View>
           </PaperModal>
