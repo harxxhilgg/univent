@@ -1,4 +1,4 @@
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, TouchableOpacity, Text } from 'react-native';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
@@ -40,6 +40,8 @@ const Signup = () => {
   const navigation = useNavigation<AuthScreenNavigationProp>();
   const { showError, showSuccess } = useToast();
   const [secureTextEntry, setsecureTextEntry] = useState(true);
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const {
     control,
@@ -51,13 +53,27 @@ const Signup = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      setSignupLoading(true);
       const response = await api.post("/auth/signup", data);
       console.log(`User created: ${response.data.username}`);
-      showSuccess(2500, 'Account created!', 'Please log in');
+      showSuccess(3000, 'Account created', 'Please log in');
       navigation.navigate('Auth');
     } catch (error: any) {
       console.error(error);
-      showError(2500, 'Signup Failed', error.response?.data?.message || "Please try again");
+      showError(3000, 'Signup Failed', error.response?.data?.message || "Please try again");
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  const redirectLogin = () => {
+    try {
+      setLoginLoading(true);
+      navigation.replace('Auth')
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoginLoading(false);
     };
   };
 
@@ -181,25 +197,37 @@ const Signup = () => {
               )}
             />
           </View>
-          <TouchableOpacity style={styles.SignupBtn} onPress={handleSubmit(onSubmit)}>
+          <TouchableOpacity
+            style={styles.SignupBtn}
+            onPress={handleSubmit(onSubmit)}
+            disabled={signupLoading}
+          >
             <LinearGradient
               colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
               start={{ x: 0, y: 1 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientBackground}
             >
-              <CustomText style={styles.SignupBtnText} semibold>Sign up</CustomText>
+              {signupLoading ? (
+                <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+              ) : (
+                <CustomText style={styles.SignupBtnText} semibold>Sign up</CustomText>
+              )}
             </LinearGradient>
           </TouchableOpacity>
           <View style={styles.oldAccContainer}>
-            <TouchableOpacity onPress={() => navigation.replace('Auth')}>
+            <TouchableOpacity onPress={redirectLogin} disabled={loginLoading}>
               <LinearGradient
                 colors={['rgb(250, 250, 250)', 'rgb(210, 238, 255)', 'rgb(250, 250, 250)']}
                 start={{ x: 0, y: 1 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientBackground}
               >
-                <CustomText style={styles.LoginBtnText} semibold>Log in</CustomText>
+                {loginLoading ? (
+                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                ) : (
+                  <CustomText style={styles.LoginBtnText} semibold>Log in</CustomText>
+                )}
               </LinearGradient>
             </TouchableOpacity>
             <CustomText style={styles.alreadyUserText}>Already a user?</CustomText>
@@ -268,6 +296,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
     alignItems: "center",
+  },
+  activityIndicator: {
+    paddingVertical: 3
   },
   SignupBtnText: {
     color: theme.colorFontDark,
