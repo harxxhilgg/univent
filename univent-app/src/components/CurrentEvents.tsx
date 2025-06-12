@@ -1,7 +1,7 @@
 import { View, Image, StyleSheet } from 'react-native';
 import { theme } from '../../theme';
 import CustomText from './CustomText';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -32,7 +32,7 @@ const formatTime = (timeString: string, eventDate: string) => {
   });
 };
 
-export default function CurrentEvents({ event }: CurrentEventsProps) {
+const CurrentEventsComponent = ({ event }: CurrentEventsProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const formattedTime = formatTime(event.event_time, event.event_date);
 
@@ -78,7 +78,13 @@ export default function CurrentEvents({ event }: CurrentEventsProps) {
       </View>
     </View>
   );
-}
+};
+
+function areEventsEqual(prev: CurrentEventsProps, next: CurrentEventsProps) {
+  return JSON.stringify(prev.event) === JSON.stringify(next.event);
+};
+
+export const CurrentEvents = React.memo(CurrentEventsComponent, areEventsEqual);
 
 const styles = StyleSheet.create({
   card: {
