@@ -270,14 +270,14 @@ export const forgotPassword = async (req: Request, res: Response) => {
       <div style="
         background-color: #fff;
         padding: 20px;
-        border-radius: 20px;
+        border-radius: 10px;
         border: 1px solid #ddd;
         display: flex;
         width: 60%;
         justify-content: center;
         margin: 10px auto;
       ">
-        <p style="font-size: 15px; margin: 10px 0">
+        <p style="font-size: 16px; margin: 5px 0">
           <strong>Username:</strong> ${username}<br>
           <strong>Password:</strong> ${plain_password}
         </p>
