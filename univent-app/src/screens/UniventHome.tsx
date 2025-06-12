@@ -29,6 +29,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   const prevCurrentRef = useRef<Event[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [currentEvents, setCurrentEvents] = useState<Event[]>([]);
+  const [fullUpcomingEvents, setFullUpcomingEvents] = useState<Event[]>([]);
   const [hasCurrentEvents, setHasCurrentEvents] = useState(false);
   const [hasSearchData, setHasSearchData] = useState(false);
   const [showCurrentEvents, setShowCurrentEvents] = useState(true);
@@ -70,7 +71,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
     setQuery('');
     setSearchActive(false);
     setShowCurrentEvents(true);
-    fetchEvents();
+    setUpcomingEvents(fullUpcomingEvents);
     Keyboard.dismiss();
   };
 
@@ -109,6 +110,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       if (!areArraysEqual(prevUpcomingRef.current, newUpcomingData)) {
         prevUpcomingRef.current = newUpcomingData;
         setUpcomingEvents(newUpcomingData);
+        setFullUpcomingEvents(newUpcomingData);
       };
 
       if (!areArraysEqual(prevCurrentRef.current, newCurrentData)) {
