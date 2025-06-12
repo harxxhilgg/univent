@@ -5,7 +5,7 @@ import { theme } from '../../theme';
 import { Event } from './UniventHome';
 import { API_URL } from "../utils/api";
 import { UserContext } from '../context/UserContext';
-import EventCard from '../components/EventCard';
+import { EventCard } from '../components/EventCard';
 import CustomText from '../components/CustomText';
 import { TouchableRipple } from 'react-native-paper';
 import axios from 'axios';
@@ -74,7 +74,7 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
                 onPress={() => navigation.navigate('EventDetails', { event })}
                 rippleColor={theme.colorGray}
               >
-                <EventCard event={event} hideEndedEvents={true} />
+                <EventCard event={event} />
               </TouchableRipple>
             ))
           ) : (
