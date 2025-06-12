@@ -30,6 +30,7 @@ const AuthScreen = () => {
   const [secureTextEntry, setsecureTextEntry] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [GuestLoading, setGuestLoading] = useState(false);
+  const [createNewAccountLoading, setCreateNewAccountLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
   const [failedAttempt, setFailedAttempt] = useState(false);
 
@@ -49,7 +50,6 @@ const AuthScreen = () => {
 
     try {
       const response = await api.post("/auth/login", { email, password });
-
       const { token } = response.data;
 
       // Store token and decode user data
@@ -114,6 +114,17 @@ const AuthScreen = () => {
       showError(2500, "Something is wrong with the app", "Please restart the app");
     } finally {
       setGuestLoading(false);
+    };
+  };
+
+  const redirectNewAccount = () => {
+    try {
+      setCreateNewAccountLoading(true);
+      navigation.replace('Signup');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCreateNewAccountLoading(false);
     };
   };
 
@@ -209,19 +220,18 @@ const AuthScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.newAccContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.replace('Signup');
-                setGuestLoading(true);
-              }}
-            >
+            <TouchableOpacity onPress={redirectNewAccount}>
               <LinearGradient
                 colors={['rgb(250, 250, 250)', 'rgb(210, 238, 255)', 'rgb(250, 250, 250)']}
                 start={{ x: 0, y: 1 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientBackground}
               >
-                <CustomText style={styles.SignupBtnText} semibold>Create new Account</CustomText>
+                {createNewAccountLoading ? (
+                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                ) : (
+                  <CustomText style={styles.SignupBtnText} semibold>Create new Account</CustomText>
+                )}
               </LinearGradient>
             </TouchableOpacity>
             <CustomText style={styles.alreadyUserText}>New User?</CustomText>
