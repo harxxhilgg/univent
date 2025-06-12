@@ -66,7 +66,7 @@ export const formatTime = (timeString: string) => {
   };
 };
 
-export default function EventCard({ event }: EventCardProps) {
+const EventCardComponent = ({ event }: EventCardProps) => {
   const [timeUntil, setTimeUntil] = useState('');
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
@@ -129,7 +129,13 @@ export default function EventCard({ event }: EventCardProps) {
       </View>
     </View>
   );
-}
+};
+
+function areEventsEqual(prev: EventCardProps, next: EventCardProps) {
+  return JSON.stringify(prev.event) === JSON.stringify(next.event);
+};
+
+export const EventCard = React.memo(EventCardComponent, areEventsEqual);
 
 const styles = StyleSheet.create({
   card: {
