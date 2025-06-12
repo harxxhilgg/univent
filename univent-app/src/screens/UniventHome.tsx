@@ -62,8 +62,9 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
       setHasSearchData(res.data.length === 0);
     } catch (err: any) {
       console.error('Search error: ', err.message);
-    }
-    setLoading(false);
+    } finally {
+      setLoading(false);
+    };
   };
 
   const handleClearSearch = () => {
@@ -83,15 +84,14 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
         searchEvents(trimmedQuery);
       } else {
         setHasSearchData(false);
-        fetchEvents();
         setShowCurrentEvents(true);
         setSearchActive(false);
+        setUpcomingEvents(fullUpcomingEvents);
       }
     }, 500); // delay 0.5 sec
 
     return () => clearTimeout(delayDebounce);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+  }, [query, fullUpcomingEvents]);
 
   const areArraysEqual = (arr1: Event[], arr2: Event[]) => {
     return JSON.stringify(arr1) === JSON.stringify(arr2);
