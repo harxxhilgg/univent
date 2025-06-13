@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Express } from "express";
 import pool from "../config/db";
 import { uploadToImgBB } from "../utils/imageUpload";
 
