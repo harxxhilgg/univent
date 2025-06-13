@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import "./config/db";
 import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoutes";
+import defaultRoutes from "./routes/defaultRoutes";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.get("/api", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/default", defaultRoutes);
 
 app.listen(PORT, () => {
   console.log("Server running on port:", PORT);
