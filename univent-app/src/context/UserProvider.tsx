@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useToast } from "../components/useToast";
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { api } from "../utils/api";
 
 interface ProviderProps {
   children?: React.ReactNode;
@@ -80,8 +83,56 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
     }
 
     checkAuth().catch((err) => console.error('check auth failed: ', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoading, showInfo, showSuccess]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const registerForPushNotification = async () => {
+      try {
+        if (!Device.isDevice) {
+          console.log('Push notifications only work on physical devices');
+          return;
+        }
+
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+
+        if (finalStatus !== 'granted') {
+          console.log('Notification permission not granted');
+          return;
+        }
+
+        const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
+
+        console.log("Expo push token: ", expoPushToken);
+
+        const token = await AsyncStorage.getItem("authToken");
+
+        if (!token) return;
+
+        await api.post("/default/notification-push-token",
+          { expoPushToken },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Push token registered with server: ", expoPushToken);
+      } catch (err) {
+        console.error("Error registering push token: ", err);
+      };
+    };
+
+    registerForPushNotification();
+  }, [user]);
 
   return (
     <UserContext.Provider value={{ user, setUser, isLoading, initialRoute }}>
