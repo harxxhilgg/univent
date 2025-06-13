@@ -16,6 +16,7 @@ import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
 import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
+import useInternetMonitor from './src/components/useInternetMonitor';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -30,6 +31,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 function AppContent() {
   const { isLoading, initialRoute } = useContext(UserContext);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const isOnline = useInternetMonitor();
 
   useEffect(() => {
     async function loadFonts() {
@@ -57,7 +59,15 @@ function AppContent() {
         <ActivityIndicator size="large" color={theme.colorFontDark} />
       </View>
     );
-  }
+  };
+
+  if (!isOnline) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colorFontDark} />
+      </View>
+    );
+  };
 
   return (
     <GestureHandlerRootView style={styles.gestureHandlerRootView}>
