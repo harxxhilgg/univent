@@ -36,7 +36,7 @@
     "expo-image": "^2.0.7",
     "expo-image-picker": "~16.0.6",
     "expo-linear-gradient": "~14.0.2",
-    "expo-modules-autolinking": "^2.0.7",
+    "expo-modules-autolinking": "~2.0.0",
     "expo-notifications": "^0.31.3",
     "expo-splash-screen": "^0.29.24",
     "expo-status-bar": "~2.0.1",
@@ -60,7 +60,9 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "toggle-switch-react-native": "^3.3.0",
-    "zod": "^3.24.3"
+    "zod": "^3.24.3",
+    "expo-application": "~6.0.2",
+    "expo-modules-core": "~2.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
