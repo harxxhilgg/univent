@@ -53,7 +53,9 @@ export default {
           resizeMode: "contain",
           backgroundColor: "#080b12"
         }
-      ]
+      ],
+      "expo-dev-client",
+      "expo-notifications"
     ],
     extra: {
       API_URL: process.env.API_URL,
