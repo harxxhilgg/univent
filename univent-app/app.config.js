@@ -53,7 +53,9 @@ export default {
           resizeMode: "contain",
           backgroundColor: "#080b12"
         }
-      ]
+      ],
+      "expo-modules-autolinking",
+      "expo-application"
     ],
     extra: {
       API_URL: process.env.API_URL,
