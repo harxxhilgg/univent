@@ -31,64 +31,44 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState<'Auth' | 'Main'>('Auth');
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const { showSuccess, showInfo } = useToast();
 
   useEffect(() => {
-    async function checkAuth() {
-      const timeout = setTimeout(() => {
-        if (isLoading) {
-          showInfo(2500, "Authentication timed out!", "Please try again.");
-          setInitialRoute('Auth');
-          setIsLoading(false);
-        }
-      }, 5000);
-
+    async function initializeApp() {
       try {
-        const authToken = await AsyncStorage.getItem('authToken');
+        const token = await AsyncStorage.getItem("authToken");
+        if (token) {
+          const decodedPayload = decodeJwtPayload(token);
+          if (decodedPayload) {
+            setUser(decodedPayload);
+            setInitialRoute('Main');
 
-        if (authToken) {
-          const decoded = decodeJwtPayload(authToken);
-
-          if (decoded && decoded.userId && decoded.username && decoded.email) {
-            const currentTime = Math.floor(Date.now() / 1000);
-
-            if (decoded.exp && decoded.exp < currentTime) {
-              await AsyncStorage.removeItem('authToken');
-              showInfo(3000, 'Session Expired!', 'Please login again.');
-              setInitialRoute('Auth');
-            } else {
-              setUser({
-                id: decoded.userId,
-                username: decoded.username,
-                email: decoded.email
-              });
-              // console.log(`session found, token expires in ${currentTime}/${decoded.exp}`); // ! DEBUG ONLY
-              showSuccess(1500, 'Welcome back!');
-              setInitialRoute('Main');
+            if (!hasShownWelcome) {
+              setHasShownWelcome(true);
+              if (decodedPayload.email === "user.guest@univent.com") {
+                showInfo(3000, 'Welcome to Univent', 'You are using a guest account');
+              } else {
+                showSuccess(3000, 'Welcome back', `Hello, ${decodedPayload.username}`);
+              }
             }
+
+            await registerForPushNotifications(token);
           } else {
-            await AsyncStorage.removeItem('authToken');
             setInitialRoute('Auth');
           }
         } else {
           setInitialRoute('Auth');
         }
-      } catch (err) {
-        console.error('Error checking auth: ', err);
+      } catch (error) {
+        console.error('Error initializing app:', error);
         setInitialRoute('Auth');
       } finally {
-        clearTimeout(timeout);
         setIsLoading(false);
       }
     }
 
-    checkAuth().catch((err) => console.error('check auth failed: ', err));
-  }, [isLoading, showInfo, showSuccess]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const registerForPushNotification = async () => {
+    async function registerForPushNotifications(token: string) {
       try {
         if (!Device.isDevice) {
           console.log('Push notifications only work on physical devices');
@@ -110,12 +90,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
         const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
 
-        console.log("Expo push token: ", expoPushToken);
-
-        const token = await AsyncStorage.getItem("authToken");
-
-        if (!token) return;
-
         await api.post("/default/notification-push-token",
           { expoPushToken },
           {
@@ -125,14 +99,15 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
           }
         );
 
-        console.log("Push token registered with server: ", expoPushToken);
+        console.log("Push token registered with server");
       } catch (err) {
         console.error("Error registering push token: ", err);
-      };
-    };
+      }
+    }
 
-    registerForPushNotification();
-  }, [user]);
+    initializeApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <UserContext.Provider value={{ user, setUser, isLoading, initialRoute }}>
