@@ -18,7 +18,6 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function BottomTabNavigator() {
   const { width } = Dimensions.get('window');
-
   const translateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -50,8 +49,13 @@ export default function BottomTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: {
+        sceneStyle: {
           backgroundColor: theme.colorBackgroundDark
+        },
+        headerStyle: {
+          backgroundColor: theme.colorBackgroundDark,
+          elevation: 0,
+          shadowOpacity: 0
         },
         headerTintColor: theme.colorTabBarTint,
         tabBarShowLabel: false,
@@ -67,7 +71,9 @@ export default function BottomTabNavigator() {
           borderRadius: 98,
           overflow: "hidden",
           borderColor: "transparent",
-          boxShadow: "0px 0px 60px #000000"
+          boxShadow: "0px 0px 60px #000000",
+          elevation: 0,
+          shadowOpacity: 0
         },
         tabBarItemStyle: {
           height: 64,
@@ -76,6 +82,7 @@ export default function BottomTabNavigator() {
         },
         tabBarActiveTintColor: theme.colorTabBarTint,
         tabBarInactiveTintColor: theme.colorTintInactive,
+        animation: "shift",
       }}
     >
 
@@ -93,7 +100,7 @@ export default function BottomTabNavigator() {
           },
           tabBarIcon: ({ color, size }) => (
             <Octicons name="home" size={size} color={color} />
-          ),
+          )
         }}
       />
 
@@ -149,7 +156,7 @@ export default function BottomTabNavigator() {
           },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bulb-outline" size={(size + 1)} color={color} />
-          ),
+          )
         }}
       />
 
@@ -168,7 +175,7 @@ export default function BottomTabNavigator() {
           },
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="user-o" size={size} color={color} />
-          ),
+          )
         }}
       />
     </Tab.Navigator>
