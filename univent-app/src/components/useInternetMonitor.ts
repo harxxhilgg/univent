@@ -4,28 +4,33 @@ import { useEffect, useRef, useState } from "react";
 
 const useInternetMonitor = () => {
   const toastShowRef = useRef(false);
+  const hasShownRestoredRef = useRef(false);
   const [isConnected, setIsConnected] = useState(true);
-  const { showError, showSuccess }: any = useToast;
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const online = !!state.isConnected && !!state.isInternetReachable;
 
-      setIsConnected(online);
+      if (isConnected !== online) {
+        setIsConnected(online);
 
-      if (!online && !toastShowRef.current) {
-        toastShowRef.current = true;
-        showError(3000, "No internet connection");
+        if (!online && !toastShowRef.current) {
+          toastShowRef.current = true;
+          hasShownRestoredRef.current = false;
+          showError(10000, "No internet connection");
+        }
+
+        if (online && toastShowRef.current && !hasShownRestoredRef.current) {
+          toastShowRef.current = false;
+          hasShownRestoredRef.current = true;
+          showSuccess(2500, "Your internet connection has been restored");
+        }
       }
-
-      if (online) {
-        toastShowRef.current = false;
-        showSuccess(3000, "Your internet connection has been restored");
-      }
-
-      return () => unsubscribe();
     });
-  }, [showError, showSuccess]);
+
+    return () => unsubscribe();
+  }, [showError, showSuccess, isConnected]);
 
   return isConnected;
 };
