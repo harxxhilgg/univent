@@ -1,4 +1,4 @@
-import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, BackHandler, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomTabNavigator from './BottomTabNavigator';
 import { UserProvider } from './src/context/UserProvider';
@@ -17,6 +17,7 @@ import { toastConfig } from './src/configs/toastConfig';
 import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
 import useInternetMonitor from './src/components/useInternetMonitor';
+import CustomText from './src/components/CustomText';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -31,10 +32,15 @@ const Stack = createStackNavigator<RootStackParamList>();
 function AppContent() {
   const { isLoading, initialRoute } = useContext(UserContext);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [showDelayedMessage, setShowDelayedMessage] = useState(false);
+  const [showCloseButton, setShowCloseButton] = useState(false);
   const isOnline = useInternetMonitor();
 
   useEffect(() => {
-    async function loadFonts() {
+    let messageTimer: NodeJS.Timeout;
+    let closeButtonTimer: NodeJS.Timeout;
+
+    const loadFonts = async () => {
       try {
         await Font.loadAsync({
           "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
@@ -47,27 +53,57 @@ function AppContent() {
         setFontsLoaded(true);
       } catch (error) {
         console.error('Font loading error:', error);
-      }
+      };
+    };
+
+    if (isOnline) {
+      setShowDelayedMessage(false);
+      setShowCloseButton(false);
+    } else {
+      messageTimer = setTimeout(() => setShowDelayedMessage(true), 10000);
+      closeButtonTimer = setTimeout(() => setShowCloseButton(true), 10000);
     }
 
     loadFonts();
-  }, []);
+
+    return () => {
+      if (messageTimer) clearTimeout(messageTimer);
+      if (closeButtonTimer) clearTimeout(closeButtonTimer);
+    };
+  }, [isOnline]);
+
+  const handleClose = () => {
+    BackHandler.exitApp();
+  };
 
   if (!fontsLoaded || isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colorFontDark} />
+        <ActivityIndicator size="large" color={theme.colorFontLight} />
       </View>
     );
   };
 
   if (!isOnline) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colorFontDark} />
+      <View style={styles.offlineContainer}>
+        <ActivityIndicator size="large" color={theme.colorFontLight} />
+        <CustomText style={styles.offlineTitle} bold>No Internet Connection</CustomText>
+
+        {showDelayedMessage && (
+          <CustomText style={styles.delayedMessage}>
+            Please check your internet connection and try again. Make sure you're connected to Wi-Fi or mobile data.
+          </CustomText>
+        )}
+
+        {showCloseButton && (
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <CustomText style={styles.closeButtonText} bold>Close Application</CustomText>
+          </TouchableOpacity>
+        )}
       </View>
     );
-  };
+  }
 
   return (
     <GestureHandlerRootView style={styles.gestureHandlerRootView}>
@@ -75,7 +111,12 @@ function AppContent() {
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName={initialRoute}
-          screenOptions={{ headerShown: false }}
+          screenOptions={{
+            headerShown: false,
+            cardStyle: {
+              backgroundColor: theme.colorBackgroundDark
+            }
+          }}
         >
           <Stack.Screen
             name="Auth"
@@ -149,6 +190,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  offlineContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    width: "90%",
+    maxWidth: 500,
+    marginHorizontal: "auto"
+  },
+  offlineTitle: {
+    fontSize: 18,
+    color: theme.colorFontLight,
+    marginVertical: 20,
+    textAlign: "center"
+  },
+  delayedMessage: {
+    color: theme.colorFontLight,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20
+  },
+  closeButton: {
+    paddingHorizontal: 30,
+    paddingVertical: 6,
+    backgroundColor: theme.colorWhite,
+    borderRadius: 10,
+    marginTop: 10
+  },
+  closeButtonText: {
+    color: theme.colorFontDark,
+    fontSize: 16
+  }
 });
 
 export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList, "Auth">;
