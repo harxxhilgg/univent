@@ -18,7 +18,6 @@ const useInternetMonitor = () => {
         if (!online && !toastShowRef.current) {
           toastShowRef.current = true;
           hasShownRestoredRef.current = false;
-          showError(10000, "No internet connection");
         }
 
         if (online && toastShowRef.current && !hasShownRestoredRef.current) {
