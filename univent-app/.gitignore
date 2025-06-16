@@ -37,3 +37,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# firebase
+google-services.json
+univent-app-firebase-adminsdk-fbsvc-52de75750d.json
