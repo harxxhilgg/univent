@@ -32,14 +32,9 @@ const Stack = createStackNavigator<RootStackParamList>();
 function AppContent() {
   const { isLoading, initialRoute } = useContext(UserContext);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [showDelayedMessage, setShowDelayedMessage] = useState(false);
-  const [showCloseButton, setShowCloseButton] = useState(false);
   const isOnline = useInternetMonitor();
 
   useEffect(() => {
-    let messageTimer: NodeJS.Timeout;
-    let closeButtonTimer: NodeJS.Timeout;
-
     const loadFonts = async () => {
       try {
         await Font.loadAsync({
@@ -56,20 +51,7 @@ function AppContent() {
       };
     };
 
-    if (isOnline) {
-      setShowDelayedMessage(false);
-      setShowCloseButton(false);
-    } else {
-      messageTimer = setTimeout(() => setShowDelayedMessage(true), 10000);
-      closeButtonTimer = setTimeout(() => setShowCloseButton(true), 10000);
-    }
-
     loadFonts();
-
-    return () => {
-      if (messageTimer) clearTimeout(messageTimer);
-      if (closeButtonTimer) clearTimeout(closeButtonTimer);
-    };
   }, [isOnline]);
 
   const handleClose = () => {
@@ -90,17 +72,13 @@ function AppContent() {
         <ActivityIndicator size="large" color={theme.colorFontLight} />
         <CustomText style={styles.offlineTitle} bold>No Internet Connection</CustomText>
 
-        {showDelayedMessage && (
-          <CustomText style={styles.delayedMessage}>
-            Please check your internet connection and try again. Make sure you're connected to Wi-Fi or mobile data.
-          </CustomText>
-        )}
+        <CustomText style={styles.delayedMessage}>
+          Please check your internet connection and try again. Make sure you're connected to Wi-Fi or mobile data.
+        </CustomText>
 
-        {showCloseButton && (
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <CustomText style={styles.closeButtonText} bold>Close Application</CustomText>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <CustomText style={styles.closeButtonText} bold>Close Application</CustomText>
+        </TouchableOpacity>
       </View>
     );
   }
