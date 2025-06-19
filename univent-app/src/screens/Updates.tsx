@@ -9,6 +9,7 @@ import { API_URL } from "../utils/api";
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
+import { checkAndScheduleNotifications, getScheduledNotifications, scheduleTestNotifications } from '../utils/notificationScheduler';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -46,6 +47,9 @@ const Updates = () => {
 
       if (Array.isArray(res.data) && res.data.length > 0) {
         setEvent(res.data[0]);
+
+        console.log('Latest evnet updated, scheduling notification...');
+        await checkAndScheduleNotifications();
       } else {
         setEvent(null);
       }
@@ -69,6 +73,29 @@ const Updates = () => {
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.linear);
     setExpanded(!expanded);
+  };
+
+
+  const handleTestNotifications = async () => {
+    try {
+      await scheduleTestNotifications();
+      console.log('Test notifications scheduled!');
+    } catch (error) {
+      console.error('Error scheduling test notifications: ', error);
+    };
+  };
+
+  const handleCheckScheduled = async () => {
+    await getScheduledNotifications();
+  };
+
+  const handleForceSchedule = async () => {
+    try {
+      await checkAndScheduleNotifications();
+      console.log('Force scheduled notifications check completed');
+    } catch (error) {
+      console.error('Error force scheduling: ', error);
+    };
   };
 
   return (
