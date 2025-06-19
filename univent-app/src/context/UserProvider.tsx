@@ -5,6 +5,7 @@ import { useToast } from "../components/useToast";
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { api } from "../utils/api";
+import { checkAndScheduleNotifications, cleanupOldNotifications, initializeBackgroundTask } from "../utils/notificationScheduler";
 
 interface ProviderProps {
   children?: React.ReactNode;
@@ -53,7 +54,12 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
               }
             }
 
-            await registerForPushNotifications(token);
+            await registerForPushNotifications(token, decodedPayload);
+
+            await initializeBackgroundTask();
+            await cleanupOldNotifications();
+            await checkAndScheduleNotifications();
+
           } else {
             setInitialRoute('Auth');
           }
@@ -68,7 +74,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
       }
     }
 
-    async function registerForPushNotifications(token: string) {
+    async function registerForPushNotifications(token: string, userData?: any) {
       try {
         if (!Device.isDevice) {
           console.log('Push notifications only work on physical devices');
@@ -90,16 +96,26 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
         const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
 
-        await api.post("/default/notification-push-token",
-          { expoPushToken },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        if (expoPushToken) {
+          console.log('Push token obtained: ', expoPushToken);
 
-        console.log("Push token registered with server");
+          const userEmail = userData?.email || user?.email;
+
+          if (!userEmail) {
+            console.error('User email not found - cannot register push token');
+            return;
+          }
+
+          const response = await api.post("/default/notification-push-token", {
+            expoPushToken,
+            userEmail
+          });
+          if (response.status === 200) {
+            console.log('Push token registered with server: ', response.data);
+          } else {
+            console.error('Failed to register push token: ', response.data);
+          }
+        }
       } catch (err) {
         console.error("Error registering push token: ", err);
       }
