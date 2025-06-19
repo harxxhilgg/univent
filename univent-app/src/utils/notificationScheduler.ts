@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
-import * as BackgroundTask from "expo-background-task";
+import * as BackgroundFetch from "expo-background-fetch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
 
@@ -12,10 +12,10 @@ TaskManager.defineTask(BACKGROUND_TASK_NAME, async () => {
 
   try {
     await checkAndScheduleNotifications();
-    return BackgroundTask.BackgroundTaskResult.Success;
+    return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (error) {
     console.error("Background task error: ", error);
-    return BackgroundTask.BackgroundTaskResult.Failed;
+    return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
 
@@ -180,27 +180,18 @@ const scheduleEventNotifications = async (
 
 export const initializeBackgroundTask = async () => {
   try {
-    // Check if background fetch is available
-    const status = await BackgroundTask.getStatusAsync();
-
-    if (
-      status === BackgroundTask.BackgroundTaskStatus.Restricted ||
-      status !== BackgroundTask.BackgroundTaskStatus.Available
-    ) {
-      console.log("❌ Background fetch is restricted or denied");
-      return;
-    }
-
-    // Register the task
     const isRegistered =
       await TaskManager.isTaskRegisteredAsync(BACKGROUND_TASK_NAME);
-    if (!isRegistered) {
-      await BackgroundTask.registerTaskAsync(BACKGROUND_TASK_NAME, {
-        minimumInterval: 5 * 60 * 1000, // 5 minutes in milliseconds
-      });
-      console.log("✅ Background fetch task registered");
+    if (isRegistered) {
+      console.log("Background task already registered");
     } else {
-      console.log("✅ Background fetch task already registered");
+      console.log("Registering background task...");
+      await BackgroundFetch.registerTaskAsync(BACKGROUND_TASK_NAME, {
+        minimumInterval: 15 * 60,
+        stopOnTerminate: false,
+        startOnBoot: true,
+      });
+      console.log("Background task registered successfully");
     }
   } catch (error) {
     console.error("❌ Failed to register background fetch:", error);
