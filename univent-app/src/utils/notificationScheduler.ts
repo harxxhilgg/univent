@@ -1,26 +1,29 @@
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
-import * as BackgroundFetch from "expo-background-fetch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
+import { AppState } from "react-native";
 
 const BACKGROUND_TASK_NAME = "background-notification-check";
 const SCHEDULED_NOTIFICATIONS_KEY = "scheduled_notifications";
+const LAST_CHECK_KEY = "last_notification_check";
 
 TaskManager.defineTask(BACKGROUND_TASK_NAME, async () => {
   console.log("Background task running...");
 
   try {
     await checkAndScheduleNotifications();
-    return BackgroundFetch.BackgroundFetchResult.NewData;
+    return { success: true };
   } catch (error) {
     console.error("Background task error: ", error);
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+    return { success: false };
   }
 });
 
 export const checkAndScheduleNotifications = async () => {
   try {
+    await AsyncStorage.setItem(LAST_CHECK_KEY, new Date().toISOString());
+
     const response = await api.get("/events/getLatestEvent");
     const events = response.data;
 
@@ -59,7 +62,6 @@ const scheduleEventNotifications = async (
       SCHEDULED_NOTIFICATIONS_KEY
     );
     const scheduled = scheduledStr ? JSON.parse(scheduledStr) : {};
-
     const eventKey = `event_${event.id}`;
 
     if (scheduled[eventKey]) {
@@ -180,21 +182,20 @@ const scheduleEventNotifications = async (
 
 export const initializeBackgroundTask = async () => {
   try {
-    const isRegistered =
-      await TaskManager.isTaskRegisteredAsync(BACKGROUND_TASK_NAME);
-    if (isRegistered) {
-      console.log("Background task already registered");
-    } else {
-      console.log("Registering background task...");
-      await BackgroundFetch.registerTaskAsync(BACKGROUND_TASK_NAME, {
-        minimumInterval: 15 * 60,
-        stopOnTerminate: false,
-        startOnBoot: true,
-      });
-      console.log("Background task registered successfully");
-    }
+    console.log("Initializing notification system...");
+
+    AppState.addEventListener("change", async (nextAppState) => {
+      if (nextAppState === "active") {
+        console.log("App became available, checking for notifications...");
+        await checkAndScheduleNotifications();
+      }
+    });
+
+    await checkAndScheduleNotifications();
+
+    console.log("Notification system intialized successfully");
   } catch (error) {
-    console.error("❌ Failed to register background fetch:", error);
+    console.error("Failed to register background fetch:", error);
   }
 };
 
@@ -207,20 +208,16 @@ export const cleanupOldNotifications = async () => {
 
     const scheduled = JSON.parse(scheduledStr);
     const now = new Date();
-    const updatedScheduled = {};
+    const updatedScheduled: { [key: string]: any } = {};
 
     for (const [eventKey, data] of Object.entries(scheduled)) {
       const eventData = data as any;
       const eventDateTime = new Date(eventData.eventDateTime);
-
-      // Keep notifications if event hasn't finished yet (give 1 hour buffer)
       const eventEndBuffer = new Date(eventDateTime.getTime() + 60 * 60 * 1000);
 
       if (eventEndBuffer > now) {
-        // @ts-ignore
         updatedScheduled[eventKey] = eventData;
       } else {
-        // Cancel and remove expired notifications
         for (const notif of eventData.notifications) {
           try {
             await Notifications.cancelScheduledNotificationAsync(notif.id);
@@ -246,10 +243,8 @@ export const cleanupOldNotifications = async () => {
 
 export const scheduleTestNotifications = async () => {
   const now = new Date();
-
-  // Test 10-second reminder
-  const testReminderTime = new Date(now.getTime() + 10000); // 10 seconds
-  const testStartTime = new Date(now.getTime() + 20000); // 20 seconds
+  const testReminderTime = new Date(now.getTime() + 10000);
+  const testStartTime = new Date(now.getTime() + 20000);
 
   const reminderId = await Notifications.scheduleNotificationAsync({
     content: {
@@ -301,7 +296,7 @@ export const getScheduledNotifications = async () => {
 
     return scheduled;
   } catch (error) {
-    console.error("❌ Error getting scheduled notifications:", error);
+    console.error("Error getting scheduled notifications:", error);
     return {};
   }
 };
