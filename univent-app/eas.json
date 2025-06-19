@@ -1,8 +1,12 @@
 {
+  "cli": {
+    "appVersionSource": "remote"
+  },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
         "APP_ENV": "dev"
       },
@@ -12,6 +16,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
         "APP_ENV": "prod"
       },
@@ -21,6 +26,7 @@
     },
     "production": {
       "distribution": "store",
+      "autoIncrement": true,
       "env": {
         "APP_ENV": "prod"
       },
