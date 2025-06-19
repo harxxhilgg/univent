@@ -38,8 +38,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       package: "com.univent.app",
-      jsEngine: "hermes",
-      googleServicesFile: "./google-services.json"
+      jsEngine: "hermes"
     },
     web: {
       favicon: "./assets/icons/favicon-32x32.png"
