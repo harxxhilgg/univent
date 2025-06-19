@@ -10,7 +10,7 @@ import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import EventDetails from './src/screens/EventDetails';
 import ForgottenPassword from './src/screens/ForgottenPassword';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
@@ -18,6 +18,9 @@ import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
 import useInternetMonitor from './src/components/useInternetMonitor';
 import CustomText from './src/components/CustomText';
+import * as Notifications from 'expo-notifications';
+import { useToast } from './src/components/useToast';
+import Updates from './src/screens/Updates';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -25,17 +28,31 @@ export type RootStackParamList = {
   Main: undefined;
   EventDetails: { event: Event };
   ForgottenPassword: { email: string };
+  Updates: undefined
 }
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false
+  }),
+});
+
 function AppContent() {
-  const { isLoading, initialRoute } = useContext(UserContext);
+  const { initialRoute } = useContext(UserContext);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const isOnline = useInternetMonitor();
+  const navigationRef = useRef<any>();
+  const { showInfo } = useToast();
 
   useEffect(() => {
-    const loadFonts = async () => {
+    let notificationListener: any;
+    let responseListener: any;
+
+    const initializeApp = async () => {
       try {
         await Font.loadAsync({
           "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
@@ -46,22 +63,88 @@ function AppContent() {
           "DreamAvenue": require("./assets/fonts/DreamAvenue.ttf")
         });
         setFontsLoaded(true);
+
+        notificationListener = Notifications.addNotificationReceivedListener(notification => {
+          console.log('Notification Received: ', notification);
+
+          // @ts-ignore
+          showInfo(4000, notification.request.content.title || "New Notification", notification.request.content.body);
+        });
+
+        responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+          console.log(' Notification tapped: ', response);
+
+          try {
+            const data = response.notification.request.content.data;
+
+            if (!data || !navigationRef.current) return;
+
+            if (data.eventId) {
+              const eventData = {
+                id: parseInt(data.eventId) || data.eventId,
+                title: data.title || 'Event',
+                organizer: data.organizer || '',
+                event_date: data.event_date || '',
+                event_time: data.event_time || '',
+                location: data.location || '',
+                image_url: data.image_url || '',
+                is_paid: data.is_paid === 'true' || data.is_paid === true,
+                created_by_email: data.created_by_email || '',
+                created_at: data.created_at || new Date().toISOString(),
+                ...data
+              };
+
+              console.log('Navigating to EventDetails with data: ', eventData);
+
+              navigationRef.current.navigate('EventDetails', {
+                event: eventData
+              });
+            } else if (data.screen) {
+              const validScreens = ['My Events', 'Updates', 'Settings', 'Univent'];
+              if (validScreens.includes(data.screen)) {
+                navigationRef.current.navigate(data.screen);
+              }
+            }
+          } catch (err) {
+            console.error('Navigation error from notification: ', err);
+          };
+        });
       } catch (error) {
-        console.error('Font loading error:', error);
-      };
+        console.error('App Intialization Error: ', error);
+      }
     };
 
-    loadFonts();
-  }, [isOnline]);
+    initializeApp();
+
+    return () => {
+      if (notificationListener) {
+        Notifications.removeNotificationSubscription(notificationListener);
+      }
+      if (responseListener) {
+        Notifications.removeNotificationSubscription(responseListener);
+      }
+    };
+
+  }, [isOnline, showInfo]);
 
   const handleClose = () => {
     BackHandler.exitApp();
   };
 
-  if (!fontsLoaded || isLoading) {
+  if (!fontsLoaded) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.offlineContainer}>
         <ActivityIndicator size="large" color={theme.colorFontLight} />
+        <CustomText style={styles.offlineTitle} bold>Font Load Error</CustomText>
+
+        <CustomText style={styles.delayedMessage}>
+          The required fonts failed to load. This may be due to a network or system issue.
+          Please try closing and reopening the application to fix the problem.
+        </CustomText>
+
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <CustomText style={styles.closeButtonText} bold>Close</CustomText>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -69,7 +152,7 @@ function AppContent() {
   if (!isOnline) {
     return (
       <View style={styles.offlineContainer}>
-        <ActivityIndicator size="large" color={theme.colorFontLight} />
+        <ActivityIndicator size={40} color={theme.colorFontLight} />
         <CustomText style={styles.offlineTitle} bold>No Internet Connection</CustomText>
 
         <CustomText style={styles.delayedMessage}>
@@ -77,7 +160,7 @@ function AppContent() {
         </CustomText>
 
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <CustomText style={styles.closeButtonText} bold>Close Application</CustomText>
+          <CustomText style={styles.closeButtonText} bold>Close</CustomText>
         </TouchableOpacity>
       </View>
     );
@@ -131,6 +214,13 @@ function AppContent() {
             })}
           />
           <Stack.Screen
+            name="Updates"
+            component={Updates}
+            options={() => ({
+              ...TransitionPresets.ModalFadeTransition
+            })}
+          />
+          <Stack.Screen
             name="EventDetails"
             component={EventDetails}
             options={() => ({
@@ -140,7 +230,7 @@ function AppContent() {
               headerStyle: { backgroundColor: theme.colorBackgroundDark },
               headerTintColor: theme.colorTabBarTint,
               headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
-              ...TransitionPresets.ModalFadeTransition
+              ...TransitionPresets.BottomSheetAndroid
             })}
           />
         </Stack.Navigator>
@@ -180,7 +270,7 @@ const styles = StyleSheet.create({
   offlineTitle: {
     fontSize: 18,
     color: theme.colorFontLight,
-    marginVertical: 20,
+    marginVertical: 24,
     textAlign: "center"
   },
   delayedMessage: {
@@ -208,3 +298,4 @@ export type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList,
 export type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, "Main">;
 export type EventDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, "EventDetails">;
 export type ForgotPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgottenPassword">;
+export type UpdatesNavigationProp = StackNavigationProp<RootStackParamList, "Updates">;
