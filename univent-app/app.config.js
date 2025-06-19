@@ -57,8 +57,7 @@ export default {
       ],
       "expo-dev-client",
       "expo-notifications",
-      "expo-task-manager",
-      "expo-background-fetch"
+      "expo-task-manager"
     ],
     extra: {
       API_URL: process.env.API_URL,
