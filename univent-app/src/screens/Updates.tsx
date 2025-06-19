@@ -116,6 +116,26 @@ const Updates = () => {
       }
     >
       <View style={styles.container}>
+        <View style={{ marginTop: 10, gap: 10, marginBottom: 20 }}>
+          <TouchableOpacity onPress={handleTestNotifications} style={styles.testButton}>
+            <CustomText style={styles.testButtonText}>
+              Test Notification (10s & 20s)
+            </CustomText>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleCheckScheduled} style={[styles.testButton, { backgroundColor: theme.colorGreen }]}>
+            <CustomText style={styles.testButtonText}>
+              Check Scheduled Notification
+            </CustomText>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleForceSchedule} style={[styles.testButton, { backgroundColor: theme.colorTaskbarYellow }]}>
+            <CustomText style={[styles.testButtonText, { color: "black" }]}>
+              Force Schedule Latest Event
+            </CustomText>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.upcomingTouchable}>
           <View style={styles.headerRow}>
             <CustomText style={expanded ? styles.headerTextExpanded : styles.headerTextNonExpanded}>
@@ -200,5 +220,15 @@ const styles = StyleSheet.create({
   eventDetailsTitle: {
     fontSize: 15,
     color: theme.colorWhite
+  },
+  testButton: {
+    padding: 12,
+    backgroundColor: theme.colorRichBlue,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  testButtonText: {
+    color: "white",
+    fontWeight: "600",
   },
 });
