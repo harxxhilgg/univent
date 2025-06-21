@@ -48,7 +48,7 @@ const Updates = () => {
       if (Array.isArray(res.data) && res.data.length > 0) {
         setEvent(res.data[0]);
 
-        console.log('Latest evnet updated, scheduling notification...');
+        console.log('Latest event updated, scheduling notification...');
         await checkAndScheduleNotifications();
       } else {
         setEvent(null);
