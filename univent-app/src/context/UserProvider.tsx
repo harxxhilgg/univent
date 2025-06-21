@@ -5,7 +5,7 @@ import { useToast } from "../components/useToast";
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { api } from "../utils/api";
-import { checkAndScheduleNotifications, cleanupOldNotifications, initializeBackgroundTask } from "../utils/notificationScheduler";
+import { cleanupOldNotifications, initializeBackgroundTask } from "../utils/notificationScheduler";
 
 interface ProviderProps {
   children?: React.ReactNode;
@@ -58,7 +58,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
             await initializeBackgroundTask();
             await cleanupOldNotifications();
-            await checkAndScheduleNotifications();
 
           } else {
             setInitialRoute('Auth');
