@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
 import { AppState } from "react-native";
 
+const ANDROID_CHANNEL_ID = "event-reminders";
 const BACKGROUND_TASK_NAME = "background-notification-check";
 const SCHEDULED_NOTIFICATIONS_KEY = "scheduled_notifications";
 const LAST_CHECK_KEY = "last_notification_check";
@@ -38,14 +39,14 @@ export const checkAndScheduleNotifications = async () => {
     const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
     const now = new Date();
 
-    const remiderTime = new Date(eventDateTime.getTime() - 10 * 60 * 1000);
+    const reminderTime = new Date(eventDateTime.getTime() - 10 * 60 * 1000);
     const startTime = new Date(eventDateTime.getTime());
 
     console.log(`Event time: ${eventDateTime.toLocaleString()}`);
-    console.log(`10min reminder: ${remiderTime.toLocaleString()}`);
+    console.log(`10min reminder: ${reminderTime.toLocaleString()}`);
     console.log(`Start notification: ${startTime.toLocaleString()}`);
 
-    await scheduleEventNotifications(event, remiderTime, startTime, now);
+    await scheduleEventNotifications(event, reminderTime, startTime, now);
   } catch (error) {
     console.error("Error checking events for notifications: ", error);
   }
@@ -92,9 +93,9 @@ const scheduleEventNotifications = async (
             },
             sound: "default",
           },
-          // @ts-ignore
           trigger: {
             date: reminderTime,
+            channelId: ANDROID_CHANNEL_ID,
           },
         });
 
@@ -133,9 +134,9 @@ const scheduleEventNotifications = async (
             },
             sound: "default",
           },
-          // @ts-ignore
           trigger: {
             date: startTime,
+            channelId: ANDROID_CHANNEL_ID,
           },
         }
       );
@@ -252,8 +253,10 @@ export const scheduleTestNotifications = async () => {
       body: "This simulates a 10-minute reminder notification!",
       data: { type: "test-reminder" },
     },
-    // @ts-ignore
-    trigger: { date: testReminderTime },
+    trigger: {
+      date: testReminderTime,
+      channelId: ANDROID_CHANNEL_ID,
+    },
   });
 
   const startId = await Notifications.scheduleNotificationAsync({
@@ -262,8 +265,10 @@ export const scheduleTestNotifications = async () => {
       body: "This simulates an event starting notification!",
       data: { type: "test-start" },
     },
-    // @ts-ignore
-    trigger: { date: testStartTime },
+    trigger: {
+      date: testStartTime,
+      channelId: ANDROID_CHANNEL_ID,
+    },
   });
 
   console.log(`🧪 Test notifications scheduled:`);
