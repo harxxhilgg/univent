@@ -1,4 +1,4 @@
-import { ActivityIndicator, BackHandler, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomTabNavigator from './BottomTabNavigator';
 import { UserProvider } from './src/context/UserProvider';
@@ -33,12 +33,14 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+const ANDROID_CHANNEL_ID = "event-reminders";
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false
-  }),
+  })
 });
 
 function AppContent() {
@@ -54,6 +56,16 @@ function AppContent() {
 
     const initializeApp = async () => {
       try {
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
+            name: 'Event Reminders',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#fff'
+          });
+          console.log("Notification channel 'event-reminders' set up.");
+        }
+
         await Font.loadAsync({
           "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
           "Inter-Bold": require("./assets/fonts/Inter-Bold.ttf"),
