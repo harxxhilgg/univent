@@ -38,7 +38,11 @@ export default {
         backgroundColor: "#ffffff"
       },
       package: "com.univent.app",
-      jsEngine: "hermes"
+      jsEngine: "hermes",
+      notification: {
+        icon: "./assets/icons/notification-icon.png",
+        color: "#fff"
+      }
     },
     web: {
       favicon: "./assets/icons/favicon-32x32.png"
