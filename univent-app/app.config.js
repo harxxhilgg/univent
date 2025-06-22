@@ -39,6 +39,7 @@ export default {
       },
       package: "com.univent.app",
       jsEngine: "hermes",
+      googleServicesFile: "./google-services.json",
       notification: {
         icon: "./assets/icons/notification-icon.png",
         color: "#877EFF"
