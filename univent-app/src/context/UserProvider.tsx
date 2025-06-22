@@ -28,6 +28,33 @@ export function decodeJwtPayload(token: string) {
   };
 };
 
+const requestNotificationPermission = async () => {
+  try {
+    if (!Device.isDevice) {
+      console.log('Skipping notification permission');
+      return false;
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      console.log('User did not grant notification permission');
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Failed to request notification permission: ', err);
+    return false;
+  };
+};
+
 export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +65,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   useEffect(() => {
     async function initializeApp() {
       try {
+        await requestNotificationPermission();
         const token = await AsyncStorage.getItem("authToken");
         if (token) {
           const decodedPayload = decodeJwtPayload(token);
@@ -76,20 +104,13 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
     async function registerForPushNotifications(token: string, userData?: any) {
       try {
         if (!Device.isDevice) {
-          console.log('Push notifications only work on physical devices');
+          console.log('Skipping token registration');
           return;
         }
 
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-
-        if (finalStatus !== 'granted') {
-          console.log('Notification permission not granted');
+        const { status } = await Notifications.getPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Permission not granted, skipping token registration.');
           return;
         }
 
