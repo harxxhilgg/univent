@@ -41,8 +41,8 @@ export default {
       jsEngine: "hermes",
       googleServicesFile: "./google-services.json",
       notification: {
-        icon: "./assets/icons/notification-icon.png",
-        color: "#877EFF"
+        icon: "./assets/icons/splash-icon-light.png",
+        color: "#FFFFFF"
       }
     },
     web: {
