@@ -77,8 +77,15 @@ function AppContent() {
         setFontsLoaded(true);
 
         notificationListener = Notifications.addNotificationReceivedListener(notification => {
-          console.log('Notification Received: ', notification);
+          const notificationDate = notification.date;
+          const now = Date.now() / 1000;
 
+          if (Math.abs(now - notificationDate) < 2) {
+            console.log('Ignoring recently scheduled notification to prevent unwanted toast');
+            return;
+          }
+
+          console.log('Notification Received: ', notification);
           // @ts-ignore
           showInfo(4000, notification.request.content.title || "New Notification", notification.request.content.body);
         });
