@@ -41,7 +41,7 @@ export default {
       jsEngine: "hermes",
       notification: {
         icon: "./assets/icons/notification-icon.png",
-        color: "#fff"
+        color: "#877EFF"
       }
     },
     web: {
