@@ -39,11 +39,7 @@ export default {
       },
       package: "com.univent.app",
       jsEngine: "hermes",
-      googleServicesFile: "./google-services.json",
-      notification: {
-        icon: "./assets/icons/splash-icon-light.png",
-        color: "#ffffff"
-      }
+      googleServicesFile: "./google-services.json"
     },
     web: {
       favicon: "./assets/icons/favicon-32x32.png"
@@ -60,7 +56,12 @@ export default {
         }
       ],
       "expo-dev-client",
-      "expo-notifications",
+      [
+        "expo-notifications", {
+          "icon": "./assets/icons/notification-icon.png",
+          "color": "#ffffff"
+        },
+      ],
       "expo-task-manager"
     ],
     extra: {
