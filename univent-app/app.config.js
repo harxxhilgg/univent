@@ -42,7 +42,7 @@ export default {
       googleServicesFile: "./google-services.json",
       notification: {
         icon: "./assets/icons/splash-icon-light.png",
-        color: "#FFFFFF"
+        color: "#ffffff"
       }
     },
     web: {

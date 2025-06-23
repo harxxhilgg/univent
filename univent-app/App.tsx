@@ -61,7 +61,7 @@ function AppContent() {
             name: 'Event Reminders',
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FFFFFF'
+            lightColor: '#ffffff'
           });
           console.log("Notification channel 'event-reminders' set up.");
         }
