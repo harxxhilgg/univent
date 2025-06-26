@@ -5,10 +5,9 @@ import { theme } from '../../theme';
 import { Event } from './UniventHome';
 import { API_URL } from "../utils/api";
 import { UserContext } from '../context/UserContext';
-import { EventCard } from '../components/EventCard';
 import CustomText from '../components/CustomText';
-import { TouchableRipple } from 'react-native-paper';
 import axios from 'axios';
+import AnimatedEventCard from '../components/AnimatedEventCard';
 
 const MyEvents = ({ navigation }: { navigation: any }) => {
   const { user } = useContext(UserContext);
@@ -68,14 +67,13 @@ const MyEvents = ({ navigation }: { navigation: any }) => {
       >
         <View style={styles.container}>
           {myEvents.length > 0 ? (
-            myEvents.map(event => (
-              <TouchableRipple
+            myEvents.map((event, index) => (
+              <AnimatedEventCard
                 key={event.id}
+                event={event}
+                index={index}
                 onPress={() => navigation.navigate('EventDetails', { event })}
-                rippleColor={theme.colorGray}
-              >
-                <EventCard event={event} />
-              </TouchableRipple>
+              />
             ))
           ) : (
             <View style={styles.noEventsTextContainer}>
