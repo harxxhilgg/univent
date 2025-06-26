@@ -1,4 +1,4 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const EditProfileSchema = z.object({
   username: z.string()
@@ -38,11 +39,14 @@ const Settings = () => {
   const { user, setUser } = useContext(UserContext);
   const accountSettingsBottomSheetRef = useRef<BottomSheet>(null);
   const profileSettingsBottomSheetRef = useRef<BottomSheet>(null);
+  const miscellaneousSettingsBottomSheetRef = useRef<BottomSheet>(null);
   const navigation = useNavigation<AuthScreenNavigationProp>();
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const [isBottomSheetAccountOpen, setIsBottomSheetAccountOpen] = useState(false);
   const [isBottomSheetProfileOpen, setIsBottomSheetProfileOpen] = useState(false);
+  const [isBottomSheetMiscellaneousOpen, setIsBottomSheetMiscellaneousOpen] = useState(false);
   const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
@@ -50,6 +54,7 @@ const Settings = () => {
   const [countdown, setCountdown] = useState(10);
   const [canDelete, setCanDelete] = useState(false);
   const { showSuccess, showError } = useToast();
+  const buttonScale = useSharedValue(1);
 
   const {
     control,
@@ -107,6 +112,18 @@ const Settings = () => {
     }
   };
 
+  const openAppSettings = async () => {
+    try {
+      setNotificationLoading(true);
+      await Linking.openSettings();
+    } catch (error) {
+      console.error('Failed to open app settings: ', error);
+      showError(3000, 'There was an error opening app settings', 'Please try again');
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
   const handleAccountSheetChanges = useCallback((index: number) => {
     setIsBottomSheetAccountOpen(index >= 0);
   }, []);
@@ -115,23 +132,33 @@ const Settings = () => {
     setIsBottomSheetProfileOpen(index >= 0);
   }, []);
 
-  const toggleBottomProfileSheet = () => {
-    if (isBottomSheetAccountOpen) accountSettingsBottomSheetRef.current?.close();
+  const handleMiscellaneousSheetChanges = useCallback((index: number) => {
+    setIsBottomSheetMiscellaneousOpen(index >= 0);
+  }, []);
 
-    if (isBottomSheetProfileOpen) {
-      profileSettingsBottomSheetRef.current?.close();
-    } else {
-      profileSettingsBottomSheetRef.current?.expand();
-    };
+  const bottomSheets = {
+    profile: {
+      ref: profileSettingsBottomSheetRef,
+      isOpen: isBottomSheetProfileOpen
+    },
+    account: {
+      ref: accountSettingsBottomSheetRef,
+      isOpen: isBottomSheetAccountOpen
+    },
+    miscellaneous: {
+      ref: miscellaneousSettingsBottomSheetRef,
+      isOpen: isBottomSheetMiscellaneousOpen
+    }
   };
 
-  const toggleBottomAccountSheet = () => {
-    if (isBottomSheetProfileOpen) profileSettingsBottomSheetRef.current?.close();
+  const toggleBottomSheet = (sheetType: keyof typeof bottomSheets) => {
+    Object.values(bottomSheets).forEach(sheet => {
+      sheet.ref.current?.close();
+    });
 
-    if (isBottomSheetAccountOpen) {
-      accountSettingsBottomSheetRef.current?.close();
-    } else {
-      accountSettingsBottomSheetRef.current?.expand();
+    const selectedSheet = bottomSheets[sheetType];
+    if (!selectedSheet.isOpen) {
+      selectedSheet.ref.current?.expand();
     };
   };
 
@@ -181,6 +208,24 @@ const Settings = () => {
       console.error("Update error: ", error);
       showError(3000, "Something went wrong", "Please try again");
     }
+  };
+
+  const animatedButtonStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }]
+  }));
+
+  const handlePressIn = () => {
+    buttonScale.value = withSpring(0.98, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handlePressOut = () => {
+    buttonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
   };
 
   useEffect(() => {
@@ -247,9 +292,14 @@ const Settings = () => {
 
           <TouchableOpacity
             style={styles.accountSettingsContainer}
-            onPress={toggleBottomProfileSheet}
+            onPress={() => toggleBottomSheet('profile')}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            activeOpacity={1}
           >
-            <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
+            <Animated.View style={animatedButtonStyles}>
+              <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
+            </Animated.View>
           </TouchableOpacity>
 
           {user.email === "user.guest@univent.com" ? (
@@ -257,11 +307,28 @@ const Settings = () => {
           ) : (
             <TouchableOpacity
               style={styles.accountSettingsContainer}
-              onPress={toggleBottomAccountSheet}
+              onPress={() => toggleBottomSheet('account')}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              activeOpacity={1}
             >
-              <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
+              <Animated.View style={animatedButtonStyles}>
+                <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
+              </Animated.View>
             </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={styles.accountSettingsContainer}
+            onPress={() => toggleBottomSheet('miscellaneous')}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            activeOpacity={1}
+          >
+            <Animated.View style={animatedButtonStyles}>
+              <CustomText style={styles.accountSettingsText}>Miscellaneous Settings</CustomText>
+            </Animated.View>
+          </TouchableOpacity>
 
           <BottomSheet
             ref={profileSettingsBottomSheetRef}
@@ -348,6 +415,37 @@ const Settings = () => {
                   </LinearGradient>
                 </TouchableOpacity>
               )}
+            </BottomSheetView>
+          </BottomSheet>
+
+          <BottomSheet
+            ref={miscellaneousSettingsBottomSheetRef}
+            index={-1}
+            enablePanDownToClose={true}
+            snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
+            onChange={handleMiscellaneousSheetChanges}
+            backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
+          >
+            <BottomSheetView style={styles.bottomSheetContainer}>
+              <TouchableOpacity
+                style={styles.logoutBtn}
+                onPress={openAppSettings}
+                disabled={notificationLoading}
+              >
+                <LinearGradient
+                  colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
+                  start={{ x: 0, y: 1 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.gradientBackground}
+                >
+                  {notificationLoading ? (
+                    <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
+                  ) : (
+                    <CustomText style={styles.logoutBtnText} semibold>Notifications</CustomText>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
             </BottomSheetView>
           </BottomSheet>
 
