@@ -85,8 +85,6 @@ export default function BottomTabNavigator() {
         animation: "shift",
       }}
     >
-
-      {/* Discover Tab */}
       <Tab.Screen
         name="Univent"
         component={UniventHome}
@@ -103,8 +101,6 @@ export default function BottomTabNavigator() {
           )
         }}
       />
-
-      {/* My-Events Tab */}
       <Tab.Screen
         name="My Events"
         component={MyEvents}
@@ -121,8 +117,6 @@ export default function BottomTabNavigator() {
           )
         }}
       />
-
-      {/* createEvent */}
       <Tab.Screen
         name="CreateEvent"
         component={CreateEvent}
@@ -141,8 +135,6 @@ export default function BottomTabNavigator() {
           )
         }}
       />
-
-      {/* Updates Tab */}
       <Tab.Screen
         name="Updates"
         component={Updates}
@@ -159,9 +151,6 @@ export default function BottomTabNavigator() {
           )
         }}
       />
-
-      {/* Settings Tab */}
-
       <Tab.Screen
         name="Settings"
         component={Settings}
