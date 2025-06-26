@@ -31,7 +31,6 @@ const CreateEvent = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const { showError, showSuccess, showInfo } = useToast();
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
