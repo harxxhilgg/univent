@@ -9,18 +9,37 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useToast } from '../components/useToast';
 import { UserContext } from '../context/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const EventDetails = ({ route }: { route: any }) => {
   // getting full event object from navigation params
   const { event } = route.params;
   const { user } = useContext(UserContext);
-
   const [timeUntil, setTimeUntil] = useState("");
   const { showInfo, showError } = useToast();
+  const buttonScale = useSharedValue(1);
 
   useEffect(() => {
     setTimeUntil(calculateTimeUntil(event.event_date, event.event_time));
   }, [event.event_date, event.event_time]);
+
+  const animatedButtonStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }]
+  }));
+
+  const handlePressIn = () => {
+    buttonScale.value = withSpring(0.96, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handlePressOut = () => {
+    buttonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
 
   const formattedTime = formatTime(event.event_time);
   const date = getMonthAndDay(event.event_date);
@@ -124,15 +143,20 @@ const EventDetails = ({ route }: { route: any }) => {
             <TouchableOpacity
               testID="register-button"
               onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              activeOpacity={1}
             >
-              <LinearGradient
-                colors={['rgb(220, 210, 250)', 'rgb(255, 255, 255)', 'rgb(220, 210, 250)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientBackground}
-              >
-                <CustomText style={styles.registerText} semibold>Register</CustomText>
-              </LinearGradient>
+              <Animated.View style={animatedButtonStyles}>
+                <LinearGradient
+                  colors={['rgb(220, 210, 250)', 'rgb(255, 255, 255)', 'rgb(220, 210, 250)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.gradientBackground}
+                >
+                  <CustomText style={styles.registerText} semibold>Register</CustomText>
+                </LinearGradient>
+              </Animated.View>
             </TouchableOpacity>
           </View>
         </View>
