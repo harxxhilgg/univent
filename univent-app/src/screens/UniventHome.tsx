@@ -3,13 +3,13 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
-import { EventCard } from '../components/EventCard';
 import { CurrentEvents } from '../components/CurrentEvents';
 import { api, API_URL } from '../utils/api';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { ActivityIndicator, Searchbar, TouchableRipple } from 'react-native-paper';
+import { ActivityIndicator, Searchbar } from 'react-native-paper';
 import axios from 'axios';
 import { useRef } from 'react';
+import AnimatedEventCard from '../components/AnimatedEventCard';
 
 export interface Event {
   id: number;
@@ -218,15 +218,13 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
                   <CustomText style={styles.headerUpcomingEvent} bold>Upcoming Event</CustomText>
                 )}
 
-                {upcomingEvents.slice(0, visibleCount).map((event) => (
-                  // passing whole event obejct as prop to EventDetails screen
-                  <TouchableRipple
+                {upcomingEvents.slice(0, visibleCount).map((event, index) => (
+                  <AnimatedEventCard
                     key={event.id}
+                    event={event}
+                    index={index}
                     onPress={() => navigation.navigate('EventDetails', { event })}
-                    rippleColor={theme.colorGray}
-                  >
-                    <EventCard event={event} />
-                  </TouchableRipple>
+                  />
                 ))}
               </View>
             </View>
