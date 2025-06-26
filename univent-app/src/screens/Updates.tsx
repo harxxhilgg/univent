@@ -9,7 +9,7 @@ import { API_URL } from "../utils/api";
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
-import { checkAndScheduleNotifications, getScheduledNotifications, scheduleTestNotifications } from '../utils/notificationScheduler';
+import { checkAndScheduleNotifications } from '../utils/notificationScheduler';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -36,12 +36,10 @@ const Updates = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
   const navigation = useNavigation<AuthScreenNavigationProp>();
 
   const fetchData = async () => {
     setLoading(true);
-
     try {
       const res = await axios.get(`${API_URL}/events/getLatestEvent`);
 
@@ -75,29 +73,6 @@ const Updates = () => {
     setExpanded(!expanded);
   };
 
-
-  const handleTestNotifications = async () => {
-    try {
-      await scheduleTestNotifications();
-      console.log('Test notifications scheduled!');
-    } catch (error) {
-      console.error('Error scheduling test notifications: ', error);
-    };
-  };
-
-  const handleCheckScheduled = async () => {
-    await getScheduledNotifications();
-  };
-
-  const handleForceSchedule = async () => {
-    try {
-      await checkAndScheduleNotifications();
-      console.log('Force scheduled notifications check completed');
-    } catch (error) {
-      console.error('Error force scheduling: ', error);
-    };
-  };
-
   return (
     <ScrollView
       contentContainerStyle={styles.scrollContainer}
@@ -116,26 +91,6 @@ const Updates = () => {
       }
     >
       <View style={styles.container}>
-        <View style={{ marginTop: 10, gap: 10, marginBottom: 20 }}>
-          <TouchableOpacity onPress={handleTestNotifications} style={styles.testButton}>
-            <CustomText style={styles.testButtonText}>
-              Test Notification (10s & 20s)
-            </CustomText>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleCheckScheduled} style={[styles.testButton, { backgroundColor: theme.colorGreen }]}>
-            <CustomText style={styles.testButtonText}>
-              Check Scheduled Notification
-            </CustomText>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleForceSchedule} style={[styles.testButton, { backgroundColor: theme.colorTaskbarYellow }]}>
-            <CustomText style={[styles.testButtonText, { color: "black" }]}>
-              Force Schedule Latest Event
-            </CustomText>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.upcomingTouchable}>
           <View style={styles.headerRow}>
             <CustomText style={expanded ? styles.headerTextExpanded : styles.headerTextNonExpanded}>
@@ -230,5 +185,5 @@ const styles = StyleSheet.create({
   testButtonText: {
     color: "white",
     fontWeight: "600",
-  },
+  }
 });
