@@ -1,4 +1,4 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
@@ -11,11 +11,11 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { TextInput as TextInputPaper, Modal as PaperModal } from 'react-native-paper';
 import { useToast } from '../components/useToast';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import AnimatedButton from '../components/AnimatedButton';
 
 const EditProfileSchema = z.object({
   username: z.string()
@@ -54,7 +54,10 @@ const Settings = () => {
   const [countdown, setCountdown] = useState(10);
   const [canDelete, setCanDelete] = useState(false);
   const { showSuccess, showError } = useToast();
-  const buttonScale = useSharedValue(1);
+  const profileButtonScale = useSharedValue(1);
+  const accountButtonScale = useSharedValue(1);
+  const miscButtonScale = useSharedValue(1);
+  const editProfileButtonScale = useSharedValue(1);
 
   const {
     control,
@@ -210,22 +213,76 @@ const Settings = () => {
     }
   };
 
-  const animatedButtonStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }]
+  const profileAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: profileButtonScale.value }]
   }));
 
-  const handlePressIn = () => {
-    buttonScale.value = withSpring(0.98, {
+  const accountAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: accountButtonScale.value }]
+  }));
+
+  const miscAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: miscButtonScale.value }]
+  }));
+
+  const editProfileAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: editProfileButtonScale.value }]
+  }));
+
+  const handleProfilePressIn = () => {
+    profileButtonScale.value = withSpring(0.95, {
       damping: 10,
       stiffness: 500
     });
   };
 
-  const handlePressOut = () => {
-    buttonScale.value = withSpring(1, {
+  const handleProfilePressOut = () => {
+    profileButtonScale.value = withSpring(1, {
       damping: 10,
       stiffness: 500
     });
+  };
+
+  const handleAccountPressIn = () => {
+    accountButtonScale.value = withSpring(0.95, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handleAccountPressOut = () => {
+    accountButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handleMiscPressIn = () => {
+    miscButtonScale.value = withSpring(0.95, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handleMiscPressOut = () => {
+    miscButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handleEditProfilePressIn = () => {
+    editProfileButtonScale.value = withSpring(0.90, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handleEditProfilePressOut = () => {
+    editProfileButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    })
   };
 
   useEffect(() => {
@@ -277,8 +334,13 @@ const Settings = () => {
                 style={styles.editAccountContainer}
                 onPress={toggleEditLayout}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPressIn={handleEditProfilePressIn}
+                onPressOut={handleEditProfilePressOut}
+                activeOpacity={1}
               >
-                <MaterialCommunityIcons name="account-edit" size={28} color={theme.colorFontGray} />
+                <Animated.View style={editProfileAnimatedStyles}>
+                  <MaterialCommunityIcons name="account-edit" size={28} color={theme.colorFontGray} />
+                </Animated.View>
               </TouchableOpacity>
             )}
             <FontAwesome name="user-circle-o" size={130} color={theme.colorTransparentLightGray} style={styles.userProfile} />
@@ -293,11 +355,11 @@ const Settings = () => {
           <TouchableOpacity
             style={styles.accountSettingsContainer}
             onPress={() => toggleBottomSheet('profile')}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={handleProfilePressIn}
+            onPressOut={handleProfilePressOut}
             activeOpacity={1}
           >
-            <Animated.View style={animatedButtonStyles}>
+            <Animated.View style={profileAnimatedStyles}>
               <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
             </Animated.View>
           </TouchableOpacity>
@@ -308,11 +370,11 @@ const Settings = () => {
             <TouchableOpacity
               style={styles.accountSettingsContainer}
               onPress={() => toggleBottomSheet('account')}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
+              onPressIn={handleAccountPressIn}
+              onPressOut={handleAccountPressOut}
               activeOpacity={1}
             >
-              <Animated.View style={animatedButtonStyles}>
+              <Animated.View style={accountAnimatedStyles}>
                 <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
               </Animated.View>
             </TouchableOpacity>
@@ -321,11 +383,11 @@ const Settings = () => {
           <TouchableOpacity
             style={styles.accountSettingsContainer}
             onPress={() => toggleBottomSheet('miscellaneous')}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={handleMiscPressIn}
+            onPressOut={handleMiscPressOut}
             activeOpacity={1}
           >
-            <Animated.View style={animatedButtonStyles}>
+            <Animated.View style={miscAnimatedStyles}>
               <CustomText style={styles.accountSettingsText}>Miscellaneous Settings</CustomText>
             </Animated.View>
           </TouchableOpacity>
@@ -343,43 +405,29 @@ const Settings = () => {
               {user?.email === "user.guest@univent.com" ? (
                 <View>{null}</View>
               ) : (
-                <TouchableOpacity
-                  style={styles.editAccBtn}
+                <AnimatedButton
+                  label='Edit Profile'
                   onPress={toggleEditLayout}
+                  loading={deleteLoading}
                   disabled={deleteLoading}
-                >
-                  <LinearGradient
-                    colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
-                    start={{ x: 0, y: 1 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientBackground}
-                  >
-                    {deleteLoading ? (
-                      <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                    ) : (
-                      <CustomText style={styles.editAccBtnText} semibold>Edit Profile</CustomText>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
+                  variant='primary'
+                  fullWidth
+                  semibold
+                  style={styles.bottomSheetButtonStyle}
+                  textStyle={styles.buttonTextStyle}
+                />
               )}
-              <TouchableOpacity
-                style={styles.logoutBtn}
+              <AnimatedButton
+                label='Log out'
                 onPress={toggleLogoutConfirmation}
+                loading={logoutLoading}
                 disabled={logoutLoading}
-              >
-                <LinearGradient
-                  colors={['rgb(255, 180, 180)', 'rgb(250, 250, 250)', 'rgb(255, 180, 180)']}
-                  start={{ x: 0, y: 1 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientBackground}
-                >
-                  {logoutLoading ? (
-                    <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                  ) : (
-                    <CustomText style={styles.logoutBtnText} semibold>Log out</CustomText>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                variant='danger'
+                fullWidth
+                semibold
+                style={styles.bottomSheetButtonStyle}
+                textStyle={styles.buttonTextStyle}
+              />
             </BottomSheetView>
           </BottomSheet>
 
@@ -396,24 +444,17 @@ const Settings = () => {
               {user?.email === "user.guest@univent.com" ? (
                 <View>{null}</View>
               ) : (
-                <TouchableOpacity
-                  style={styles.deleteAccountBtn}
+                <AnimatedButton
+                  label='Delete Account'
                   onPress={toggleDeleteConfirmation}
+                  loading={deleteLoading}
                   disabled={deleteLoading}
-                >
-                  <LinearGradient
-                    colors={['rgb(255, 0, 0)', 'rgb(250, 0, 0)']}
-                    start={{ x: 0, y: 1 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientBackground}
-                  >
-                    {deleteLoading ? (
-                      <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                    ) : (
-                      <CustomText style={styles.deleteAccountBtnText} bold>Delete Account</CustomText>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
+                  variant='red'
+                  fullWidth
+                  semibold
+                  style={styles.bottomSheetButtonStyle}
+                  textStyle={styles.deleteAccountBtnText}
+                />
               )}
             </BottomSheetView>
           </BottomSheet>
@@ -428,24 +469,17 @@ const Settings = () => {
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
-              <TouchableOpacity
-                style={styles.logoutBtn}
+              <AnimatedButton
+                label='Notifications'
                 onPress={openAppSettings}
+                loading={notificationLoading}
                 disabled={notificationLoading}
-              >
-                <LinearGradient
-                  colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
-                  start={{ x: 0, y: 1 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientBackground}
-                >
-                  {notificationLoading ? (
-                    <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                  ) : (
-                    <CustomText style={styles.logoutBtnText} semibold>Notifications</CustomText>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                variant='secondary'
+                fullWidth
+                semibold
+                style={styles.bottomSheetButtonStyle}
+                textStyle={styles.buttonTextStyle}
+              />
             </BottomSheetView>
           </BottomSheet>
 
@@ -535,16 +569,30 @@ const Settings = () => {
               <CustomText style={{ color: theme.colorFontLight }}>Errors: {JSON.stringify(errors)}</CustomText>
             </View> */}
             <View style={styles.editAccountButtonContainer}>
-              <TouchableOpacity
-                style={[styles.editAccountCancelButton, styles.editAccountButton]}
+              <AnimatedButton
+                label='Cancel'
                 onPress={handleCloseEditAccountModal}
-              >
-                <CustomText style={styles.editAccountCancelButtonText} semibold>Cancel</CustomText>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.editAccountSaveChangesButton, styles.editAccountButton]} onPress={() => handleSubmit(onSubmit)()}>
-                <CustomText style={styles.editAccountSaveChangesButtonText} semibold>Save Changes</CustomText>
-              </TouchableOpacity>
+                semibold
+                variant='gray'
+                style={styles.editAccountButton}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 20
+                }}
+                textStyle={styles.editAccountCancelButtonText}
+              />
+              <AnimatedButton
+                label='Save Changes'
+                onPress={() => handleSubmit(onSubmit)()}
+                semibold
+                variant='red'
+                style={styles.editAccountButton}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 20
+                }}
+                textStyle={styles.editAccountSaveChangesButtonText}
+              />
             </View>
           </PaperModal>
 
@@ -560,18 +608,30 @@ const Settings = () => {
               Logging out will securely end your current session. You can sign back in anytime to access your account.
             </CustomText>
             <View style={styles.logoutAccountButtonContainer}>
-              <TouchableOpacity
-                style={[styles.logoutAccountConfirmationButton, styles.logoutAccountCancelButton]}
+              <AnimatedButton
+                label='Cancel'
                 onPress={toggleLogoutConfirmation}
-              >
-                <CustomText style={styles.logoutAccountCancelButtonText} bold>Cancel</CustomText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.logoutAccountConfirmationButton, styles.logoutAccountDeleteButton]}
+                semibold
+                variant='gray'
+                style={styles.logoutAccountConfirmationButton}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 20
+                }}
+                textStyle={styles.logoutAccountCancelButtonText}
+              />
+              <AnimatedButton
+                label='Log Out'
                 onPress={handleLogout}
-              >
-                <CustomText style={styles.logoutAccountDeleteButtonText} bold>Log out</CustomText>
-              </TouchableOpacity>
+                semibold
+                variant='red'
+                style={styles.logoutAccountConfirmationButton}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 20
+                }}
+                textStyle={styles.logoutAccountDeleteButtonText}
+              />
             </View>
           </PaperModal>
 
@@ -587,35 +647,41 @@ const Settings = () => {
               Deleting this account will permanently remove it from Univnet. This action cannot be undone.
             </CustomText>
             <View style={styles.deleteAccountButtonContainer}>
-              <TouchableOpacity
-                style={[styles.deleteAccountConfirmationButton, styles.deleteAccountCancelButton]}
+              <AnimatedButton
+                label='Cancel'
                 onPress={toggleDeleteConfirmation}
-              >
-                <CustomText style={styles.deleteAccountCancelButtonText} bold>Cancel</CustomText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.deleteAccountConfirmationButton,
-                  styles.deleteAccountDeleteButton,
-                  !canDelete && { opacity: 0.3 }
-                ]}
+                semibold
+                variant='gray'
+                style={styles.deleteAccountConfirmationButton}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 24
+                }}
+                textStyle={styles.deleteAccountCancelButtonText}
+              />
+              <AnimatedButton
+                label={canDelete ? 'Yes, Delete' : countdown.toString()}
                 onPress={handleDeleteAccount}
+                loading={deleteAccountLoading}
                 disabled={!canDelete}
-              >
-                {deleteAccountLoading ? (
-                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                ) : (
-                  <CustomText style={styles.deleteAccountDeleteButtonText} bold>
-                    {canDelete ? 'Yes, Delete' : countdown}
-                  </CustomText>
-                )}
-              </TouchableOpacity>
+                variant='red'
+                semibold
+                style={{
+                  ...styles.deleteAccountConfirmationButton,
+                  ...(!canDelete && { opacity: 0.3 })
+                }}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  borderRadius: 24
+                }}
+                textStyle={styles.deleteAccountDeleteButtonText}
+              />
             </View>
           </PaperModal>
 
         </ScrollView>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </KeyboardAvoidingView >
   );
 };
 
@@ -677,39 +743,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colorSlightDark,
     padding: 16
   },
-  gradientBackground: {
-    paddingVertical: 8,
-    borderRadius: 10,
-    overflow: "hidden",
-    alignItems: "center"
-  },
-  editAccBtn: {
+  bottomSheetButtonStyle: {
     alignSelf: "center",
     width: "100%",
     maxWidth: 400,
-    marginBottom: 10,
     elevation: 5
   },
-  editAccBtnText: {
+  buttonTextStyle: {
     color: theme.colorFontDark,
     textAlign: "center"
-  },
-  logoutBtn: {
-    alignSelf: "center",
-    width: "100%",
-    maxWidth: 400,
-    marginBottom: 10,
-    elevation: 5
-  },
-  logoutBtnText: {
-    color: theme.colorFontDark,
-    textAlign: "center"
-  },
-  deleteAccountBtn: {
-    alignSelf: "center",
-    width: "100%",
-    maxWidth: 400,
-    marginBottom: 10
   },
   deleteAccountBtnText: {
     color: theme.colorFontLight,
@@ -761,7 +803,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "90%",
     gap: 10,
-    paddingVertical: 6
+    paddingBottom: 3
   },
   editAccountButton: {
     flex: 1,
@@ -769,7 +811,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 1,
     paddingVertical: 6,
-    borderRadius: 12
+    borderRadius: 20
   },
   editAccountCancelButton: {
     backgroundColor: theme.colorButtonGray
@@ -797,33 +839,27 @@ const styles = StyleSheet.create({
   },
   logoutAccountConfirmationTitle: {
     color: theme.colorFontLight,
-    fontSize: 18
+    fontSize: 20
   },
   logoutAccountConfirmationMessage: {
     color: theme.colorLightGray,
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
-    marginVertical: 10,
+    marginTop: 10,
+    marginBottom: 4,
     width: "90%"
   },
   logoutAccountButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 4
+    width: '100%'
   },
   logoutAccountConfirmationButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingTop: 4,
     borderRadius: 12,
     marginHorizontal: 5,
     alignItems: 'center'
-  },
-  logoutAccountCancelButton: {
-    backgroundColor: theme.colorButtonGray
-  },
-  logoutAccountDeleteButton: {
-    backgroundColor: theme.colorRed
   },
   logoutAccountCancelButtonText: {
     fontSize: 14,
@@ -845,14 +881,15 @@ const styles = StyleSheet.create({
   },
   deleteAccountConfirmationTitle: {
     color: theme.colorFontLight,
-    fontSize: 18
+    fontSize: 20
   },
   deleteAccountConfirmationMessage: {
     color: theme.colorLightGray,
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
-    marginVertical: 10,
-    width: "90%"
+    marginTop: 10,
+    marginBottom: 14,
+    width: "85%"
   },
   deleteAccountButtonContainer: {
     flexDirection: 'row',
@@ -861,16 +898,7 @@ const styles = StyleSheet.create({
   },
   deleteAccountConfirmationButton: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 12,
-    marginHorizontal: 5,
-    alignItems: 'center'
-  },
-  deleteAccountCancelButton: {
-    backgroundColor: theme.colorButtonGray
-  },
-  deleteAccountDeleteButton: {
-    backgroundColor: theme.colorRed
+    marginHorizontal: 6,
   },
   deleteAccountCancelButtonText: {
     fontSize: 14,
