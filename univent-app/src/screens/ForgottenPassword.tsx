@@ -1,13 +1,14 @@
-import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { TextInput } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useToast } from '../components/useToast';
 import { api } from '../utils/api';
+import AnimatedButton from '../components/AnimatedButton';
+import { useState } from 'react';
 
 const EmailSchema = z.object({
   email: z.string().regex(
@@ -20,6 +21,7 @@ type FormData = z.infer<typeof EmailSchema>;
 
 const ForgottenPassword = ({ route }: { route: any }) => {
   const passedEmail = route.params?.email || '';
+  const [forgottenPasswordLoading, setForgottenPasswordLoading] = useState(false);
   const { showSuccess, showInfo, showError } = useToast();
 
   const {
@@ -35,6 +37,7 @@ const ForgottenPassword = ({ route }: { route: any }) => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      setForgottenPasswordLoading(true);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const response = await api.post("/auth/forgotPassword", data);
       showSuccess(2500, "Credentials sent via email");
@@ -48,6 +51,8 @@ const ForgottenPassword = ({ route }: { route: any }) => {
       } else {
         showError(2500, "Something went wrong", "Please try again");
       };
+    } finally {
+      setForgottenPasswordLoading(false);
     };
   };
 
@@ -60,7 +65,6 @@ const ForgottenPassword = ({ route }: { route: any }) => {
         <View style={styles.container}>
           <CustomText style={styles.titleText} bold>Recover your password</CustomText>
           <CustomText style={styles.enterEmailText}>Enter your email address.</CustomText>
-
           <View style={styles.inputContainer}>
             <Controller
               name="email"
@@ -95,17 +99,17 @@ const ForgottenPassword = ({ route }: { route: any }) => {
             />
           </View>
           <CustomText style={styles.grayedText}>You will receive an email from us which contains your credentials to get back into your account.</CustomText>
-
-          <TouchableOpacity style={styles.continueBtn} onPress={handleSubmit(onSubmit)}>
-            <LinearGradient
-              colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientBackground}
-            >
-              <CustomText style={styles.continueBtnText} semibold>Continue</CustomText>
-            </LinearGradient>
-          </TouchableOpacity>
+          <AnimatedButton
+            label='Continue'
+            onPress={handleSubmit(onSubmit)}
+            loading={forgottenPasswordLoading}
+            disabled={forgottenPasswordLoading}
+            variant='primary'
+            fullWidth
+            semibold
+            style={styles.continueBtn}
+            textStyle={styles.continueBtnText}
+          />
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -158,7 +162,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6
   },
   continueBtn: {
-    marginVertical: 14
+    marginVertical: 12
   },
   gradientBackground: {
     paddingVertical: 8,
@@ -169,5 +173,5 @@ const styles = StyleSheet.create({
   continueBtnText: {
     color: theme.colorFontDark,
     letterSpacing: 0.5
-  },
+  }
 });

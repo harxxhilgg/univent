@@ -1,4 +1,4 @@
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, Text } from 'react-native';
 import React, { useState } from 'react';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
@@ -10,7 +10,7 @@ import { useToast } from '../components/useToast';
 import { Controller, useForm } from "react-hook-form";
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedButton from '../components/AnimatedButton';
 
 const SignupSchema = z.object({
   username: z.string()
@@ -197,39 +197,30 @@ const Signup = () => {
               )}
             />
           </View>
-          <TouchableOpacity
-            style={styles.SignupBtn}
+
+          <AnimatedButton
+            label='Sign up'
             onPress={handleSubmit(onSubmit)}
+            loading={signupLoading}
             disabled={signupLoading}
-          >
-            <LinearGradient
-              colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientBackground}
-            >
-              {signupLoading ? (
-                <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-              ) : (
-                <CustomText style={styles.SignupBtnText} semibold>Sign up</CustomText>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+            variant='primary'
+            fullWidth
+            semibold
+            style={styles.SignupBtn}
+            textStyle={styles.SignupBtnText}
+          />
+
           <View style={styles.oldAccContainer}>
-            <TouchableOpacity onPress={redirectLogin} disabled={loginLoading}>
-              <LinearGradient
-                colors={['rgb(250, 250, 250)', 'rgb(210, 238, 255)', 'rgb(250, 250, 250)']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientBackground}
-              >
-                {loginLoading ? (
-                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                ) : (
-                  <CustomText style={styles.LoginBtnText} semibold>Log in</CustomText>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
+            <AnimatedButton
+              label='Log in'
+              onPress={redirectLogin}
+              loading={loginLoading}
+              disabled={loginLoading}
+              variant='primary'
+              fullWidth
+              semibold
+              textStyle={styles.LoginBtnText}
+            />
             <CustomText style={styles.alreadyUserText}>Already a user?</CustomText>
           </View>
         </ScrollView>

@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
 import { checkAndScheduleNotifications } from '../utils/notificationScheduler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -37,12 +38,49 @@ const Updates = () => {
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const navigation = useNavigation<AuthScreenNavigationProp>();
+  const chevronScale = useSharedValue(1);
+  const touchableScale = useSharedValue(1);
+
+  const chevronAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: chevronScale.value }]
+  }));
+
+  const touchableAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: touchableScale.value }]
+  }));
+
+  const chevronPressIn = () => {
+    chevronScale.value = withSpring(0.90, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const chevronPressOut = () => {
+    chevronScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const touchablePressIn = () => {
+    touchableScale.value = withSpring(0.98, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const touchablePressOut = () => {
+    touchableScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/events/getLatestEvent`);
-
       if (Array.isArray(res.data) && res.data.length > 0) {
         setEvent(res.data[0]);
 
@@ -102,19 +140,35 @@ const Updates = () => {
                     : 'No upcoming event'
               }
             </CustomText>
-            <TouchableOpacity onPress={toggleExpand} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-              <Ionicons
-                name={expanded ? 'chevron-up' : 'chevron-down'}
-                size={22}
-                color={expanded ? theme.colorFontGray : theme.colorWhite}
-              />
+
+            <TouchableOpacity
+              onPress={toggleExpand}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+              onPressIn={chevronPressIn}
+              onPressOut={chevronPressOut}
+              activeOpacity={1}
+            >
+              <Animated.View style={chevronAnimatedStyles}>
+                <Ionicons
+                  name={expanded ? 'chevron-up' : 'chevron-down'}
+                  size={22}
+                  color={expanded ? theme.colorFontGray : theme.colorWhite}
+                />
+              </Animated.View>
             </TouchableOpacity>
           </View>
 
           {expanded && event && (
             <View style={styles.eventDetails}>
-              <TouchableOpacity onPress={() => navigation.navigate('EventDetails', { event })}>
-                <CustomText style={styles.eventDetailsTitle}>{event.title}</CustomText>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('EventDetails', { event })}
+                onPressIn={touchablePressIn}
+                onPressOut={touchablePressOut}
+                activeOpacity={1}
+              >
+                <Animated.View style={touchableAnimatedStyles}>
+                  <CustomText style={styles.eventDetailsTitle}>{event.title}</CustomText>
+                </Animated.View>
               </TouchableOpacity>
             </View>
           )}
@@ -175,15 +229,5 @@ const styles = StyleSheet.create({
   eventDetailsTitle: {
     fontSize: 15,
     color: theme.colorWhite
-  },
-  testButton: {
-    padding: 12,
-    backgroundColor: theme.colorRichBlue,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  testButtonText: {
-    color: "white",
-    fontWeight: "600",
   }
 });

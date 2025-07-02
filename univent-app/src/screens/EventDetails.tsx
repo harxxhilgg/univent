@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Image } from 'react-native';
 import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
 import { calculateTimeUntil, getMonthAndDay } from '../components/EventCard';
@@ -8,8 +8,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useToast } from '../components/useToast';
 import { UserContext } from '../context/UserContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import AnimatedButton from '../components/AnimatedButton';
 
 const EventDetails = ({ route }: { route: any }) => {
   // getting full event object from navigation params
@@ -17,29 +16,11 @@ const EventDetails = ({ route }: { route: any }) => {
   const { user } = useContext(UserContext);
   const [timeUntil, setTimeUntil] = useState("");
   const { showInfo, showError } = useToast();
-  const buttonScale = useSharedValue(1);
+  const [registerLoading, setRegisterLoading] = useState(false);
 
   useEffect(() => {
     setTimeUntil(calculateTimeUntil(event.event_date, event.event_time));
   }, [event.event_date, event.event_time]);
-
-  const animatedButtonStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }]
-  }));
-
-  const handlePressIn = () => {
-    buttonScale.value = withSpring(0.96, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handlePressOut = () => {
-    buttonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
 
   const formattedTime = formatTime(event.event_time);
   const date = getMonthAndDay(event.event_date);
@@ -61,15 +42,29 @@ const EventDetails = ({ route }: { route: any }) => {
   const formattedWeekday = dateDay.toLocaleDateString('en-US', options);
 
   const handleRegister = () => {
-    if (event.created_by_email === user.email) {
-      showError(3000, "You cannot register for this event", "You are the host of this event");
-    } else {
-      showInfo(3000, "Feature yet to be implemented");
+    try {
+      setRegisterLoading(true);
+      if (event.created_by_email === user.email) {
+        showError(3000, "You cannot register for this event", "You are the host of this event");
+      } else {
+        showInfo(3000, "Feature yet to be implemented");
+      };
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRegisterLoading(false);
     };
   };
 
   const handleGuestRegister = () => {
-    showInfo(3000, "Guest users cannot register for events", "Please Login or Signup to register");
+    try {
+      setRegisterLoading(true);
+      showInfo(3000, "Guest users cannot register for events", "Please Login or Signup to register");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRegisterLoading(false);
+    };
   };
 
   return (
@@ -140,24 +135,16 @@ const EventDetails = ({ route }: { route: any }) => {
           </View>
 
           <View style={styles.registerContainer}>
-            <TouchableOpacity
-              testID="register-button"
+            <AnimatedButton
+              label='Register'
               onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-              activeOpacity={1}
-            >
-              <Animated.View style={animatedButtonStyles}>
-                <LinearGradient
-                  colors={['rgb(220, 210, 250)', 'rgb(255, 255, 255)', 'rgb(220, 210, 250)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientBackground}
-                >
-                  <CustomText style={styles.registerText} semibold>Register</CustomText>
-                </LinearGradient>
-              </Animated.View>
-            </TouchableOpacity>
+              loading={registerLoading}
+              disabled={registerLoading}
+              variant='light-purple'
+              fullWidth
+              semibold
+              textStyle={styles.registerText}
+            />
           </View>
         </View>
       </ScrollView>

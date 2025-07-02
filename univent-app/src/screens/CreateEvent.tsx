@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity } from "react-native";
 import CustomText from "../components/CustomText";
 import { theme } from "../../theme";
 import { Image } from "expo-image";
@@ -14,7 +14,7 @@ import { api } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
 import { useToast } from "../components/useToast";
-import { LinearGradient } from "expo-linear-gradient";
+import AnimatedButton from "../components/AnimatedButton";
 
 const CreateEvent = () => {
   const { user } = useContext(UserContext);
@@ -287,20 +287,17 @@ const CreateEvent = () => {
                 </View>
               </View>
               <View style={styles.createEventContainer}>
-                <TouchableOpacity style={styles.submitBtn} onPress={handleEventCreate} disabled={loading} >
-                  <LinearGradient
-                    colors={['rgb(210, 255, 238)', 'rgb(255, 255, 255)', 'rgb(210, 255, 238)']}
-                    start={{ x: 0, y: 1 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientBackground}
-                  >
-                    {loading ? (
-                      <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                    ) : (
-                      <CustomText style={styles.submitBtnText} bold>Create Event</CustomText>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
+                <AnimatedButton
+                  label='Create Event'
+                  onPress={handleEventCreate}
+                  loading={loading}
+                  disabled={loading}
+                  variant="primary"
+                  fullWidth
+                  semibold
+                  style={styles.submitBtn}
+                  textStyle={styles.submitBtnText}
+                />
               </View>
             </>
           )}
@@ -320,7 +317,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: theme.colorBackgroundDark,
     alignItems: "center",
-    paddingBottom: 100
+    paddingBottom: 130
   },
   guestContainer: {
     top: "30%",
@@ -441,14 +438,6 @@ const styles = StyleSheet.create({
     maxWidth: 500
   },
   submitBtn: {},
-  gradientBackground: {
-    paddingVertical: 6,
-    borderRadius: 10,
-    overflow: "hidden"
-  },
-  activityIndicator: {
-    paddingVertical: 3
-  },
   submitBtnText: {
     color: theme.colorFontDark,
     textAlign: "center",
