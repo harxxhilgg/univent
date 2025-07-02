@@ -1,7 +1,7 @@
-import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import CustomText from '../components/CustomText';
 import { theme } from '../../theme';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,10 +10,8 @@ import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { decodeJwtPayload } from '../context/UserProvider';
 import { useToast } from '../components/useToast';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-
-const AnimatedText = Animated.createAnimatedComponent(Text);
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import AnimatedButton from '../components/AnimatedButton';
 
 type LoginFormData = {
   email: string;
@@ -29,20 +27,28 @@ const AuthScreen = () => {
   const [password, setPassword] = useState("");
   const [secureTextEntry, setsecureTextEntry] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
-  const [GuestLoading, setGuestLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   const [createNewAccountLoading, setCreateNewAccountLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
-  const [failedAttempt, setFailedAttempt] = useState(false);
+  const buttonScale = useSharedValue(1);
 
-  const defaultForgottenPasswordSize = useSharedValue(12);
+  const animatedButtonStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }]
+  }));
 
-  useEffect(() => {
-    defaultForgottenPasswordSize.value = withTiming(failedAttempt ? 14 : 13, { duration: 200 });
-  }, [failedAttempt, defaultForgottenPasswordSize]);
+  const handlePressIn = () => {
+    buttonScale.value = withSpring(0.96, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    fontSize: defaultForgottenPasswordSize.value
-  }))
+  const handlePressOut = () => {
+    buttonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
 
   const onLoginSubmit = async (data: LoginFormData) => {
     const { email, password } = data;
@@ -76,7 +82,6 @@ const AuthScreen = () => {
         showInfo(2500, "Please fill in all fields");
       } else if (status === 401 || status === 403) {
         showError(3000, "Invalid credentials", "Please check your email and password.");
-        setFailedAttempt(true);
       } else {
         const status = error.response?.status;
 
@@ -181,59 +186,52 @@ const AuthScreen = () => {
               }
             />
           </View>
-          <TouchableOpacity onPress={() => onLoginSubmit({ email, password })} disabled={loginLoading} style={styles.loginBtnContainer}>
-            <LinearGradient
-              colors={['rgb(210, 238, 255)', 'rgb(250, 250, 250)', 'rgb(210, 238, 255)']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientBackground}
-            >
-              {loginLoading ? (
-                <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-              ) : (
-                <CustomText style={styles.loginBtnText} semibold>Log in</CustomText>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+          <AnimatedButton
+            label='Log in'
+            onPress={() => onLoginSubmit({ email, password })}
+            loading={loginLoading}
+            disabled={loginLoading}
+            variant='primary'
+            fullWidth
+            semibold
+            style={styles.loginBtnContainer}
+            textStyle={styles.loginBtnText}
+          />
 
-          <TouchableOpacity onPress={handleGuestLogin} disabled={GuestLoading} style={styles.loginBtnContainer}>
-            <LinearGradient
-              colors={['rgb(210, 255, 238)', 'rgb(255, 255, 255)', 'rgb(210, 255, 238)']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientBackground}
-            >
-              {GuestLoading ? (
-                <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-              ) : (
-                <CustomText style={styles.guestLoginBtnText} semibold>Guest Login</CustomText>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+          <AnimatedButton
+            label='Guest Login'
+            onPress={handleGuestLogin}
+            disabled={guestLoading}
+            variant='secondary'
+            fullWidth
+            semibold
+            style={styles.loginBtnContainer}
+            textStyle={styles.guestLoginBtnText}
+          />
 
-          <TouchableOpacity onPress={() => navigation.navigate("ForgottenPassword", { email })}>
-            <AnimatedText style={[animatedStyle, {
-              color: theme.colorFontGray
-            }]}>
-              Forgotten Password?
-            </AnimatedText>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ForgottenPassword", { email })}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            activeOpacity={1}
+          >
+            <Animated.View style={animatedButtonStyles}>
+              <CustomText style={styles.forgotPassText}> Forgotten Password? </CustomText>
+            </Animated.View>
           </TouchableOpacity>
 
           <View style={styles.newAccContainer}>
-            <TouchableOpacity onPress={redirectNewAccount}>
-              <LinearGradient
-                colors={['rgb(250, 250, 250)', 'rgb(210, 238, 255)', 'rgb(250, 250, 250)']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientBackground}
-              >
-                {createNewAccountLoading ? (
-                  <ActivityIndicator color={theme.colorFontDark} style={styles.activityIndicator} />
-                ) : (
-                  <CustomText style={styles.SignupBtnText} semibold>Create new Account</CustomText>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
+            <AnimatedButton
+              label='Create new Account'
+              onPress={redirectNewAccount}
+              loading={createNewAccountLoading}
+              disabled={createNewAccountLoading}
+              variant='primary'
+              fullWidth
+              semibold
+              style={styles.loginBtnContainer}
+              textStyle={styles.SignupBtnText}
+            />
             <CustomText style={styles.alreadyUserText}>New User?</CustomText>
           </View>
         </ScrollView>
@@ -278,7 +276,7 @@ const styles = StyleSheet.create({
     width: "95%",
     maxWidth: 500,
     gap: 6,
-    marginBottom: 12
+    marginBottom: 10
   },
   input: {
     fontSize: 15
@@ -289,7 +287,7 @@ const styles = StyleSheet.create({
   loginBtnContainer: {
     width: "95%",
     maxWidth: 500,
-    marginBottom: 8
+    marginBottom: 5
   },
   gradientBackground: {
     paddingVertical: 8,
@@ -315,11 +313,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colorFontGray
   },
+  forgotPassText: {
+    color: theme.colorFontGray,
+    fontSize: 14
+  },
   newAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
     marginBottom: 10,
-    width: "95%",
+    width: "100%",
     maxWidth: 500
   },
   SignupBtnText: {
@@ -330,9 +332,7 @@ const styles = StyleSheet.create({
   alreadyUserText: {
     color: theme.colorFontGray,
     fontSize: 13,
-    textAlign: "center",
-    marginBottom: 5,
-    letterSpacing: 0.5
+    textAlign: "center"
   }
 });
 
