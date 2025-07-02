@@ -15,7 +15,7 @@ const AnimatedEventCard = ({ event, onPress, index = 0 }: AnimatedEventCardProps
   const touchableScale = useSharedValue(1);
 
   const opacity = useSharedValue(1);
-  const scale = useSharedValue(0.9);
+  const scale = useSharedValue(0.96);
 
   const animatedButtonStyles = useAnimatedStyle(() => ({
     transform: [{ scale: touchableScale.value }]
@@ -45,7 +45,7 @@ const AnimatedEventCard = ({ event, onPress, index = 0 }: AnimatedEventCardProps
   }));
 
   const handlePressIn = () => {
-    touchableScale.value = withSpring(0.96, {
+    touchableScale.value = withSpring(0.98, {
       damping: 10,
       stiffness: 500
     });
