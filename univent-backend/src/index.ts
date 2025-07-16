@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoutes";
 import defaultRoutes from "./routes/defaultRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import { startNotificationCronJob } from "./jobs/notificationScheduler";
 
 dotenv.config();
 
@@ -38,6 +39,8 @@ app.use("/api/notifications", notificationRoutes);
 
 app.listen(PORT, () => {
   console.log("Server running on port:", PORT);
+  // start cron job when server starts
+  startNotificationCronJob();
 });
 
 export default app;
