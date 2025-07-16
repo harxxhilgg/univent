@@ -9,7 +9,6 @@ import { API_URL } from "../utils/api";
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
-import { checkAndScheduleNotifications } from '../utils/notificationScheduler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -83,14 +82,11 @@ const Updates = () => {
       const res = await axios.get(`${API_URL}/events/getLatestEvent`);
       if (Array.isArray(res.data) && res.data.length > 0) {
         setEvent(res.data[0]);
-
-        console.log('Latest event updated, scheduling notification...');
-        await checkAndScheduleNotifications();
       } else {
         setEvent(null);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching event: ', err);
     } finally {
       setLoading(false);
     }
