@@ -5,7 +5,6 @@ import { useToast } from "../components/useToast";
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { api } from "../utils/api";
-import { cleanupOldNotifications, initializeBackgroundTask } from "../utils/notificationScheduler";
 
 interface ProviderProps {
   children?: React.ReactNode;
@@ -28,10 +27,10 @@ export function decodeJwtPayload(token: string) {
   };
 };
 
-const requestNotificationPermission = async () => {
+const requestNotificationPermission = async (): Promise<boolean> => {
   try {
     if (!Device.isDevice) {
-      console.log('Skipping notification permission');
+      console.log('Not a physical device');
       return false;
     }
 
@@ -44,13 +43,14 @@ const requestNotificationPermission = async () => {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('User did not grant notification permission');
+      console.log('Notification perms denied');
       return false;
     }
 
+    console.log(`Notification perms granted`);
     return true;
   } catch (err) {
-    console.error('Failed to request notification permission: ', err);
+    console.error('Perms error: ', err);
     return false;
   };
 };
@@ -62,10 +62,54 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const { showSuccess, showInfo } = useToast();
 
+  async function registerForPushNotifications(token: string, userData?: any) {
+    try {
+      if (!Device.isDevice) {
+        console.log('Skipping push token - not a physical device');
+        return;
+      }
+
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notifications permission not granted - skipping token registration');
+        return;
+      }
+
+      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
+
+      if (expoPushToken) {
+        console.log('Push token obtained: ', expoPushToken);
+
+        const userEmail = userData?.email || user?.email;
+
+        if (!userEmail) {
+          console.error('User email not found - cannot register push token');
+          return;
+        }
+
+        const response = await api.post("/default/notification-push-token", {
+          expoPushToken,
+          userEmail
+        });
+
+        if (response.status === 200) {
+          console.log('Push token registered with server: ', response.data);
+        } else {
+          console.error('Failed to register push token: ', response.data);
+        };
+      }
+    } catch (error) {
+      console.error('Error registering push token: ', error);
+    };
+  };
+
   useEffect(() => {
     async function initializeApp() {
       try {
+        // req notification perms
         await requestNotificationPermission();
+
+        // check existing auth token from storage
         const token = await AsyncStorage.getItem("authToken");
         if (token) {
           const decodedPayload = decodeJwtPayload(token);
@@ -73,6 +117,7 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
             setUser(decodedPayload);
             setInitialRoute('Main');
 
+            // welcome message
             if (!hasShownWelcome) {
               setHasShownWelcome(true);
               if (decodedPayload.email === "user.guest@univent.com") {
@@ -82,10 +127,8 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
               }
             }
 
+            // register push token and initialize notifications
             await registerForPushNotifications(token, decodedPayload);
-
-            await initializeBackgroundTask();
-            await cleanupOldNotifications();
 
           } else {
             setInitialRoute('Auth');
@@ -98,46 +141,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
         setInitialRoute('Auth');
       } finally {
         setIsLoading(false);
-      }
-    }
-
-    async function registerForPushNotifications(token: string, userData?: any) {
-      try {
-        if (!Device.isDevice) {
-          console.log('Skipping token registration');
-          return;
-        }
-
-        const { status } = await Notifications.getPermissionsAsync();
-        if (status !== 'granted') {
-          console.log('Permission not granted, skipping token registration.');
-          return;
-        }
-
-        const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
-
-        if (expoPushToken) {
-          console.log('Push token obtained: ', expoPushToken);
-
-          const userEmail = userData?.email || user?.email;
-
-          if (!userEmail) {
-            console.error('User email not found - cannot register push token');
-            return;
-          }
-
-          const response = await api.post("/default/notification-push-token", {
-            expoPushToken,
-            userEmail
-          });
-          if (response.status === 200) {
-            console.log('Push token registered with server: ', response.data);
-          } else {
-            console.error('Failed to register push token: ', response.data);
-          }
-        }
-      } catch (err) {
-        console.error("Error registering push token: ", err);
       }
     }
 
