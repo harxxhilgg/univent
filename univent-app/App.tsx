@@ -10,7 +10,7 @@ import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import EventDetails from './src/screens/EventDetails';
 import ForgottenPassword from './src/screens/ForgottenPassword';
-import { useEffect, useState, useContext, useRef } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
@@ -33,7 +33,6 @@ export type RootStackParamList = {
 }
 
 const Stack = createStackNavigator<RootStackParamList>();
-
 const ANDROID_CHANNEL_ID = "event-reminders";
 
 Notifications.setNotificationHandler({
@@ -49,31 +48,20 @@ function AppContent() {
   const [showFullFontError, setShowFullFontError] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const isOnline = useInternetMonitor();
-  const navigationRef = useRef<any>();
   const { showInfo } = useToast();
 
   useEffect(() => {
     let fontTimer: any;
     let notificationListener: any;
-    let responseListener: any;
 
     const initializeApp = async () => {
       try {
+        // load fonts
         if (!fontsLoaded) {
           fontTimer = setTimeout(() => {
             setShowFullFontError(true);
           }, 5000);
         };
-
-        if (Platform.OS === 'android') {
-          await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
-            name: 'Event Reminders',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#ffffff'
-          });
-          console.log("Notification channel 'event-reminders' set up.");
-        }
 
         await Font.loadAsync({
           "Inter-Regular": require("./assets/fonts/Inter-Regular.ttf"),
@@ -85,58 +73,23 @@ function AppContent() {
         });
         setFontsLoaded(true);
 
+        // Set up notification channel for Android
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
+            name: 'Event Reminders',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#ffffff',
+            sound: 'default'
+          });
+        }
+
+        // listen for notifications received while app is open
         notificationListener = Notifications.addNotificationReceivedListener(notification => {
-          const notificationDate = notification.date;
-          const now = Date.now() / 1000;
-
-          if (Math.abs(now - notificationDate) < 2) {
-            console.log('Ignoring recently scheduled notification to prevent unwanted toast');
-            return;
-          }
-
-          console.log('Notification Received: ', notification);
-          // @ts-ignore
-          showInfo(4000, notification.request.content.title || "New Notification", notification.request.content.body);
+          console.log("Notification received: ", notification.request.content.title);
+          showInfo(4000, notification.request.content.title || "New Notification", notification.request.content.body ?? undefined);
         });
 
-        responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-          console.log(' Notification tapped: ', response);
-
-          try {
-            const data = response.notification.request.content.data;
-
-            if (!data || !navigationRef.current) return;
-
-            if (data.eventId) {
-              const eventData = {
-                id: parseInt(data.eventId) || data.eventId,
-                title: data.title || 'Event',
-                organizer: data.organizer || '',
-                event_date: data.event_date || '',
-                event_time: data.event_time || '',
-                location: data.location || '',
-                image_url: data.image_url || '',
-                is_paid: data.is_paid === 'true' || data.is_paid === true,
-                created_by_email: data.created_by_email || '',
-                created_at: data.created_at || new Date().toISOString(),
-                ...data
-              };
-
-              console.log('Navigating to EventDetails with data: ', eventData);
-
-              navigationRef.current.navigate('EventDetails', {
-                event: eventData
-              });
-            } else if (data.screen) {
-              const validScreens = ['My Events', 'Updates', 'Settings', 'Univent'];
-              if (validScreens.includes(data.screen)) {
-                navigationRef.current.navigate(data.screen);
-              }
-            }
-          } catch (err) {
-            console.error('Navigation error from notification: ', err);
-          };
-        });
       } catch (error) {
         console.error('App Intialization Error: ', error);
       }
@@ -145,18 +98,12 @@ function AppContent() {
     initializeApp();
 
     return () => {
-      if (fontTimer) {
-        clearTimeout(fontTimer);
-      }
+      if (fontTimer) clearTimeout(fontTimer);
       if (notificationListener) {
         Notifications.removeNotificationSubscription(notificationListener);
       }
-      if (responseListener) {
-        Notifications.removeNotificationSubscription(responseListener);
-      }
     };
-
-  }, [isOnline, showInfo, fontsLoaded]);
+  }, [showInfo, fontsLoaded]);
 
   const handleClose = () => {
     BackHandler.exitApp();
@@ -280,7 +227,30 @@ function AppContent() {
 }
 
 export default function App() {
-  setBackgroundColorAsync(theme.colorBackgroundDark);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const prepare = async () => {
+      try {
+        await setBackgroundColorAsync(theme.colorBackgroundDark);
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+      };
+    };
+
+    prepare();
+  }, []);
+
+  if (!isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colorFontLight} />
+      </View>
+    );
+  }
+
   return (
     <UserProvider>
       <AppContent />
@@ -296,7 +266,8 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    backgroundColor: theme.colorBackgroundDark
   },
   offlineContainer: {
     flex: 1,
