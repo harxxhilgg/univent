@@ -1,6 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
 import CustomText from '../CustomText';
+import { render } from '@testing-library/react-native';
 
 describe('CustomText Component', () => {
   it('renders correctly with default props', () => {
