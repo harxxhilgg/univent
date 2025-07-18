@@ -1,13 +1,13 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import CustomText from '../components/CustomText';
+import axios from 'axios';
+import AnimatedEventCard from '../components/AnimatedEventCard';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { theme } from '../../theme';
 import { Event } from './UniventHome';
 import { API_URL } from "../utils/api";
 import { UserContext } from '../context/UserContext';
-import CustomText from '../components/CustomText';
-import axios from 'axios';
-import AnimatedEventCard from '../components/AnimatedEventCard';
 
 const MyEvents = ({ navigation }: { navigation: any }) => {
   const { user } = useContext(UserContext);
