@@ -1,20 +1,22 @@
+import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import CustomText from "../components/CustomText";
+import ToggleSwitch from "toggle-switch-react-native";
+import AnimatedButton from "../components/AnimatedButton";
 import React, { useContext, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity } from "react-native";
-import CustomText from "../components/CustomText";
 import { theme } from "../../theme";
 import { Image } from "expo-image";
 import { TextInput as TextInputPaper } from "react-native-paper";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import * as ImagePicker from "expo-image-picker";
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { FontAwesome6, Octicons } from "@expo/vector-icons";
-import ToggleSwitch from "toggle-switch-react-native";
 import { UserContext } from "../context/UserContext";
 import { api } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
 import { useToast } from "../components/useToast";
-import AnimatedButton from "../components/AnimatedButton";
+
+const isDev = __DEV__;
 
 const CreateEvent = () => {
   const { user } = useContext(UserContext);
@@ -116,10 +118,10 @@ const CreateEvent = () => {
         isPaid,
         created_by_email: user?.email || "usersemailwillbehere@example.com",
       };
-      // console.log("event data: ", eventData);
+      if (isDev) console.log("event data: ", eventData);
 
       const response = await api.post("/events/create", eventData);
-      console.log(response?.data);
+      if (isDev) console.log(response?.data);
       showSuccess(1500, "Event created successfully!");
 
       setTitle("");
@@ -130,7 +132,7 @@ const CreateEvent = () => {
       setSelectedImage(null);
       setIsPaid(false);
     } catch (err: any) {
-      console.log("Event creation error ", err.response?.data || err.message);
+      if (isDev) console.log("Event creation error ", err.response?.data || err.message);
       showError(2500, "Event created failure!");
     } finally {
       setLoading(false);
