@@ -1,15 +1,15 @@
-import { LayoutAnimation, Platform, ScrollView, StyleSheet, TouchableOpacity, UIManager, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
 import CustomText from '../components/CustomText';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import React, { useCallback, useEffect, useState } from 'react';
+import { LayoutAnimation, Platform, ScrollView, StyleSheet, TouchableOpacity, UIManager, View } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
-import axios from 'axios';
 import { API_URL } from "../utils/api";
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
