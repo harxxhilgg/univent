@@ -1,15 +1,14 @@
-import { View, StyleSheet, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView } from 'react-native';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { UserContext } from '../context/UserContext';
-import { theme } from '../../theme';
+import axios from 'axios';
 import CustomText from '../components/CustomText';
-import { CurrentEvents } from '../components/CurrentEvents';
-import { api, API_URL } from '../utils/api';
+import AnimatedEventCard from '../components/AnimatedEventCard';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { ActivityIndicator, Searchbar } from 'react-native-paper';
-import axios from 'axios';
-import { useRef } from 'react';
-import AnimatedEventCard from '../components/AnimatedEventCard';
+import { UserContext } from '../context/UserContext';
+import { api, API_URL } from '../utils/api';
+import { theme } from '../../theme';
+import { CurrentEvents } from '../components/CurrentEvents';
 
 export interface Event {
   id: number;
