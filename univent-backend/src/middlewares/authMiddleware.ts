@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import logger from "../utils/logger";
+import { Request, Response, NextFunction } from "express";
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -28,7 +29,7 @@ export const verifyToken = (
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("JWT verification error: ", err);
+    logger.error("JWT verification error: ", err);
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };
