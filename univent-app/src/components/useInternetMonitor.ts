@@ -1,5 +1,5 @@
-import { useToast } from "./useToast";
 import NetInfo from "@react-native-community/netinfo";
+import { useToast } from "./useToast";
 import { useEffect, useRef, useState } from "react";
 
 const useInternetMonitor = () => {
