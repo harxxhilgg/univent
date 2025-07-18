@@ -1,14 +1,13 @@
-import { StyleSheet, View, Platform, Dimensions, Keyboard, UIManager, Animated } from 'react-native';
-import React, { useEffect, useRef } from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { theme } from './theme';
-import { FontAwesome, Fontisto, Ionicons, Octicons } from '@expo/vector-icons';
-// screens
 import UniventHome from './src/screens/UniventHome';
 import MyEvents from './src/screens/MyEvents';
 import CreateEvent from './src/screens/CreateEvent';
 import Updates from './src/screens/Updates';
 import Settings from './src/screens/Settings';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Platform, Dimensions, Keyboard, UIManager, Animated } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { theme } from './theme';
+import { FontAwesome, Fontisto, Ionicons, Octicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
