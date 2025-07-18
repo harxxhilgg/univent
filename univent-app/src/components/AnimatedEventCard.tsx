@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { TouchableRipple } from 'react-native-paper';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
+import { TouchableRipple } from 'react-native-paper';
 import { EventCard } from './EventCard';
 import { Event } from '../screens/UniventHome';
 import { theme } from '../../theme';
