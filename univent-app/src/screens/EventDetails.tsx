@@ -1,14 +1,14 @@
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Entypo from '@expo/vector-icons/Entypo';
+import CustomText from '../components/CustomText';
+import AnimatedButton from '../components/AnimatedButton';
 import React, { useContext, useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Image } from 'react-native';
 import { theme } from '../../theme';
-import CustomText from '../components/CustomText';
 import { calculateTimeUntil, getMonthAndDay } from '../components/EventCard';
 import { formatTime } from '../components/EventCard';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import Entypo from '@expo/vector-icons/Entypo';
 import { useToast } from '../components/useToast';
 import { UserContext } from '../context/UserContext';
-import AnimatedButton from '../components/AnimatedButton';
 
 const EventDetails = ({ route }: { route: any }) => {
   // getting full event object from navigation params
