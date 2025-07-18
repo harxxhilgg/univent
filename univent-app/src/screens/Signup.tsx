@@ -1,7 +1,8 @@
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, Text } from 'react-native';
-import React, { useState } from 'react';
-import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
+import AnimatedButton from '../components/AnimatedButton';
+import React, { useState } from 'react';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, ScrollView, StyleSheet, Platform, Keyboard, Text } from 'react-native';
+import { theme } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { TextInput as TextInputPaper } from 'react-native-paper';
@@ -10,7 +11,8 @@ import { useToast } from '../components/useToast';
 import { Controller, useForm } from "react-hook-form";
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import AnimatedButton from '../components/AnimatedButton';
+
+const isDev = __DEV__;
 
 const SignupSchema = z.object({
   username: z.string()
@@ -55,7 +57,7 @@ const Signup = () => {
     try {
       setSignupLoading(true);
       const response = await api.post("/auth/signup", data);
-      console.log(`User created: ${response.data.username}`);
+      if (isDev) console.log(`User created: ${response.data.username}`);
       showSuccess(3000, 'Account created', 'Please log in');
       navigation.navigate('Auth');
     } catch (error: any) {
