@@ -1,12 +1,13 @@
-import { Pool } from "pg";
 import dotenv from "dotenv";
+import logger from "../utils/logger";
+import { Pool } from "pg";
 
 dotenv.config();
 
 const environment = process.env.NODE_ENV || "production";
 const isProduction = environment === "production";
 
-console.log(`(db) environment: ${environment.toUpperCase()}`);
+logger.debug(`(db) environment: ${environment.toUpperCase()}`);
 
 const poolConfig = isProduction
   ? {
@@ -32,8 +33,9 @@ const verifyConnection = async () => {
   try {
     const client: any = await pool.connect();
     client.release();
+    logger.debug(`Conntected Postgres`);
   } catch (err) {
-    console.error("PostgreSQL Connection Error: ", err);
+    logger.error(`PostgreSQL Connection Error: ${err}`);
   }
 };
 
