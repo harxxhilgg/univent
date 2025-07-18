@@ -1,17 +1,19 @@
-import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomText from '../components/CustomText';
+import AnimatedButton from '../components/AnimatedButton';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import { theme } from '../../theme';
 import { useContext, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../utils/api';
 import { UserContext } from '../context/UserContext';
 import { TextInput as TextInputPaper } from 'react-native-paper';
 import { decodeJwtPayload } from '../context/UserProvider';
 import { useToast } from '../components/useToast';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import AnimatedButton from '../components/AnimatedButton';
+
+const isDev = __DEV__;
 
 type LoginFormData = {
   email: string;
@@ -68,7 +70,7 @@ const AuthScreen = () => {
           email: decoded.email,
         });
       } catch (storageError) {
-        console.log("Error storing token: ", storageError);
+        if (isDev) console.log("Error storing token: ", storageError);
         showError(2500, "Something went wrong", "Please try again");
         return;
       };
