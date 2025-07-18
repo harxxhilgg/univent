@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
 import pool from "../config/db";
+import logger from "../utils/logger";
+import { Request, Response } from "express";
 import { uploadToImgBB } from "../utils/imageUpload";
 
 export const uploadImage = async (
@@ -15,10 +16,10 @@ export const uploadImage = async (
       req.file.buffer,
       req.file.originalname
     );
-    console.log("Generated imgBB image URL: ", imageUrl);
+    logger.debug("Generated imgBB image URL: ", imageUrl);
     res.json({ imageUrl: imageUrl || null });
   } catch (err) {
-    console.error("Error uploading image to ImgBB: ", err);
+    logger.error("Error uploading image to ImgBB: ", err);
     res.status(500).json({ imageUrl: null });
   }
 };
@@ -36,7 +37,7 @@ export const createEvent = async (req: Request, res: Response) => {
       created_by_email,
     } = req.body;
 
-    console.log("Received event data: ", {
+    logger.debug("Received event data: ", {
       title,
       organizer,
       eventDate,
@@ -104,7 +105,7 @@ export const createEvent = async (req: Request, res: Response) => {
       event: result.rows[0],
     });
   } catch (error) {
-    console.error("Error creating event: ", error);
+    logger.error("Error creating event: ", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -132,7 +133,7 @@ export const getAllEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching on-going events: ", err);
+    logger.error("Error fetching on-going events: ", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -162,7 +163,7 @@ export const getCurrentEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching on-going events: ", err);
+    logger.error("Error fetching on-going events: ", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -192,7 +193,7 @@ export const getUpcomingEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (error) {
-    console.error("Error fetching events: ", error);
+    logger.error("Error fetching events: ", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -226,7 +227,7 @@ export const getEventsByUser = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -260,7 +261,7 @@ export const search = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -291,7 +292,7 @@ export const getLatestEvent = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
