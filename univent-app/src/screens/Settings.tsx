@@ -1,21 +1,21 @@
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import CustomText from '../components/CustomText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AnimatedButton from '../components/AnimatedButton';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
 import { theme } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
 import { api } from "../utils/api";
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { TextInput as TextInputPaper, Modal as PaperModal } from 'react-native-paper';
 import { useToast } from '../components/useToast';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import AnimatedButton from '../components/AnimatedButton';
 
 const EditProfileSchema = z.object({
   username: z.string()
