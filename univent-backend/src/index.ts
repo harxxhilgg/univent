@@ -7,6 +7,7 @@ import eventRoutes from "./routes/eventRoutes";
 import defaultRoutes from "./routes/defaultRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { startNotificationCronJob } from "./jobs/notificationScheduler";
+import logger from "./utils/logger";
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 const environment = process.env.NODE_ENV || "development";
 const CLIENT_URL = process.env.CLIENT_URL;
 
-console.log(`(index) environment: ${environment.toUpperCase()}`);
+logger.debug(`(index) environment: ${environment.toUpperCase()}`);
 
 app.use(
   cors({
@@ -38,7 +39,7 @@ app.use("/api/default", defaultRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.listen(PORT, () => {
-  console.log("Server running on port:", PORT);
+  logger.debug(`Server running on port: ${PORT}`);
   // start cron job when server starts
   startNotificationCronJob();
 });
