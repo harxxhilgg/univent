@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { messaging } from "../config/firebase";
-import { Expo } from "expo-server-sdk";
 import pool from "../config/db";
+import logger from "../utils/logger";
+import { Request, Response } from "express";
+import { Expo } from "expo-server-sdk";
 
 const expo = new Expo();
 
@@ -15,7 +15,7 @@ export const sendNotification = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`Sending notification to: ${userEmail}`);
+    logger.debug(`Sending notification to: ${userEmail}`);
 
     // getting user's push token from db
     const userResult = await pool.query(
@@ -42,7 +42,7 @@ export const sendNotification = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`Using push token: ${pushToken.substring(0, 20)}...`);
+    logger.debug(`Using push token: ${pushToken.substring(0, 20)}...`);
 
     const message: any = {
       to: pushToken,
@@ -69,7 +69,7 @@ export const sendNotification = async (req: Request, res: Response) => {
       recipient: userEmail,
     });
   } catch (error) {
-    console.error("Error sending notifications: ", error);
+    logger.error("Error sending notifications: ", error);
     res.status(500).json({
       message: "Failed to send notification",
       error: error instanceof Error ? error.message : "Unknown error",
