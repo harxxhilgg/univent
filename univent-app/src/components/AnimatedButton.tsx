@@ -1,9 +1,9 @@
 import React from "react";
-import { ActivityIndicator, DimensionValue, StyleSheet, TextStyle, TouchableOpacity, ViewStyle } from "react-native";
+import CustomText from "./CustomText";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { ActivityIndicator, DimensionValue, StyleSheet, TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 import { theme } from "../../theme";
 import { LinearGradient } from "expo-linear-gradient";
-import CustomText from "./CustomText";
 
 interface AnimatedButtonProps {
   label: string;
