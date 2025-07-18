@@ -1,7 +1,7 @@
+import * as useToastModule from "../../components/useToast";
+import EventDetails from "../EventDetails";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { UserContext } from "../../context/UserContext";
-import EventDetails from "../EventDetails";
-import * as useToastModule from "../../components/useToast";
 
 jest.mock('@expo/vector-icons/FontAwesome6', () => 'FontAwesome6');
 jest.mock('@expo/vector-icons/Entypo', () => 'Entypo');
