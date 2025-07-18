@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
 import dotenv from "dotenv";
+import logger from "../utils/logger";
+import { Request, Response } from "express";
 
 dotenv.config();
 
@@ -21,8 +22,8 @@ export const updatePushToken = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "User email is required" });
     }
 
-    console.log(`Updating push token for user: ${userEmail}`);
-    console.log(`Updated push token: ${expoPushToken.substring(0, 20)}...`);
+    logger.debug(`Updating push token for user: ${userEmail}`);
+    logger.debug(`Updated push token: ${expoPushToken.substring(0, 20)}...`);
 
     const result = await pool.query(
       `
@@ -42,7 +43,7 @@ export const updatePushToken = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log(`Push token updated successfully for user: ${userEmail}`);
+    logger.debug(`Push token updated successfully for user: ${userEmail}`);
 
     res.json({
       message: "Push token updated successfully",
@@ -50,7 +51,7 @@ export const updatePushToken = async (req: Request, res: Response) => {
       tokenUpdated: true,
     });
   } catch (error) {
-    console.error("Error updating push token: ", error);
+    logger.error("Error updating push token: ", error);
     res.status(500).json({
       message: "Server error while updating push token",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -93,7 +94,7 @@ export const getPushToken = async (req: Request, res: Response) => {
         : null,
     });
   } catch (error) {
-    console.error("Error retrieving push token: ", error);
+    logger.error("Error retrieving push token: ", error);
     res
       .status(500)
       .json({ message: "Server error while retrieving push token" });
@@ -138,7 +139,7 @@ export const notificationPushToken = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Push token registered succesfully" });
   } catch (err) {
-    console.error("Failed to register push token: ", err);
+    logger.error("Failed to register push token: ", err);
     res.status(403).json({ error: "Invalid or expired token" });
   }
 };
