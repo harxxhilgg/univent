@@ -1,27 +1,29 @@
-import { ActivityIndicator, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Font from 'expo-font';
+import * as Notifications from 'expo-notifications';
 import BottomTabNavigator from './BottomTabNavigator';
-import { UserProvider } from './src/context/UserProvider';
-import { theme } from './theme';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator, StackNavigationProp, TransitionPresets } from '@react-navigation/stack';
 import AuthScreen from './src/screens/AuthScreen';
 import Signup from './src/screens/Signup';
 import Toast from 'react-native-toast-message';
 import EventDetails from './src/screens/EventDetails';
 import ForgottenPassword from './src/screens/ForgottenPassword';
+import useInternetMonitor from './src/components/useInternetMonitor';
+import CustomText from './src/components/CustomText';
+import Updates from './src/screens/Updates';
+import { ActivityIndicator, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { UserProvider } from './src/context/UserProvider';
+import { theme } from './theme';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator, StackNavigationProp, TransitionPresets } from '@react-navigation/stack';
 import { useEffect, useState, useContext } from 'react';
-import * as Font from 'expo-font';
 import { UserContext } from './src/context/UserContext';
 import { toastConfig } from './src/configs/toastConfig';
 import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
-import useInternetMonitor from './src/components/useInternetMonitor';
-import CustomText from './src/components/CustomText';
-import * as Notifications from 'expo-notifications';
 import { useToast } from './src/components/useToast';
-import Updates from './src/screens/Updates';
 import { Image } from 'expo-image';
+
+const isDev = __DEV__;
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -30,7 +32,7 @@ export type RootStackParamList = {
   EventDetails: { event: Event };
   ForgottenPassword: { email: string };
   Updates: undefined
-}
+};
 
 const Stack = createStackNavigator<RootStackParamList>();
 const ANDROID_CHANNEL_ID = "event-reminders";
@@ -86,7 +88,7 @@ function AppContent() {
 
         // listen for notifications received while app is open
         notificationListener = Notifications.addNotificationReceivedListener(notification => {
-          console.log("Notification received: ", notification.request.content.title);
+          if (isDev) console.log("Notification received: ", notification.request.content.title);
           showInfo(4000, notification.request.content.title || "New Notification", notification.request.content.body ?? undefined);
         });
 
@@ -234,7 +236,7 @@ export default function App() {
       try {
         await setBackgroundColorAsync(theme.colorBackgroundDark);
       } catch (e) {
-        console.warn(e);
+        if (isDev) console.warn(e);
       } finally {
         setIsReady(true);
       };
