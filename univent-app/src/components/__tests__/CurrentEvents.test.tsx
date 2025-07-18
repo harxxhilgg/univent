@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import CurrentEvents from "../CurrentEvents";
+import { CurrentEvents } from "../CurrentEvents";
 import { formatTime } from "../EventCard";
 
 jest.mock('react-native-shimmer-placeholder', () => {
