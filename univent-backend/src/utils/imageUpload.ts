@@ -1,13 +1,14 @@
 import axios from "axios";
 import FormData from "form-data";
 import dotenv from "dotenv";
+import logger from "./logger";
 
 dotenv.config();
 
 export const uploadToImgBB = async (buffer: any, filename: string) => {
   try {
     if (!buffer || buffer.length === 0) {
-      console.error("Invalid or empty buffer provided");
+      logger.error("Invalid or empty buffer provided");
       return null;
     }
 
@@ -26,10 +27,10 @@ export const uploadToImgBB = async (buffer: any, filename: string) => {
       }
     );
 
-    // console.log("ImgBB upload response: ", response.data);
+    // logger.debug("ImgBB upload response: ", response.data);
     return response.data.data.url;
   } catch (err: any) {
-    console.error(
+    logger.error(
       "ImgBB upload error: ",
       err.response ? err.response.data : err.message
     );
