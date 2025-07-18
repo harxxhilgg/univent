@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
 import emailService from "./../utils/sendEMail";
+import logger from "../utils/logger";
+import { Request, Response } from "express";
 
 export const signup = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
@@ -75,7 +76,7 @@ export const signup = async (req: Request, res: Response) => {
       token,
     });
   } catch (err: any) {
-    console.error(err);
+    logger.error(err);
 
     if (err.code === "23505") {
       return res.status(400).json({ message: "Email already exists" });
@@ -137,7 +138,7 @@ export const login = async (req: Request, res: Response) => {
       user: { id: user.id, username: user.username, email: user.email },
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send("Server error");
   }
 };
@@ -155,10 +156,10 @@ export const deleteAccount = async (req: Request, res: Response) => {
       `,
       [email]
     );
-    console.log(`query result: ${result}`);
+    logger.debug(`query result: ${result}`);
     res.json({ message: "Account deleted successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -217,7 +218,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     res.json(updateUser.rows[0]);
   } catch (err) {
-    console.error("Profile update error: ", err);
+    logger.error(`Profile update error: ${err}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -308,7 +309,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.error("Error in forgotPassword: ", err);
+    logger.error(`Error in forgottenPassword: ${err}`);
     return res.status(500).json({ message: "Server error" });
   }
 };
