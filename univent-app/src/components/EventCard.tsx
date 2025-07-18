@@ -1,8 +1,8 @@
+import CustomText from './CustomText';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { theme } from '../../theme';
-import CustomText from './CustomText';
-import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface EventAPI {
@@ -108,7 +108,7 @@ const EventCardComponent = ({ event }: EventCardProps) => {
           style={isImageLoaded ? styles.image : styles.hiddenImage}
           onLoad={() => setIsImageLoaded(true)}
           onError={(e) => {
-            console.log("Image load error for event ", event.id, " : ", e.nativeEvent.error);
+            console.error("Image load error for event ", event.id, " : ", e.nativeEvent.error);
             setIsImageLoaded(true);
           }}
         />
