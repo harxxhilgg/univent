@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import pool from "../config/db";
+import logger from "../utils/logger";
 import { Expo } from "expo-server-sdk";
 
 const expo = new Expo();
@@ -67,7 +68,7 @@ const sendEventReminders = async () => {
           `,
           [eventIdsToUpdate]
         );
-        console.log(
+        logger.debug(
           `[CRON] Sent 10-min reminder for ${upcomingEvents.rows.length} event(s) to ${pushTokens.length} users.`
         );
       }
@@ -133,13 +134,13 @@ const sendEventReminders = async () => {
           `,
           [eventIdsToUpdate]
         );
-        console.log(
+        logger.debug(
           `[CRON] Sent starting now reminder for ${startingNowEvents.rows.length} event(s) to ${pushTokens.length} users.`
         );
       }
     }
   } catch (error) {
-    console.error("[CRON] Error in notification cron job: ", error);
+    logger.error("[CRON] Error in notification cron job: ", error);
   }
 };
 
