@@ -1,5 +1,6 @@
-import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import AnimatedButton from '../components/AnimatedButton';
 import CustomText from '../components/CustomText';
+import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { theme } from '../../theme';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +8,6 @@ import { z } from 'zod';
 import { TextInput } from 'react-native-paper';
 import { useToast } from '../components/useToast';
 import { api } from '../utils/api';
-import AnimatedButton from '../components/AnimatedButton';
 import { useState } from 'react';
 
 const EmailSchema = z.object({
