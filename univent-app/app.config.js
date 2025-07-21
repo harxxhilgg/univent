@@ -3,14 +3,14 @@ import 'dotenv/config';
 const env = process.env.APP_ENV || 'dev';
 
 require('dotenv').config({
-  path: `.env.${env}`,
-})
+  path: `.env.${env}`
+});
 
 export default {
   expo: {
     name: "Univent",
     slug: "univent",
-    version: "0.1.0",
+    version: "0.2.0-dev",
     orientation: "portrait",
     icon: "./assets/icons/splash-icon-light.png",
     userInterfaceStyle: "light",
@@ -60,9 +60,8 @@ export default {
         "expo-notifications", {
           "icon": "./assets/icons/notification-icon.png",
           "color": "#ffffff"
-        },
-      ],
-      "expo-task-manager"
+        }
+      ]
     ],
     extra: {
       API_URL: process.env.API_URL,
