@@ -51,7 +51,7 @@ export const updatePushToken = async (req: Request, res: Response) => {
       tokenUpdated: true,
     });
   } catch (error) {
-    logger.error("Error updating push token: ", error);
+    logger.error(`Error updating push token: ${error}`);
     res.status(500).json({
       message: "Server error while updating push token",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -94,7 +94,7 @@ export const getPushToken = async (req: Request, res: Response) => {
         : null,
     });
   } catch (error) {
-    logger.error("Error retrieving push token: ", error);
+    logger.error(`Error retrieving push token: ${error}`);
     res
       .status(500)
       .json({ message: "Server error while retrieving push token" });
@@ -139,7 +139,7 @@ export const notificationPushToken = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Push token registered succesfully" });
   } catch (err) {
-    logger.error("Failed to register push token: ", err);
+    logger.error(`Failed to register push token: ${err}`);
     res.status(403).json({ error: "Invalid or expired token" });
   }
 };
