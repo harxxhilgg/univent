@@ -140,7 +140,7 @@ const sendEventReminders = async () => {
       }
     }
   } catch (error) {
-    logger.error("[CRON] Error in notification cron job: ", error);
+    logger.error(`[CRON] Error in notification cron job: ${error}`);
   }
 };
 
