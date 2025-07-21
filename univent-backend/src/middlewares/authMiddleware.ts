@@ -29,7 +29,7 @@ export const verifyToken = (
     req.user = decoded;
     next();
   } catch (err) {
-    logger.error("JWT verification error: ", err);
+    logger.error(`JWT verification error: ${err}`);
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };
