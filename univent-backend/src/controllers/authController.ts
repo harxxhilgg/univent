@@ -76,7 +76,7 @@ export const signup = async (req: Request, res: Response) => {
       token,
     });
   } catch (err: any) {
-    logger.error(err);
+    logger.error(`${err}`);
 
     if (err.code === "23505") {
       return res.status(400).json({ message: "Email already exists" });
