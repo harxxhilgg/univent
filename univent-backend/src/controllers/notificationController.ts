@@ -69,7 +69,7 @@ export const sendNotification = async (req: Request, res: Response) => {
       recipient: userEmail,
     });
   } catch (error) {
-    logger.error("Error sending notifications: ", error);
+    logger.error(`Error sending notifications: ${error}`);
     res.status(500).json({
       message: "Failed to send notification",
       error: error instanceof Error ? error.message : "Unknown error",
