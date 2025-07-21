@@ -8,7 +8,7 @@ dotenv.config();
 export const uploadToImgBB = async (buffer: any, filename: string) => {
   try {
     if (!buffer || buffer.length === 0) {
-      logger.error("Invalid or empty buffer provided");
+      logger.error(`Invalid or empty buffer provided`);
       return null;
     }
 
@@ -31,8 +31,7 @@ export const uploadToImgBB = async (buffer: any, filename: string) => {
     return response.data.data.url;
   } catch (err: any) {
     logger.error(
-      "ImgBB upload error: ",
-      err.response ? err.response.data : err.message
+      `ImgBB upload error: ${err.response ? err.response.data : err.message}`
     );
     return null;
   }
