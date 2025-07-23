@@ -4,10 +4,10 @@ import AnimatedButton from '../components/AnimatedButton';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking, Text } from 'react-native';
 import { theme } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
-import { AuthScreenNavigationProp } from '../../App';
+import { RootStackParamList } from '../../App';
 import { UserContext } from '../context/UserContext';
 import { api } from "../utils/api";
 import { TextInput as TextInputPaper, Modal as PaperModal } from 'react-native-paper';
@@ -16,6 +16,7 @@ import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 const EditProfileSchema = z.object({
   username: z.string()
@@ -40,13 +41,15 @@ const Settings = () => {
   const accountSettingsBottomSheetRef = useRef<BottomSheet>(null);
   const profileSettingsBottomSheetRef = useRef<BottomSheet>(null);
   const miscellaneousSettingsBottomSheetRef = useRef<BottomSheet>(null);
-  const navigation = useNavigation<AuthScreenNavigationProp>();
+  const aboutUsBottomSheetRef = useRef<BottomSheet>(null);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [isBottomSheetAccountOpen, setIsBottomSheetAccountOpen] = useState(false);
   const [isBottomSheetProfileOpen, setIsBottomSheetProfileOpen] = useState(false);
   const [isBottomSheetMiscellaneousOpen, setIsBottomSheetMiscellaneousOpen] = useState(false);
+  const [isBottomSheetAboutUsOpen, setIsBottomSheetAboutUsOpen] = useState(false);
   const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
@@ -57,7 +60,11 @@ const Settings = () => {
   const profileButtonScale = useSharedValue(1);
   const accountButtonScale = useSharedValue(1);
   const miscButtonScale = useSharedValue(1);
+  const aboutUsButtonScale = useSharedValue(1);
   const editProfileButtonScale = useSharedValue(1);
+  const emailToButtonScale = useSharedValue(1);
+  const privacyPolicyButtonScale = useSharedValue(1);
+  const tosButtonScale = useSharedValue(1);
 
   const {
     control,
@@ -139,6 +146,10 @@ const Settings = () => {
     setIsBottomSheetMiscellaneousOpen(index >= 0);
   }, []);
 
+  const handleAboutUsSheetChanges = useCallback((index: number) => {
+    setIsBottomSheetAboutUsOpen(index >= 0);
+  }, []);
+
   const bottomSheets = {
     profile: {
       ref: profileSettingsBottomSheetRef,
@@ -151,6 +162,10 @@ const Settings = () => {
     miscellaneous: {
       ref: miscellaneousSettingsBottomSheetRef,
       isOpen: isBottomSheetMiscellaneousOpen
+    },
+    aboutus: {
+      ref: aboutUsBottomSheetRef,
+      isOpen: isBottomSheetAboutUsOpen
     }
   };
 
@@ -225,8 +240,24 @@ const Settings = () => {
     transform: [{ scale: miscButtonScale.value }]
   }));
 
+  const aboutUsAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: aboutUsButtonScale.value}]
+  }));
+
   const editProfileAnimatedStyles = useAnimatedStyle(() => ({
     transform: [{ scale: editProfileButtonScale.value }]
+  }));
+
+  const emailToAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: emailToButtonScale.value }]
+  }));
+
+  const privacyPolicyAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: privacyPolicyButtonScale.value }]
+  }));
+
+  const tosAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ scale: tosButtonScale.value }]
   }));
 
   const handleProfilePressIn = () => {
@@ -271,6 +302,20 @@ const Settings = () => {
     });
   };
 
+  const handleAboutPressIn = () => {
+    aboutUsButtonScale.value = withSpring(0.95, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
+  const handleAboutPressOut = () => {
+    aboutUsButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    });
+  };
+
   const handleEditProfilePressIn = () => {
     editProfileButtonScale.value = withSpring(0.90, {
       damping: 10,
@@ -280,6 +325,48 @@ const Settings = () => {
 
   const handleEditProfilePressOut = () => {
     editProfileButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handleEmailToPressIn = () => {
+    emailToButtonScale.value = withSpring(0.98, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handleEmailToPressOut = () => {
+    emailToButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handlePrivacyPolicyPressIn = () => {
+    privacyPolicyButtonScale.value = withSpring(0.98, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handlePrivacyPolicyPressOut = () => {
+    privacyPolicyButtonScale.value = withSpring(1, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handleTosPressIn = () => {
+    tosButtonScale.value = withSpring(0.98, {
+      damping: 10,
+      stiffness: 500
+    })
+  };
+
+  const handleTosPressOut = () => {
+    tosButtonScale.value = withSpring(1, {
       damping: 10,
       stiffness: 500
     })
@@ -392,13 +479,25 @@ const Settings = () => {
             </Animated.View>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.accountSettingsContainer}
+            onPress={() => toggleBottomSheet('aboutus')}
+            onPressIn={handleAboutPressIn}
+            onPressOut={handleAboutPressOut}
+            activeOpacity={1}
+          >
+            <Animated.View style={aboutUsAnimatedStyles}>
+              <CustomText style={styles.accountSettingsText}>About Us</CustomText>
+            </Animated.View>
+          </TouchableOpacity>
+
           <BottomSheet
             ref={profileSettingsBottomSheetRef}
             index={-1}
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
             onChange={handleProfileSheetChanges}
-            backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
@@ -437,7 +536,7 @@ const Settings = () => {
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
             onChange={handleAccountSheetChanges}
-            backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
@@ -465,7 +564,7 @@ const Settings = () => {
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
             onChange={handleMiscellaneousSheetChanges}
-            backgroundStyle={{ backgroundColor: theme.colorSlightDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
@@ -480,6 +579,73 @@ const Settings = () => {
                 style={styles.bottomSheetButtonStyle}
                 textStyle={styles.buttonTextStyle}
               />
+            </BottomSheetView>
+          </BottomSheet>
+
+          <BottomSheet
+            ref={aboutUsBottomSheetRef}
+            index={-1}
+            enablePanDownToClose={true}
+            snapPoints={Platform.OS === 'web' ? ['80%'] : ['90%']}
+            onChange={handleAboutUsSheetChanges}
+            backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+            handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
+          >
+            <BottomSheetView style={styles.bottomSheetContainer}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.aboutHeader}>
+                  <Text style={styles.aboutLogo}>Univent</Text>
+                  <CustomText style={styles.aboutMission}>Your ultimate companion for discovering and managing university events. Never miss out on what's happening on campus again.</CustomText>
+                </View>
+
+                <View style={styles.aboutSection}>
+                  <CustomText style={styles.aboutSectionTitle} bold>App Version</CustomText>
+                  <CustomText style={styles.aboutSectionContent}>v0.2.0-dev</CustomText>
+                </View>
+
+                <View style={styles.aboutSection}>
+                  <CustomText style={styles.aboutSectionTitle} bold>Created By</CustomText>
+                  <CustomText style={styles.aboutSectionContent}>Harshil</CustomText>
+                </View>
+
+                <View style={styles.aboutSection}>
+                  <CustomText style={styles.aboutSectionTitle} bold>Contact & Support</CustomText>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL('mailto:harxxhil.gg@gmail.com')}
+                      onPressIn={handleEmailToPressIn}
+                      onPressOut={handleEmailToPressOut}
+                      activeOpacity={1}
+                    >
+                      <Animated.View style={emailToAnimatedStyles}>
+                        <CustomText style={styles.aboutLink}>harxxhil.gg@gmail.com</CustomText>
+                      </Animated.View>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.aboutSection}>
+                  <CustomText style={styles.aboutSectionTitle} bold>Legal</CustomText>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Legal', { type: 'privacy' })}
+                    onPressIn={handlePrivacyPolicyPressIn}
+                    onPressOut={handlePrivacyPolicyPressOut}
+                    activeOpacity={1}
+                  >
+                    <Animated.View style={privacyPolicyAnimatedStyles}>
+                      <CustomText style={styles.aboutLink}>Privacy Policy</CustomText>
+                    </Animated.View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Legal', { type: 'tos' })}
+                    onPressIn={handleTosPressIn}
+                    onPressOut={handleTosPressOut}
+                    activeOpacity={1}
+                  >
+                    <Animated.View style={tosAnimatedStyles}>
+                    <CustomText style={styles.aboutLink}>Terms of Service</CustomText>
+                    </Animated.View>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
             </BottomSheetView>
           </BottomSheet>
 
@@ -514,7 +680,7 @@ const Settings = () => {
                       theme={{
                         colors: {
                           primary: theme.colorWhite,
-                          background: theme.colorSlightDark
+                          background: theme.colorBottomSheetDark
                         }
                       }}
                       textColor={theme.colorFontLight}
@@ -548,7 +714,7 @@ const Settings = () => {
                       theme={{
                         colors: {
                           primary: theme.colorWhite,
-                          background: theme.colorSlightDark
+                          background: theme.colorBottomSheetDark
                         }
                       }}
                       textColor={theme.colorFontLight}
@@ -640,7 +806,7 @@ const Settings = () => {
             onDismiss={toggleDeleteConfirmation}
             dismissable={true}
             contentContainerStyle={styles.deleteAccountConfirmationContainer}
-            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.9)' } }}
+            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.95)' } }}
           >
             <CustomText style={styles.deleteAccountConfirmationTitle} bold>Delete Account?</CustomText>
             <CustomText style={styles.deleteAccountConfirmationMessage}>
@@ -740,7 +906,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetContainer: {
     flex: 1,
-    backgroundColor: theme.colorSlightDark,
+    backgroundColor: theme.colorBottomSheetDark,
     padding: 16
   },
   bottomSheetButtonStyle: {
@@ -761,7 +927,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   editAccountConfirmationContainer: {
-    backgroundColor: theme.colorSlightDark,
+    backgroundColor: theme.colorBottomSheetDark,
     borderRadius: 20,
     paddingBottom: 10,
     width: "85%",
@@ -828,7 +994,7 @@ const styles = StyleSheet.create({
     fontSize: 14
   },
   logoutAccountConfirmationContainer: {
-    backgroundColor: theme.colorSlightDark,
+    backgroundColor: theme.colorBottomSheetDark,
     paddingVertical: 18,
     paddingHorizontal: 14,
     borderRadius: 22,
@@ -870,7 +1036,7 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight
   },
   deleteAccountConfirmationContainer: {
-    backgroundColor: theme.colorSlightDark,
+    backgroundColor: theme.colorBottomSheetDark,
     paddingVertical: 18,
     paddingHorizontal: 14,
     borderRadius: 22,
@@ -907,5 +1073,42 @@ const styles = StyleSheet.create({
   deleteAccountDeleteButtonText: {
     fontSize: 14,
     color: theme.colorFontLight
+  },
+  aboutHeader: {
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colorGray
+  },
+  aboutLogo: {
+    fontFamily: "DreamAvenue",
+    fontSize: 48,
+    color: theme.colorTabBarTint,
+    marginBottom: 12
+  },
+  aboutMission: {
+    fontSize: 15,
+    color: theme.colorLightGray,
+    textAlign: 'center',
+    paddingHorizontal: 10,
+    lineHeight: 24,
+    marginBottom: 2
+  },
+  aboutSection: {
+    marginTop: 20
+  },
+  aboutSectionTitle: {
+    fontSize: 16,
+    color: theme.colorFontLight,
+    marginBottom: 2
+  },
+  aboutSectionContent: {
+    fontSize: 15,
+    color: theme.colorFontGray
+  },
+  aboutLink: {
+    fontSize: 15,
+    color: theme.colorFontGray,
+    textDecorationLine: 'underline'
   }
 });
