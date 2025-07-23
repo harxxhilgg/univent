@@ -22,6 +22,7 @@ import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
 import { useToast } from './src/components/useToast';
 import { Image } from 'expo-image';
+import LegalScreen from './src/screens/LegalScreen';
 
 const isDev = __DEV__;
 
@@ -31,7 +32,8 @@ export type RootStackParamList = {
   Main: undefined;
   EventDetails: { event: Event };
   ForgottenPassword: { email: string };
-  Updates: undefined
+  Updates: undefined;
+  Legal: { type: 'privacy' | 'tos' };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -222,6 +224,18 @@ function AppContent() {
               ...TransitionPresets.BottomSheetAndroid
             })}
           />
+          <Stack.Screen
+            name="Legal"
+            component={LegalScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: route.params.type === 'privacy' ? 'Privacy Policy' : 'Terms of Service',
+              headerStyle: { backgroundColor: theme.colorBackgroundDark },
+              headerTintColor: theme.colorTabBarTint,
+              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+              ...TransitionPresets.FadeFromBottomAndroid
+            })}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
@@ -338,3 +352,4 @@ export type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, "
 export type EventDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, "EventDetails">;
 export type ForgotPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgottenPassword">;
 export type UpdatesNavigationProp = StackNavigationProp<RootStackParamList, "Updates">;
+export type LegalNavigationProp = StackNavigationProp<RootStackParamList, "Legal">;
