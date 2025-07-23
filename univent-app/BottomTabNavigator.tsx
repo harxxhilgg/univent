@@ -62,7 +62,7 @@ export default function BottomTabNavigator() {
         tabBarStyle: {
           transform: [{ translateY }],
           position: "absolute",
-          backgroundColor: theme.colorSlightDark,
+          backgroundColor: theme.colorBottomSheetDark,
           height: 80,
           marginHorizontal: Platform.OS === 'web' ? 0 : width > 1000 ? (width - 500) / 2 : 10,
           paddingTop: 20,
