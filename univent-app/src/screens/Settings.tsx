@@ -241,7 +241,7 @@ const Settings = () => {
   }));
 
   const aboutUsAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: aboutUsButtonScale.value}]
+    transform: [{ scale: aboutUsButtonScale.value }]
   }));
 
   const editProfileAnimatedStyles = useAnimatedStyle(() => ({
@@ -600,7 +600,7 @@ const Settings = () => {
 
                 <View style={styles.aboutSection}>
                   <CustomText style={styles.aboutSectionTitle} bold>App Version</CustomText>
-                  <CustomText style={styles.aboutSectionContent}>v0.2.0-dev</CustomText>
+                  <CustomText style={styles.aboutSectionContent}>v0.2.0-beta</CustomText>
                 </View>
 
                 <View style={styles.aboutSection}>
@@ -610,16 +610,16 @@ const Settings = () => {
 
                 <View style={styles.aboutSection}>
                   <CustomText style={styles.aboutSectionTitle} bold>Contact & Support</CustomText>
-                    <TouchableOpacity
-                      onPress={() => Linking.openURL('mailto:harxxhil.gg@gmail.com')}
-                      onPressIn={handleEmailToPressIn}
-                      onPressOut={handleEmailToPressOut}
-                      activeOpacity={1}
-                    >
-                      <Animated.View style={emailToAnimatedStyles}>
-                        <CustomText style={styles.aboutLink}>harxxhil.gg@gmail.com</CustomText>
-                      </Animated.View>
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL('mailto:harxxhil.gg@gmail.com')}
+                    onPressIn={handleEmailToPressIn}
+                    onPressOut={handleEmailToPressOut}
+                    activeOpacity={1}
+                  >
+                    <Animated.View style={emailToAnimatedStyles}>
+                      <CustomText style={styles.aboutLink}>harxxhil.gg@gmail.com</CustomText>
+                    </Animated.View>
+                  </TouchableOpacity>
                 </View>
 
                 <View style={styles.aboutSection}>
@@ -641,7 +641,7 @@ const Settings = () => {
                     activeOpacity={1}
                   >
                     <Animated.View style={tosAnimatedStyles}>
-                    <CustomText style={styles.aboutLink}>Terms of Service</CustomText>
+                      <CustomText style={styles.aboutLink}>Terms of Service</CustomText>
                     </Animated.View>
                   </TouchableOpacity>
                 </View>
