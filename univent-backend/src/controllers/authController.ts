@@ -250,63 +250,165 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const { username, plain_password } = user;
 
     const subject = `Account Credentials for ${username} | Univent`;
+
     const html = `
-    <div style="
-      max-width: 600px;
-      margin: 0 auto;
-      margin-top: 0.5rem;
-      padding: 30px;
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    ">
-      <h2 style="color: #333;">Account Credentials</h2>
+      <table
+        role="presentation"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        width="100%"
+        style="
+          font-family: Arial, sans-serif;
+          background-color: #f0f0f0;
+          padding: 20px;
+        "
+      >
+        <tr>
+          <td align="center" valign="top">
+            <table
+              role="presentation"
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+              width="100%"
+              style="
+              max-width: 600px;
+              background-color: #f9f9f9;
+              border-radius: 20px;
+              border-collapse: separate;
+              "
+            >
+              <tr>
+                <td
+                  align="center"
+                  style="
+                  background-color: #291315;
+                  border-top-left-radius: 20px;
+                  border-top-right-radius: 20px;
+                  padding: 16px;
+                  font-size: 0;
+                  line-height: 0;
+                  "
+                >
+                  <img
+                    src="https://i.ibb.co/pvQ5SM4Y/univent-no-bg.png"
+                    alt="univent-logo"
+                    border="0"
+                    width="150"
+                    style="display: block; max-width: 100%; height: auto;"
+                  />
+                </td>
+              </tr>
 
-      <p style="font-size: 16px;">Dear <strong>${username}</strong>,</span>
+              <tr>
+                <td
+                  align="center"
+                  style="padding: 20px 30px 10px 30px; color: #333;"
+                >
+                  <h2 class="desktop-large" style="margin: 0px 0px 10px 0px; padding: 0; font-size: 15px; color: #333;">
+                    Account Credentials
+                  </h2>
+                </td>
+              </tr>
 
-      <p style="font-size: 16px; color: #555;">Please find your login credentials below:</p>
+              <tr>
+                <td style="padding: 0px 30px 0px 30px;">
+                  <p class="desktop-large" style="font-size: 13px; margin: 0 0 10px 0;">
+                    Dear <strong>${username}</strong>,
+                  </p>
+                </td>
+              </tr>
 
-      <div style="
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        display: flex;
-        width: 60%;
-        justify-content: center;
-        margin: 10px auto;
-      ">
-        <p style="font-size: 16px; margin: 5px 0">
-          <strong>Username:</strong> ${username}<br>
-          <strong>Password:</strong> ${plain_password}
-        </p>
-      </div>
+              <tr>
+                <td style="padding: 0px 30px 20px 30px;">
+                  <p class="desktop-large" style="font-size: 12px; color: #555; margin: 0;">
+                    Please find your login credentials below:
+                  </p>
+                </td>
+              </tr>
 
-      <p style="font-size: 15px; margin-top: 20px;">
-        Best regards,<br>
-        <strong>Harshil Patel</strong><br>
-        <span style="color: #555; font-style: italic;">dev@univent</span>
-      </p>
-      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+              <tr>
+                <td align="center" style="padding: 0 30px;">
+                  <table
+                    role="presentation"
+                    cellpadding="0"
+                    cellspacing="0"
+                    border="0"
+                    width="100%"
+                    style="
+                      background-color: #ffffff;
+                      border-radius: 10px;
+                      border: 1px solid #ddd;
+                      border-collapse: separate;
+                      max-width: 98%;
+                    "
+                  >
+                    <tr>
+                      <td style="padding: 14px; text-align: center;">
+                        <p class="desktop-large" style="font-size: 13px; margin: 5px 0;">
+                          <strong>Username:</strong> ${username}<br />
+                          <strong>Password:</strong> ${plain_password}
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
 
-      <p style="font-size: 13px; color: #777;">
-        If you have any questions or encounter any issues, please do not hesitate to respond to this email.
-      </p>
-    </div>
+              <tr>
+                <td style="padding: 8px 30px 0px 30px; text-align: center;">
+                  <p class="desktop-large" style="font-size: 14px; margin: 20px 0 0 0;">
+                  Best regards,<br />
+                  <strong>Harshil Patel</strong><br />
+                  <span class="desktop-large" style="color: #555; font-style: italic;">
+                    dev@univent
+                  </span>
+                  </p>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 30px 30px 14px 30px;">
+                  <hr style="border: none; border-top: 1px solid #ccc; margin: 0;" />
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 0px 30px 30px 30px; text-align: center;">
+                  <p class="desktop-large" style="font-size: 10px; color: #777; margin: 0;">
+                    If you have any questions or encounter any issues, reply to this email.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      
+      <style>
+        @media only screen and (min-width: 601px) {
+          .desktop-large {
+            font-size: 16px !important;
+          }
+          h2.desktop-large {
+            font-size: 18px !important;
+          }
+          p.desktop-large {
+            font-size: 15px !important;
+          }
+          span.desktop-large {
+            font-size: 13px !important;
+          }
+        }
+      </style>
     `;
 
     // send mail
     await emailService.sendEmail(email, subject, html);
 
     return res.status(200).json({
-      message: "Credentials sent via email",
-      user: {
-        username,
-        email,
-        plain_password,
-      },
+      message: `Credentials sent to ${email}`,
     });
   } catch (err) {
     logger.error(`Error in forgottenPassword: ${err}`);
