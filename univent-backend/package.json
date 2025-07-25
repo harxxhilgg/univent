@@ -20,13 +20,12 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.25.5",
     "expo-server-sdk": "^3.15.0",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "firebase-admin": "^13.4.0",
-    "form-data": "^4.0.2",
+    "form-data": "^4.0.4",
     "image-size": "^1.2.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
@@ -46,11 +45,15 @@
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.11.11",
-    "@vercel/node": "^4.0.0",
+    "@vercel/node": "^5.3.6",
     "dotenv-cli": "^8.0.0",
     "nodemon": "^3.1.9",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "overrides": {
+    "undici": "^5.28.6",
+    "esbuild": ">=0.24.3"
   }
 }
