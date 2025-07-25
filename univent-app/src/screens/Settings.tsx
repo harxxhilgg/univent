@@ -517,7 +517,7 @@ const Settings = () => {
                 />
               )}
               <AnimatedButton
-                label='Log out'
+                label='Log Out'
                 onPress={toggleLogoutConfirmation}
                 loading={logoutLoading}
                 disabled={logoutLoading}
@@ -806,7 +806,7 @@ const Settings = () => {
             onDismiss={toggleDeleteConfirmation}
             dismissable={true}
             contentContainerStyle={styles.deleteAccountConfirmationContainer}
-            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.95)' } }}
+            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.9)' } }}
           >
             <CustomText style={styles.deleteAccountConfirmationTitle} bold>Delete Account?</CustomText>
             <CustomText style={styles.deleteAccountConfirmationMessage}>
