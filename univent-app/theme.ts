@@ -22,5 +22,5 @@ export const theme = {
   colorExclusiveYellow: "#FFED29",
   colorButtonGray: "#595959",
   colorTabBarTint: "#FBFFFF",
-  colorBottomSheetDark: "#10141C"
+  colorBottomSheetDark: "#10141C",
 };
