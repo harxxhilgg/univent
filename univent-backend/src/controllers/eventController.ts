@@ -16,10 +16,10 @@ export const uploadImage = async (
       req.file.buffer,
       req.file.originalname
     );
-    logger.debug(`Generated imgBB image URL: ${imageUrl}`);
+    logger.debug(`uploadImage - generated imgBB image URL: ${imageUrl}`);
     res.json({ imageUrl: imageUrl || null });
   } catch (err) {
-    logger.error(`Error uploading image to ImgBB: ${err}`);
+    logger.error(`uploadImage - error uploading image to ImgBB: ${err}`);
     res.status(500).json({ imageUrl: null });
   }
 };
@@ -59,7 +59,9 @@ export const createEvent = async (req: Request, res: Response) => {
       !created_by_email ||
       !isPaid === undefined
     ) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ message: "createEvent - missing required fields" });
     }
 
     // event exists
@@ -77,7 +79,9 @@ export const createEvent = async (req: Request, res: Response) => {
       [title, created_by_email]
     );
     if (eventExists.rows.length > 0) {
-      return res.status(400).json({ message: "Event already exists" });
+      return res
+        .status(400)
+        .json({ message: "createEvent - event already exists" });
     }
 
     // create event
@@ -102,12 +106,12 @@ export const createEvent = async (req: Request, res: Response) => {
     );
 
     res.status(201).json({
-      message: "Event created successfully",
+      message: "createEvent - event created successfully",
       event: result.rows[0],
     });
   } catch (error) {
-    logger.error(`Error creating event: ${error}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`createEvent - error creating event: ${error}`);
+    res.status(500).json({ message: "createEvent - server error" });
   }
 };
 
@@ -134,8 +138,8 @@ export const getAllEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    logger.error(`Error fetching on-going events: ${err}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`getAllEvents - error fetching on-going events: ${err}`);
+    res.status(500).json({ message: "getAllEvents - server error" });
   }
 };
 
@@ -164,8 +168,8 @@ export const getCurrentEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    logger.error(`Error fetching on-going events: ${err}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`getCurrentEvents - error fetching on-going events: ${err}`);
+    res.status(500).json({ message: "getCurrentEvents - server error" });
   }
 };
 
@@ -194,8 +198,8 @@ export const getUpcomingEvents = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (error) {
-    logger.error(`Error fetching events: ${error}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`getUpcomingEvents - error fetching events: ${error}`);
+    res.status(500).json({ message: "getUpcomingEvents - server error" });
   }
 };
 
@@ -228,8 +232,8 @@ export const getEventsByUser = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    logger.error(`${err}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`getEventsByUser - ${err}`);
+    res.status(500).json({ message: "getEventsByUser - server error" });
   }
 };
 
@@ -262,8 +266,8 @@ export const search = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    logger.error(`${err}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`search - ${err}`);
+    res.status(500).json({ message: "search - server error" });
   }
 };
 
@@ -293,7 +297,7 @@ export const getLatestEvent = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    logger.error(`${err}`);
-    res.status(500).json({ message: "Server error" });
+    logger.error(`getLatestEvent - ${err}`);
+    res.status(500).json({ message: "getLatestEvent - server error" });
   }
 };
