@@ -9,13 +9,13 @@ export const signup = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).send("Please provide all required fields");
+    return res.status(400).send("signup - fill in all fields");
   }
 
   if (!process.env.JWT_SECRET) {
-    return res
-      .status(502)
-      .json({ message: "Internal server error: JWT_SECRET not defined" });
+    return res.status(502).json({
+      message: "signup - internal server error: JWT_SECRET not defined",
+    });
   }
 
   try {
@@ -33,7 +33,9 @@ export const signup = async (req: Request, res: Response) => {
     );
 
     if (userExists.rows.length > 0) {
-      return res.status(401).json({ message: "Email already registered" });
+      return res
+        .status(401)
+        .json({ message: "signup - email already registered" });
     }
 
     // Hash password
@@ -66,7 +68,7 @@ export const signup = async (req: Request, res: Response) => {
     );
 
     res.status(201).json({
-      message: "User created successfully",
+      message: "signup - user created successfully",
       user: {
         id: result.rows[0].id,
         username: result.rows[0].username,
@@ -79,10 +81,10 @@ export const signup = async (req: Request, res: Response) => {
     logger.error(`${err}`);
 
     if (err.code === "23505") {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "signup - email already exists" });
     }
 
-    res.status(500).send("Server error");
+    res.status(500).send("signup - server error");
   }
 };
 
@@ -92,7 +94,7 @@ export const login = async (req: Request, res: Response) => {
   if (!email || !password) {
     return res
       .status(400)
-      .json({ message: "Please provide email and password" });
+      .json({ message: "login - please provide email and password" });
   }
 
   try {
@@ -109,14 +111,14 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "login - user not found" });
     }
 
     const user = result.rows[0];
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "login - invalid credentials" });
     }
 
     // JWT token
@@ -133,13 +135,13 @@ export const login = async (req: Request, res: Response) => {
     );
 
     res.json({
-      message: "Login successful",
+      message: "login - login successful",
       token,
       user: { id: user.id, username: user.username, email: user.email },
     });
   } catch (err) {
     logger.error(err);
-    res.status(500).send("Server error");
+    res.status(500).send("login - server error");
   }
 };
 
@@ -157,10 +159,10 @@ export const deleteAccount = async (req: Request, res: Response) => {
       [email]
     );
     logger.debug(`query result: ${result}`);
-    res.json({ message: "Account deleted successfully" });
+    res.json({ message: "deleteAccount - account deleted successfully" });
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "deleteAccount - server error" });
   }
 };
 
@@ -182,7 +184,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       [email, id]
     );
     if (emailCheck.rows.length > 0) {
-      return res.status(400).json({ error: "Email already in use" });
+      return res
+        .status(400)
+        .json({ error: "updateProfile - email already in use" });
     }
 
     const usernameCheck = await pool.query(
@@ -199,7 +203,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       [username, id]
     );
     if (usernameCheck.rows.length > 0) {
-      return res.status(400).json({ error: "Username already taken" });
+      return res
+        .status(400)
+        .json({ error: "updateProfile - username already taken" });
     }
 
     const updateUser = await pool.query(
@@ -218,8 +224,8 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     res.json(updateUser.rows[0]);
   } catch (err) {
-    logger.error(`Profile update error: ${err}`);
-    res.status(500).json({ error: "Internal server error" });
+    logger.error(`updateProfile - profile update error: ${err}`);
+    res.status(500).json({ error: "updateProfile - internal server error" });
   }
 };
 
@@ -227,7 +233,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: "Email is required." });
+    return res.status(400).json({ message: "forgotPass - Email is required." });
   }
 
   try {
@@ -243,7 +249,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res
+        .status(404)
+        .json({ message: `forgotPass - No user found with email ${email}` });
     }
 
     const user = result.rows[0];
@@ -408,10 +416,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
     await emailService.sendEmail(email, subject, html);
 
     return res.status(200).json({
-      message: `Credentials sent to ${email}`,
+      message: `forgotPass - Creds sent to ${email}`,
     });
   } catch (err) {
-    logger.error(`Error in forgottenPassword: ${err}`);
-    return res.status(500).json({ message: "Server error" });
+    logger.error(`forgotPass - Error in forgottenPassword: ${err}`);
+    return res.status(500).json({ message: "forgotPass - Server error" });
   }
 };
