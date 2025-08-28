@@ -1,7 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { theme } from '../../theme';
 import CustomText from '../components/CustomText';
+import { theme } from '../../theme';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { privacyPolicyText, termsOfServiceText } from '../configs/legalText';
 
 const LegalScreen = ({ route }: { route: any }) => {
