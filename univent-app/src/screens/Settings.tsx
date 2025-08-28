@@ -1,22 +1,26 @@
+import * as Haptics from "expo-haptics";
 import CustomText from '../components/CustomText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedButton from '../components/AnimatedButton';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking, Text } from 'react-native';
-import { theme } from '../../theme';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../../App';
-import { UserContext } from '../context/UserContext';
+import Constants from 'expo-constants';
+import HapticsToggle from '../components/HapticsToggle';
+import PressableScale from "../components/PressableScale";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Keyboard, TouchableWithoutFeedback, Linking, Text } from "react-native";
+import { theme } from "../../theme";
+import { useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../App";
+import { UserContext } from "../context/UserContext";
 import { api } from "../utils/api";
-import { TextInput as TextInputPaper, Modal as PaperModal } from 'react-native-paper';
-import { useToast } from '../components/useToast';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { TextInput as TextInputPaper, Modal as PaperModal } from "react-native-paper";
+import { useToast } from "../components/useToast";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { conditionalHaptics } from "../utils/haptics";
 
 const EditProfileSchema = z.object({
   username: z.string()
@@ -44,27 +48,56 @@ const Settings = () => {
   const aboutUsBottomSheetRef = useRef<BottomSheet>(null);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [notificationLoading, setNotificationLoading] = useState(false);
-  const [isBottomSheetAccountOpen, setIsBottomSheetAccountOpen] = useState(false);
-  const [isBottomSheetProfileOpen, setIsBottomSheetProfileOpen] = useState(false);
-  const [isBottomSheetMiscellaneousOpen, setIsBottomSheetMiscellaneousOpen] = useState(false);
-  const [isBottomSheetAboutUsOpen, setIsBottomSheetAboutUsOpen] = useState(false);
   const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isEditAccDetailsLayoutVisible, setIsEditAccDetailsLayoutVisible] = useState(false);
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [openSheet, setOpenSheet] = useState<SheetType | null>(null);
   const [countdown, setCountdown] = useState(10);
   const [canDelete, setCanDelete] = useState(false);
   const { showSuccess, showError } = useToast();
-  const profileButtonScale = useSharedValue(1);
-  const accountButtonScale = useSharedValue(1);
-  const miscButtonScale = useSharedValue(1);
-  const aboutUsButtonScale = useSharedValue(1);
-  const editProfileButtonScale = useSharedValue(1);
-  const emailToButtonScale = useSharedValue(1);
-  const privacyPolicyButtonScale = useSharedValue(1);
-  const tosButtonScale = useSharedValue(1);
+
+  type SheetType = keyof typeof sheetRefs;
+
+  const sheetRefs = {
+    profile: profileSettingsBottomSheetRef,
+    account: accountSettingsBottomSheetRef,
+    miscellaneous: miscellaneousSettingsBottomSheetRef,
+    aboutus: aboutUsBottomSheetRef
+  } as const;
+
+
+  // data for about-us screen
+  const aboutUsData = {
+    name: "Univent",
+    description: "Your ultimate companion for discovering and managing university events. Never miss out on what's happening on campus again.",
+    createdBy: "Harshil",
+    email: "harxxhil.gg@gmail.com"
+  };
+
+  // check if guest
+  const isGuest = user?.email === 'user.guest@univent.com';
+
+  const toggleBottomSheet = (type: SheetType) => {
+    Object.values(sheetRefs).forEach(r => r.current?.close());
+    setOpenSheet(type);
+    requestAnimationFrame(() => sheetRefs[type].current?.expand());
+  };
+
+  const toggleSheetFromButton = (type: SheetType) => {
+    if (openSheet === type) {
+      sheetRefs[type].current?.close();
+      setOpenSheet(null);
+      return;
+    }
+    toggleBottomSheet(type);
+  };
+
+  const handleSheetChange = (type: SheetType) => (index: number) => {
+    if (index === -1) setOpenSheet(prev => (prev === type ? null : prev));
+    else setOpenSheet(type);
+  };
 
   const {
     control,
@@ -82,6 +115,7 @@ const Settings = () => {
   });
 
   const handleLogout = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setLogoutLoading(true);
     try {
       await AsyncStorage.removeItem("authToken");
@@ -89,6 +123,7 @@ const Settings = () => {
       showSuccess(1500, 'Logged out successfully!');
       setLogoutLoading(false);
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error("Logout failed: ", err);
       setLogoutLoading(false);
       showError(2000, 'Logout failed!', 'Try again later.');
@@ -97,16 +132,22 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     setIsDeleteConfirmationVisible(false);
-    try {
-      setDeleteLoading(true);
-      setDeleteAccountLoading(true);
 
+    // show an early error if email is not available
+    if (!user?.email) {
+      showError(2000, 'No account found');
+      return;
+    }
+
+    try {
+      setDeleteAccountLoading(true);
       const res = await api.delete('/auth/deleteAccount', {
         data: { email: user.email }
       });
 
       if (res.status === 200) {
         await AsyncStorage.removeItem("authToken");
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showSuccess(3000, 'Your account has been permanently deleted.');
         navigation.replace('Auth');
       } else {
@@ -114,15 +155,16 @@ const Settings = () => {
       };
 
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error(err);
       showError(2000, 'Something went wrong!');
     } finally {
-      setDeleteLoading(false);
       setDeleteAccountLoading(false);
     }
   };
 
   const openAppSettings = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     try {
       setNotificationLoading(true);
       await Linking.openSettings();
@@ -134,65 +176,23 @@ const Settings = () => {
     }
   };
 
-  const handleAccountSheetChanges = useCallback((index: number) => {
-    setIsBottomSheetAccountOpen(index >= 0);
-  }, []);
-
-  const handleProfileSheetChanges = useCallback((index: number) => {
-    setIsBottomSheetProfileOpen(index >= 0);
-  }, []);
-
-  const handleMiscellaneousSheetChanges = useCallback((index: number) => {
-    setIsBottomSheetMiscellaneousOpen(index >= 0);
-  }, []);
-
-  const handleAboutUsSheetChanges = useCallback((index: number) => {
-    setIsBottomSheetAboutUsOpen(index >= 0);
-  }, []);
-
-  const bottomSheets = {
-    profile: {
-      ref: profileSettingsBottomSheetRef,
-      isOpen: isBottomSheetProfileOpen
-    },
-    account: {
-      ref: accountSettingsBottomSheetRef,
-      isOpen: isBottomSheetAccountOpen
-    },
-    miscellaneous: {
-      ref: miscellaneousSettingsBottomSheetRef,
-      isOpen: isBottomSheetMiscellaneousOpen
-    },
-    aboutus: {
-      ref: aboutUsBottomSheetRef,
-      isOpen: isBottomSheetAboutUsOpen
-    }
-  };
-
-  const toggleBottomSheet = (sheetType: keyof typeof bottomSheets) => {
-    Object.values(bottomSheets).forEach(sheet => {
-      sheet.ref.current?.close();
-    });
-
-    const selectedSheet = bottomSheets[sheetType];
-    if (!selectedSheet.isOpen) {
-      selectedSheet.ref.current?.expand();
-    };
-  };
-
   const toggleLogoutConfirmation = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     setIsLogoutConfirmationVisible((prev) => !prev);
   };
 
   const toggleDeleteConfirmation = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     setIsDeleteConfirmationVisible((prev) => !prev);
   };
 
   const toggleEditLayout = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     setIsEditAccDetailsLayoutVisible((prev) => !prev);
   };
 
   const handleCloseEditAccountModal = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     setIsEditAccDetailsLayoutVisible(false);
     reset({
       username: user?.username || '',
@@ -206,7 +206,6 @@ const Settings = () => {
 
   const handleEditAccount = async (data: FormData) => {
     try {
-
       const response = await api.put('/auth/updateProfile', {
         id: user.id,
         username: data.username,
@@ -216,160 +215,26 @@ const Settings = () => {
       if (response.status === 200) {
         const updateUser = response.data;
         setUser(updateUser);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showSuccess(3000, 'Profile Updated');
         handleCloseEditAccountModal();
       } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         showError(3000, "Profile Update Failed");
-      };
-
+      }
     } catch (error) {
       console.error("Update error: ", error);
       showError(3000, "Something went wrong", "Please try again");
     }
   };
 
-  const profileAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: profileButtonScale.value }]
-  }));
-
-  const accountAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: accountButtonScale.value }]
-  }));
-
-  const miscAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: miscButtonScale.value }]
-  }));
-
-  const aboutUsAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: aboutUsButtonScale.value}]
-  }));
-
-  const editProfileAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: editProfileButtonScale.value }]
-  }));
-
-  const emailToAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: emailToButtonScale.value }]
-  }));
-
-  const privacyPolicyAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: privacyPolicyButtonScale.value }]
-  }));
-
-  const tosAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: tosButtonScale.value }]
-  }));
-
-  const handleProfilePressIn = () => {
-    profileButtonScale.value = withSpring(0.95, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleProfilePressOut = () => {
-    profileButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleAccountPressIn = () => {
-    accountButtonScale.value = withSpring(0.95, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleAccountPressOut = () => {
-    accountButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleMiscPressIn = () => {
-    miscButtonScale.value = withSpring(0.95, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleMiscPressOut = () => {
-    miscButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleAboutPressIn = () => {
-    aboutUsButtonScale.value = withSpring(0.95, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleAboutPressOut = () => {
-    aboutUsButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    });
-  };
-
-  const handleEditProfilePressIn = () => {
-    editProfileButtonScale.value = withSpring(0.90, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handleEditProfilePressOut = () => {
-    editProfileButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handleEmailToPressIn = () => {
-    emailToButtonScale.value = withSpring(0.98, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handleEmailToPressOut = () => {
-    emailToButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handlePrivacyPolicyPressIn = () => {
-    privacyPolicyButtonScale.value = withSpring(0.98, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handlePrivacyPolicyPressOut = () => {
-    privacyPolicyButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handleTosPressIn = () => {
-    tosButtonScale.value = withSpring(0.98, {
-      damping: 10,
-      stiffness: 500
-    })
-  };
-
-  const handleTosPressOut = () => {
-    tosButtonScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 500
-    })
+  const handleProfileLink = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    try {
+      await Linking.openURL("https://github.com/harxxhilgg");
+    } catch (error) {
+      console.error(`error opening github profile: ${error}`);
+    };
   };
 
   useEffect(() => {
@@ -414,101 +279,78 @@ const Settings = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.userDataContainer}>
-            {user?.email === "user.guest@univent.com" ? (
-              <View>{null}</View>
-            ) : (
-              <TouchableOpacity
-                style={styles.editAccountContainer}
+            {!isGuest && (
+              <PressableScale
                 onPress={toggleEditLayout}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                onPressIn={handleEditProfilePressIn}
-                onPressOut={handleEditProfilePressOut}
-                activeOpacity={1}
+                pressedScale={0.90}
+                style={styles.editAccountContainer}
               >
-                <Animated.View style={editProfileAnimatedStyles}>
-                  <MaterialCommunityIcons name="account-edit" size={28} color={theme.colorFontGray} />
-                </Animated.View>
-              </TouchableOpacity>
+                <MaterialCommunityIcons name="account-edit" size={28} color={theme.colorFontGray} />
+              </PressableScale>
             )}
             <FontAwesome name="user-circle-o" size={130} color={theme.colorTransparentLightGray} style={styles.userProfile} />
             <CustomText style={[styles.userDetails, styles.usernameText]} bold>{user?.username || 'Username'}</CustomText>
-            {user.email === 'user.guest@univent.com' ? (
-              <View>{null}</View>
-            ) : (
+            {!isGuest && (
               <CustomText style={[styles.userDetails, styles.emailText]}>{user?.email || 'testemail@example.com'}</CustomText>
             )}
           </View>
 
-          <TouchableOpacity
+          <PressableScale
             style={styles.accountSettingsContainer}
-            onPress={() => toggleBottomSheet('profile')}
-            onPressIn={handleProfilePressIn}
-            onPressOut={handleProfilePressOut}
-            activeOpacity={1}
+            onPress={() => {
+              conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              toggleSheetFromButton('profile');
+            }}
           >
-            <Animated.View style={profileAnimatedStyles}>
-              <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
-            </Animated.View>
-          </TouchableOpacity>
+            <CustomText style={styles.accountSettingsText}>Profile Settings</CustomText>
+          </PressableScale>
 
-          {user.email === "user.guest@univent.com" ? (
-            <View>{null}</View>
-          ) : (
-            <TouchableOpacity
+          {!isGuest && (
+            <PressableScale
               style={styles.accountSettingsContainer}
-              onPress={() => toggleBottomSheet('account')}
-              onPressIn={handleAccountPressIn}
-              onPressOut={handleAccountPressOut}
-              activeOpacity={1}
+              onPress={() => {
+                conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                toggleSheetFromButton('account');
+              }}
             >
-              <Animated.View style={accountAnimatedStyles}>
-                <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
-              </Animated.View>
-            </TouchableOpacity>
+              <CustomText style={styles.accountSettingsText}>Account Settings</CustomText>
+            </PressableScale>
           )}
 
-          <TouchableOpacity
+          <PressableScale
             style={styles.accountSettingsContainer}
-            onPress={() => toggleBottomSheet('miscellaneous')}
-            onPressIn={handleMiscPressIn}
-            onPressOut={handleMiscPressOut}
-            activeOpacity={1}
+            onPress={() => {
+              conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              toggleSheetFromButton('miscellaneous');
+            }}
           >
-            <Animated.View style={miscAnimatedStyles}>
-              <CustomText style={styles.accountSettingsText}>Miscellaneous Settings</CustomText>
-            </Animated.View>
-          </TouchableOpacity>
+            <CustomText style={styles.accountSettingsText}>Miscellaneous Settings</CustomText>
+          </PressableScale>
 
-          <TouchableOpacity
+          <PressableScale
             style={styles.accountSettingsContainer}
-            onPress={() => toggleBottomSheet('aboutus')}
-            onPressIn={handleAboutPressIn}
-            onPressOut={handleAboutPressOut}
-            activeOpacity={1}
+            onPress={() => {
+              conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              toggleSheetFromButton('aboutus');
+            }}
           >
-            <Animated.View style={aboutUsAnimatedStyles}>
-              <CustomText style={styles.accountSettingsText}>About Us</CustomText>
-            </Animated.View>
-          </TouchableOpacity>
+            <CustomText style={styles.accountSettingsText}>About Us</CustomText>
+          </PressableScale>
 
           <BottomSheet
             ref={profileSettingsBottomSheetRef}
             index={-1}
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
-            onChange={handleProfileSheetChanges}
+            onChange={handleSheetChange('profile')}
             backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
-              {user?.email === "user.guest@univent.com" ? (
-                <View>{null}</View>
-              ) : (
+              {!isGuest && (
                 <AnimatedButton
                   label='Edit Profile'
                   onPress={toggleEditLayout}
-                  loading={deleteLoading}
-                  disabled={deleteLoading}
                   variant='primary'
                   fullWidth
                   semibold
@@ -535,19 +377,15 @@ const Settings = () => {
             index={-1}
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
-            onChange={handleAccountSheetChanges}
+            onChange={handleSheetChange('account')}
             backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
-              {user?.email === "user.guest@univent.com" ? (
-                <View>{null}</View>
-              ) : (
+              {!isGuest && (
                 <AnimatedButton
                   label='Delete Account'
                   onPress={toggleDeleteConfirmation}
-                  loading={deleteLoading}
-                  disabled={deleteLoading}
                   variant='red'
                   fullWidth
                   semibold
@@ -563,7 +401,7 @@ const Settings = () => {
             index={-1}
             enablePanDownToClose={true}
             snapPoints={Platform.OS === 'web' ? ['30%'] : ['40%']}
-            onChange={handleMiscellaneousSheetChanges}
+            onChange={handleSheetChange('miscellaneous')}
             backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
@@ -579,6 +417,7 @@ const Settings = () => {
                 style={styles.bottomSheetButtonStyle}
                 textStyle={styles.buttonTextStyle}
               />
+              <HapticsToggle />
             </BottomSheetView>
           </BottomSheet>
 
@@ -586,64 +425,68 @@ const Settings = () => {
             ref={aboutUsBottomSheetRef}
             index={-1}
             enablePanDownToClose={true}
-            snapPoints={Platform.OS === 'web' ? ['80%'] : ['90%']}
-            onChange={handleAboutUsSheetChanges}
+            snapPoints={['90%', '100%']}
+            onChange={handleSheetChange('aboutus')}
             backgroundStyle={{ backgroundColor: theme.colorBottomSheetDark, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
             handleIndicatorStyle={{ backgroundColor: theme.colorTransparentLightGray, width: 100, marginTop: 4 }}
           >
             <BottomSheetView style={styles.bottomSheetContainer}>
               <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.aboutHeader}>
-                  <Text style={styles.aboutLogo}>Univent</Text>
-                  <CustomText style={styles.aboutMission}>Your ultimate companion for discovering and managing university events. Never miss out on what's happening on campus again.</CustomText>
-                </View>
+                <View style={styles.aboutUsContainer}>
+                  <View style={styles.aboutHeader}>
+                    <Text style={styles.aboutLogo}>{aboutUsData.name}</Text>
+                    <CustomText style={styles.aboutMission}>{aboutUsData.description}</CustomText>
+                  </View>
 
-                <View style={styles.aboutSection}>
-                  <CustomText style={styles.aboutSectionTitle} bold>App Version</CustomText>
-                  <CustomText style={styles.aboutSectionContent}>v0.2.0-dev</CustomText>
-                </View>
+                  <View style={styles.aboutSection}>
+                    <CustomText style={styles.aboutSectionTitle} bold>App Version</CustomText>
+                    <CustomText style={styles.aboutSectionVersion}>v{Constants.expoConfig?.version}</CustomText>
+                  </View>
 
-                <View style={styles.aboutSection}>
-                  <CustomText style={styles.aboutSectionTitle} bold>Created By</CustomText>
-                  <CustomText style={styles.aboutSectionContent}>Harshil</CustomText>
-                </View>
-
-                <View style={styles.aboutSection}>
-                  <CustomText style={styles.aboutSectionTitle} bold>Contact & Support</CustomText>
-                    <TouchableOpacity
-                      onPress={() => Linking.openURL('mailto:harxxhil.gg@gmail.com')}
-                      onPressIn={handleEmailToPressIn}
-                      onPressOut={handleEmailToPressOut}
-                      activeOpacity={1}
+                  <View style={styles.aboutSection}>
+                    <CustomText style={styles.aboutSectionTitle} bold>Created By</CustomText>
+                    <PressableScale
+                      onPress={handleProfileLink}
+                      pressedScale={0.98}
                     >
-                      <Animated.View style={emailToAnimatedStyles}>
-                        <CustomText style={styles.aboutLink}>harxxhil.gg@gmail.com</CustomText>
-                      </Animated.View>
-                    </TouchableOpacity>
-                </View>
+                      <CustomText style={styles.aboutSectionContent}>{aboutUsData.createdBy}</CustomText>
+                    </PressableScale>
+                  </View>
 
-                <View style={styles.aboutSection}>
-                  <CustomText style={styles.aboutSectionTitle} bold>Legal</CustomText>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('Legal', { type: 'privacy' })}
-                    onPressIn={handlePrivacyPolicyPressIn}
-                    onPressOut={handlePrivacyPolicyPressOut}
-                    activeOpacity={1}
-                  >
-                    <Animated.View style={privacyPolicyAnimatedStyles}>
+                  <View style={styles.aboutSection}>
+                    <CustomText style={styles.aboutSectionTitle} bold>Contact & Support</CustomText>
+                    <PressableScale
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        Linking.openURL('mailto:harxxhil.gg@gmail.com');
+                      }}
+                      pressedScale={0.98}
+                    >
+                      <CustomText style={styles.aboutLink}>{aboutUsData.email}</CustomText>
+                    </PressableScale>
+                  </View>
+
+                  <View style={styles.aboutSection}>
+                    <CustomText style={styles.aboutSectionTitle} bold>Legal</CustomText>
+                    <PressableScale
+                      onPress={() => {
+                        conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        navigation.navigate('Legal', { type: 'privacy' });
+                      }}
+                      pressedScale={0.98}
+                    >
                       <CustomText style={styles.aboutLink}>Privacy Policy</CustomText>
-                    </Animated.View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('Legal', { type: 'tos' })}
-                    onPressIn={handleTosPressIn}
-                    onPressOut={handleTosPressOut}
-                    activeOpacity={1}
-                  >
-                    <Animated.View style={tosAnimatedStyles}>
-                    <CustomText style={styles.aboutLink}>Terms of Service</CustomText>
-                    </Animated.View>
-                  </TouchableOpacity>
+                    </PressableScale>
+                    <PressableScale
+                      onPress={() => {
+                        conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        navigation.navigate('Legal', { type: 'tos' });
+                      }}
+                      pressedScale={0.98}
+                    >
+                      <CustomText style={styles.aboutLink}>Terms of Service</CustomText>
+                    </PressableScale>
+                  </View>
                 </View>
               </ScrollView>
             </BottomSheetView>
@@ -728,6 +571,7 @@ const Settings = () => {
                   </>
                 )}
               />
+
             </View>
             {/* <View style={{ padding: 10 }}> // ! USE ONLY IN DEBUG
               <CustomText style={{ fontSize: 18, color: theme.colorFontLight, marginBottom: 4 }}>Debug Values</CustomText>
@@ -844,7 +688,6 @@ const Settings = () => {
               />
             </View>
           </PaperModal>
-
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView >
@@ -885,10 +728,12 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight,
   },
   usernameText: {
-    fontSize: 26
+    fontSize: 28,
+    lineHeight: 28
   },
   emailText: {
-    fontSize: 13
+    fontSize: 12,
+    color: theme.colorLightGray
   },
   accountSettingsContainer: {
     backgroundColor: theme.colorSlightDark,
@@ -922,9 +767,6 @@ const styles = StyleSheet.create({
   deleteAccountBtnText: {
     color: theme.colorFontLight,
     textAlign: "center"
-  },
-  activityIndicator: {
-    paddingVertical: 4
   },
   editAccountConfirmationContainer: {
     backgroundColor: theme.colorBottomSheetDark,
@@ -979,15 +821,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20
   },
-  editAccountCancelButton: {
-    backgroundColor: theme.colorButtonGray
-  },
   editAccountCancelButtonText: {
     color: theme.colorFontLight,
     fontSize: 14
-  },
-  editAccountSaveChangesButton: {
-    backgroundColor: theme.colorRed
   },
   editAccountSaveChangesButtonText: {
     color: theme.colorFontLight,
@@ -1074,11 +910,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colorFontLight
   },
+  aboutUsContainer: {
+    width: "100%",
+    maxWidth: 450,
+    marginHorizontal: "auto"
+  },
   aboutHeader: {
     alignItems: 'center',
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colorGray
+    borderBottomColor: theme.colorGray,
+    marginHorizontal: "auto"
   },
   aboutLogo: {
     fontFamily: "DreamAvenue",
@@ -1102,9 +944,14 @@ const styles = StyleSheet.create({
     color: theme.colorFontLight,
     marginBottom: 2
   },
-  aboutSectionContent: {
+  aboutSectionVersion: {
     fontSize: 15,
     color: theme.colorFontGray
+  },
+  aboutSectionContent: {
+    fontSize: 15,
+    color: theme.colorFontGray,
+    textDecorationLine: 'underline'
   },
   aboutLink: {
     fontSize: 15,
