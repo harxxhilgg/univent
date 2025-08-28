@@ -9,6 +9,7 @@ import ForgottenPassword from './src/screens/ForgottenPassword';
 import useInternetMonitor from './src/components/useInternetMonitor';
 import CustomText from './src/components/CustomText';
 import Updates from './src/screens/Updates';
+import LegalScreen from './src/screens/LegalScreen';
 import { ActivityIndicator, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from './src/context/UserProvider';
@@ -22,7 +23,9 @@ import { setBackgroundColorAsync } from "expo-system-ui";
 import { Event } from './src/screens/UniventHome';
 import { useToast } from './src/components/useToast';
 import { Image } from 'expo-image';
-import LegalScreen from './src/screens/LegalScreen';
+import { initializeHaptics } from './src/utils/haptics';
+import { HapticsProvider } from './src/context/HapticsContext';
+import { MenuProvider } from "react-native-popup-menu";
 
 const isDev = __DEV__;
 
@@ -57,6 +60,7 @@ function AppContent() {
   useEffect(() => {
     let fontTimer: any;
     let notificationListener: any;
+    initializeHaptics();
 
     const initializeApp = async () => {
       try {
@@ -73,7 +77,9 @@ function AppContent() {
           "Inter-SemiBold": require("./assets/fonts/Inter-SemiBold.ttf"),
           "Dynalight": require("./assets/fonts/Dynalight.ttf"),
           "ZenOldMincho": require("./assets/fonts/ZenOldMincho.ttf"),
-          "DreamAvenue": require("./assets/fonts/DreamAvenue.ttf")
+          "DreamAvenue": require("./assets/fonts/DreamAvenue.ttf"),
+          "SpaceMono": require("./assets/fonts/SpaceMono-Regular.ttf"),
+          "SpaceMono-Bold": require("./assets/fonts/SpaceMono-Bold.ttf")
         });
         setFontsLoaded(true);
 
@@ -155,90 +161,94 @@ function AppContent() {
         </TouchableOpacity>
       </View>
     );
-  }
+  };
 
   return (
-    <GestureHandlerRootView style={styles.gestureHandlerRootView}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName={initialRoute}
-          screenOptions={{
-            headerShown: false,
-            cardStyle: {
-              backgroundColor: theme.colorBackgroundDark
-            }
-          }}
-        >
-          <Stack.Screen
-            name="Auth"
-            component={AuthScreen}
-            options={() => ({
-              ...TransitionPresets.ModalFadeTransition
-            })}
-          />
-          <Stack.Screen
-            name="ForgottenPassword"
-            component={ForgottenPassword}
-            options={() => ({
-              headerShown: true,
-              headerTitle: "",
-              headerBackButtonDisplayMode: "minimal",
-              headerStyle: { backgroundColor: theme.colorBackgroundDark },
-              headerTintColor: theme.colorTabBarTint,
-              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
-              ...TransitionPresets.ModalFadeTransition
-            })}
-          />
-          <Stack.Screen
-            name="Signup"
-            component={Signup}
-            options={() => ({
-              ...TransitionPresets.ModalFadeTransition
-            })}
-          />
-          <Stack.Screen
-            name="Main"
-            component={BottomTabNavigator}
-            options={() => ({
-              ...TransitionPresets.ModalFadeTransition
-            })}
-          />
-          <Stack.Screen
-            name="Updates"
-            component={Updates}
-            options={() => ({
-              ...TransitionPresets.ModalFadeTransition
-            })}
-          />
-          <Stack.Screen
-            name="EventDetails"
-            component={EventDetails}
-            options={() => ({
-              headerShown: true,
-              headerTitle: "Event Details",
-              headerBackButtonDisplayMode: "minimal",
-              headerStyle: { backgroundColor: theme.colorBackgroundDark },
-              headerTintColor: theme.colorTabBarTint,
-              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
-              ...TransitionPresets.BottomSheetAndroid
-            })}
-          />
-          <Stack.Screen
-            name="Legal"
-            component={LegalScreen}
-            options={({ route }) => ({
-              headerShown: true,
-              title: route.params.type === 'privacy' ? 'Privacy Policy' : 'Terms of Service',
-              headerStyle: { backgroundColor: theme.colorBackgroundDark },
-              headerTintColor: theme.colorTabBarTint,
-              headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
-              ...TransitionPresets.FadeFromBottomAndroid
-            })}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <HapticsProvider>
+      <GestureHandlerRootView style={styles.gestureHandlerRootView}>
+        <StatusBar barStyle="light-content" backgroundColor={theme.colorBackgroundDark} />
+        <MenuProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName={initialRoute}
+              screenOptions={{
+                headerShown: false,
+                cardStyle: {
+                  backgroundColor: theme.colorBackgroundDark
+                }
+              }}
+            >
+              <Stack.Screen
+                name="Auth"
+                component={AuthScreen}
+                options={() => ({
+                  ...TransitionPresets.ModalFadeTransition
+                })}
+              />
+              <Stack.Screen
+                name="ForgottenPassword"
+                component={ForgottenPassword}
+                options={() => ({
+                  headerShown: true,
+                  headerTitle: "",
+                  headerBackButtonDisplayMode: "minimal",
+                  headerStyle: { backgroundColor: theme.colorBackgroundDark },
+                  headerTintColor: theme.colorTabBarTint,
+                  headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+                  ...TransitionPresets.ModalFadeTransition
+                })}
+              />
+              <Stack.Screen
+                name="Signup"
+                component={Signup}
+                options={() => ({
+                  ...TransitionPresets.ModalFadeTransition
+                })}
+              />
+              <Stack.Screen
+                name="Main"
+                component={BottomTabNavigator}
+                options={() => ({
+                  ...TransitionPresets.ModalFadeTransition
+                })}
+              />
+              <Stack.Screen
+                name="Updates"
+                component={Updates}
+                options={() => ({
+                  ...TransitionPresets.ModalFadeTransition
+                })}
+              />
+              <Stack.Screen
+                name="EventDetails"
+                component={EventDetails}
+                options={() => ({
+                  headerShown: true,
+                  headerTitle: "Event Details",
+                  headerBackButtonDisplayMode: "minimal",
+                  headerStyle: { backgroundColor: theme.colorBackgroundDark },
+                  headerTintColor: theme.colorTabBarTint,
+                  headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+                  ...TransitionPresets.BottomSheetAndroid
+                })}
+              />
+              <Stack.Screen
+                name="Legal"
+                component={LegalScreen}
+                options={({ route }) => ({
+                  headerShown: true,
+                  title: route.params.type === 'privacy' ? 'Privacy Policy' : 'Terms of Service',
+                  headerStyle: { backgroundColor: theme.colorBackgroundDark },
+                  headerTintColor: theme.colorTabBarTint,
+                  headerTitleStyle: { fontSize: 22, fontWeight: "bold", letterSpacing: 0.5 },
+                  ...TransitionPresets.FadeFromBottomAndroid
+                })}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </MenuProvider>
+      </GestureHandlerRootView>
+    </HapticsProvider>
   );
 }
 
