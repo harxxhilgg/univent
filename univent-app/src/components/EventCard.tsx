@@ -161,10 +161,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4
   },
   month: {
-    fontSize: 12.5,
+    fontSize: 14,
     color: theme.colorFontDark,
     textTransform: 'uppercase',
-    letterSpacing: 2
+    fontFamily: "SpaceMono-Bold"
   },
   day: {
     fontSize: 16,
@@ -175,7 +175,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10
+    borderBottomRightRadius: 10,
+    fontFamily: "SpaceMono"
   },
   imageWrapper: {
     position: 'relative',
