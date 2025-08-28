@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import axios from 'axios';
 import CustomText from '../components/CustomText';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -10,6 +11,7 @@ import { API_URL } from "../utils/api";
 import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../../App';
 import { Event as UpcomingEvent } from './UniventHome';
+import { conditionalHaptics } from "../utils/haptics";
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -98,11 +100,19 @@ const Updates = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData();
-    setRefreshing(false);
+    try {
+      await fetchData();
+      conditionalHaptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error(`updates - server error ${error}`);
+      conditionalHaptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setRefreshing(false);
+    };
   }, []);
 
   const toggleExpand = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.linear);
     setExpanded(!expanded);
   };
@@ -157,7 +167,10 @@ const Updates = () => {
           {expanded && event && (
             <View style={styles.eventDetails}>
               <TouchableOpacity
-                onPress={() => navigation.navigate('EventDetails', { event })}
+                onPress={() => {
+                  conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  navigation.navigate('EventDetails', { event });
+                }}
                 onPressIn={touchablePressIn}
                 onPressOut={touchablePressOut}
                 activeOpacity={1}
