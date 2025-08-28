@@ -1,60 +1,12 @@
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
 import { useToast } from "../components/useToast";
-import { api } from "../utils/api";
-
-const isDev = __DEV__;
+import { registerForPushNotifications, requestNotificationPermission } from "../utils/notifications";
+import { decodeJwtPayload } from "../utils/auth";
 
 interface ProviderProps {
   children?: React.ReactNode;
-};
-
-export function decodeJwtPayload(token: string) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  };
-};
-
-const requestNotificationPermission = async (): Promise<boolean> => {
-  try {
-    if (!Device.isDevice) {
-      if (isDev) console.log('Not a physical device');
-      return false;
-    }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      if (isDev) console.log('Notification perms denied');
-      return false;
-    }
-
-    if (isDev) console.log(`Notification perms granted`);
-    return true;
-  } catch (err) {
-    console.error('Perms error: ', err);
-    return false;
-  };
 };
 
 export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
@@ -63,47 +15,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [initialRoute, setInitialRoute] = useState<'Auth' | 'Main'>('Auth');
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const { showSuccess, showInfo } = useToast();
-
-  async function registerForPushNotifications(token: string, userData?: any) {
-    try {
-      if (!Device.isDevice) {
-        if (isDev) console.log('Skipping push token - not a physical device');
-        return;
-      }
-
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== 'granted') {
-        if (isDev) console.log('Notifications permission not granted - skipping token registration');
-        return;
-      }
-
-      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
-
-      if (expoPushToken) {
-        if (isDev) console.log('Push token obtained: ', expoPushToken);
-
-        const userEmail = userData?.email || user?.email;
-
-        if (!userEmail) {
-          console.error('User email not found - cannot register push token');
-          return;
-        }
-
-        const response = await api.post("/default/notification-push-token", {
-          expoPushToken,
-          userEmail
-        });
-
-        if (response.status === 200) {
-          if (isDev) console.log('Push token registered with server: ', response.data);
-        } else {
-          console.error('Failed to register push token: ', response.data);
-        };
-      }
-    } catch (error) {
-      console.error('Error registering push token: ', error);
-    };
-  };
 
   useEffect(() => {
     async function initializeApp() {
@@ -131,7 +42,6 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
             // register push token and initialize notifications
             await registerForPushNotifications(token, decodedPayload);
-
           } else {
             setInitialRoute('Auth');
           }
