@@ -7,7 +7,7 @@ import { Request, Response } from "express";
 dotenv.config();
 
 export const getDefault = (req: Request, res: Response) => {
-  res.json({ message: "Default route is working" });
+  res.json({ message: "default route is working" });
 };
 
 export const updatePushToken = async (req: Request, res: Response) => {
@@ -15,15 +15,21 @@ export const updatePushToken = async (req: Request, res: Response) => {
     const { expoPushToken, userEmail } = req.body;
 
     if (!expoPushToken) {
-      return res.status(400).json({ messge: "Expo Push token is required" });
+      return res
+        .status(400)
+        .json({ messge: "updateToken - expo Push token is required" });
     }
 
     if (!userEmail) {
-      return res.status(400).json({ message: "User email is required" });
+      return res
+        .status(400)
+        .json({ message: "updateToken - user email is required" });
     }
 
-    logger.debug(`Updating push token for user: ${userEmail}`);
-    logger.debug(`Updated push token: ${expoPushToken.substring(0, 20)}...`);
+    logger.debug(`updateToken - updating push token for user: ${userEmail}`);
+    logger.debug(
+      `updateToken - updated push token: ${expoPushToken.substring(0, 20)}...`
+    );
 
     const result = await pool.query(
       `
@@ -40,21 +46,24 @@ export const updatePushToken = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "updateToken - user not found" });
     }
 
-    logger.debug(`Push token updated successfully for user: ${userEmail}`);
+    logger.debug(
+      `updateToken - push token updated successfully for user: ${userEmail}`
+    );
 
     res.json({
-      message: "Push token updated successfully",
+      message: "updateToken - push token updated successfully",
       email: userEmail,
       tokenUpdated: true,
     });
   } catch (error) {
-    logger.error(`Error updating push token: ${error}`);
+    logger.error(`updateToken - error updating push token: ${error}`);
     res.status(500).json({
-      message: "Server error while updating push token",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "updateToken - server error while updating push token",
+      error:
+        error instanceof Error ? error.message : "updateToken - unknown error",
     });
   }
 };
@@ -64,7 +73,9 @@ export const getPushToken = async (req: Request, res: Response) => {
     const { userEmail } = req.query;
 
     if (!userEmail) {
-      return res.status(400).json({ message: "User email is required" });
+      return res
+        .status(400)
+        .json({ message: "getPushToken - user email is required" });
     }
 
     const result = await pool.query(
@@ -80,13 +91,13 @@ export const getPushToken = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "getPushToken - user not found" });
     }
 
     const user = result.rows[0];
 
     res.json({
-      message: "Push token retrieved successfully",
+      message: "getPushToken - push token retrieved successfully",
       email: user.email,
       hasPushToken: !!user.expo_push_token,
       pushToken: user.expo_push_token
@@ -94,10 +105,10 @@ export const getPushToken = async (req: Request, res: Response) => {
         : null,
     });
   } catch (error) {
-    logger.error(`Error retrieving push token: ${error}`);
-    res
-      .status(500)
-      .json({ message: "Server error while retrieving push token" });
+    logger.error(`getPushToken - error retrieving push token: ${error}`);
+    res.status(500).json({
+      message: "getPushToken - server error while retrieving push token",
+    });
   }
 };
 
@@ -105,7 +116,9 @@ export const notificationPushToken = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res
+      .status(401)
+      .json({ error: "notificationPushToken - unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -113,16 +126,23 @@ export const notificationPushToken = async (req: Request, res: Response) => {
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      return res.status(500).json({ error: "JWT secret not configured" });
+      return res
+        .status(500)
+        .json({ error: "notificationPushToken - JWT secret not configured" });
     }
 
     const decoded = jwt.verify(token, jwtSecret);
     // @ts-ignore
-    const userId = decoded.userId;
+    const { userId, email } = decoded;
     const { expoPushToken } = req.body;
+    const start = expoPushToken.indexOf("[") + 1;
+    const end = expoPushToken.indexOf("]");
+    const justTheToken = expoPushToken.substring(start, end);
 
     if (!expoPushToken) {
-      return res.status(400).json({ error: "Expo push token is required" });
+      return res
+        .status(400)
+        .json({ error: "notificationPushToken - expo push token is required" });
     }
 
     await pool.query(
@@ -137,9 +157,15 @@ export const notificationPushToken = async (req: Request, res: Response) => {
       [expoPushToken, userId]
     );
 
-    res.status(200).json({ message: "Push token registered succesfully" });
+    res.status(200).json({
+      message: `notificationPushToken - token ${justTheToken} registered succesfully for ${email}`,
+    });
   } catch (err) {
-    logger.error(`Failed to register push token: ${err}`);
-    res.status(403).json({ error: "Invalid or expired token" });
+    logger.error(
+      `notificationPushToken - failed to register push token: ${err}`
+    );
+    res
+      .status(403)
+      .json({ error: "notificationPushToken - invalid or expired token" });
   }
 };
