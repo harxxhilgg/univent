@@ -1,17 +1,19 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import CustomText from '../components/CustomText';
-import AnimatedButton from '../components/AnimatedButton';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Text } from 'react-native';
-import { theme } from '../../theme';
-import { useContext, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { AuthScreenNavigationProp } from '../../App';
-import { api } from '../utils/api';
-import { UserContext } from '../context/UserContext';
-import { TextInput as TextInputPaper } from 'react-native-paper';
-import { decodeJwtPayload } from '../context/UserProvider';
-import { useToast } from '../components/useToast';
+import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomText from "../components/CustomText";
+import AnimatedButton from "../components/AnimatedButton";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Text } from "react-native";
+import { theme } from "../../theme";
+import { useContext, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { AuthScreenNavigationProp } from "../../App";
+import { api } from "../utils/api";
+import { UserContext } from "../context/UserContext";
+import { TextInput as TextInputPaper } from "react-native-paper";
+import { decodeJwtPayload } from "../utils/auth";
+import { useToast } from "../components/useToast";
+import { conditionalHaptics } from "../utils/haptics";
 
 const isDev = __DEV__;
 
@@ -75,10 +77,12 @@ const AuthScreen = () => {
         return;
       };
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showSuccess(1500, "Logged in successfully!");
       navigation.replace("Main");
     } catch (error: any) {
       const status = error.response?.status;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
       if (status === 400) {
         showInfo(2500, "Please fill in all fields");
@@ -99,6 +103,7 @@ const AuthScreen = () => {
   };
 
   const handleGuestLogin = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setGuestLoading(true);
     try {
       // setting up guest data
@@ -111,7 +116,7 @@ const AuthScreen = () => {
       setUser(data.user);
       try {
         navigation.replace("Main");
-        showSuccess(1500, 'Logged in as a guest!');
+        showSuccess(2000, 'Logged in as a guest!');
       } catch (err) {
         console.error(err);
         showError(2500, "Something is wrong with the app", "Please restart the app");
@@ -125,6 +130,7 @@ const AuthScreen = () => {
   };
 
   const redirectNewAccount = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     try {
       setCreateNewAccountLoading(true);
       navigation.replace('Signup');
@@ -165,6 +171,7 @@ const AuthScreen = () => {
               theme={{ colors: { primary: theme.colorWhite, background: theme.colorBackgroundDark } }}
               textColor={theme.colorFontLight}
               outlineStyle={{ borderRadius: 10 }}
+              activeOutlineColor={theme.colorWhite}
             />
             <TextInputPaper
               keyboardType="default"
@@ -180,6 +187,7 @@ const AuthScreen = () => {
               textColor={theme.colorFontLight}
               outlineStyle={{ borderRadius: 10 }}
               secureTextEntry={secureTextEntry}
+              activeOutlineColor={theme.colorWhite}
               right={
                 <TextInputPaper.Icon
                   icon={secureTextEntry ? 'eye' : 'eye-off'}
@@ -212,13 +220,16 @@ const AuthScreen = () => {
           />
 
           <TouchableOpacity
-            onPress={() => navigation.navigate("ForgottenPassword", { email })}
+            onPress={() => {
+              conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              navigation.navigate("ForgottenPassword", { email });
+            }}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             activeOpacity={1}
           >
             <Animated.View style={animatedButtonStyles}>
-              <CustomText style={styles.forgotPassText}> Forgotten Password? </CustomText>
+              <CustomText style={styles.forgotPassText}>Forgotten Password?</CustomText>
             </Animated.View>
           </TouchableOpacity>
 
@@ -307,22 +318,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontSize: 15
   },
-  defaultAttempt: {
-    fontSize: 12,
-    color: theme.colorFontGray
-  },
-  failedAttempt: {
-    fontSize: 14,
-    color: theme.colorFontGray
-  },
   forgotPassText: {
     color: theme.colorFontGray,
-    fontSize: 14
+    fontSize: 13,
+    marginTop: 2
   },
   newAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
-    marginBottom: 10,
+    marginBottom: 6,
     width: "100%",
     maxWidth: 500
   },
@@ -334,7 +338,8 @@ const styles = StyleSheet.create({
   alreadyUserText: {
     color: theme.colorFontGray,
     fontSize: 13,
-    textAlign: "center"
+    textAlign: "center",
+    letterSpacing: 0.5
   }
 });
 
