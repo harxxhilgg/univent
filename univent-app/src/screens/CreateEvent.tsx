@@ -1,11 +1,13 @@
+import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomText from "../components/CustomText";
 import ToggleSwitch from "toggle-switch-react-native";
 import AnimatedButton from "../components/AnimatedButton";
-import React, { useContext, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
+import React, { useContext, useRef, useState } from "react";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View, TouchableOpacity, Dimensions } from "react-native";
 import { theme } from "../../theme";
 import { Image } from "expo-image";
 import { TextInput as TextInputPaper } from "react-native-paper";
@@ -15,6 +17,7 @@ import { api } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { AuthScreenNavigationProp } from "../../App";
 import { useToast } from "../components/useToast";
+import { conditionalHaptics } from "../utils/haptics";
 
 const isDev = __DEV__;
 
@@ -34,6 +37,19 @@ const CreateEvent = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(false);
   const { showError, showSuccess, showInfo } = useToast();
+  const confettiRef = useRef<any>();
+
+  const isGuest = user?.email === "user.guest@univent.com";
+
+  async function clearInputFields() {
+    setTitle("");
+    setOrganizer("");
+    setEventDate("");
+    setEventTime("");
+    setLocation("");
+    setSelectedImage(null);
+    setIsPaid(false);
+  };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
@@ -54,6 +70,7 @@ const CreateEvent = () => {
   };
 
   const pickImage = async () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync(); // take media perms
 
     if (status !== "granted") {
@@ -98,7 +115,6 @@ const CreateEvent = () => {
     return response?.data?.imageUrl || null;
   };
 
-
   const handleEventCreate = async () => {
     if (!title || !organizer || !eventDate || !eventTime || !location || !selectedImage || isPaid === undefined) {
       showInfo(2500, "Please fill in all fields!");
@@ -124,16 +140,13 @@ const CreateEvent = () => {
       if (isDev) console.log(response?.data);
       showSuccess(1500, "Event created successfully!");
 
-      setTitle("");
-      setOrganizer("");
-      setEventDate("");
-      setEventTime("");
-      setLocation("");
-      setSelectedImage(null);
-      setIsPaid(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      confettiRef?.current?.start();
+      await clearInputFields();
     } catch (err: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       if (isDev) console.log("Event creation error ", err.response?.data || err.message);
-      showError(2500, "Event created failure!");
+      showError(2500, "Event created failure!", "Please try again later.");
     } finally {
       setLoading(false);
     };
@@ -143,8 +156,7 @@ const CreateEvent = () => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flexContainer}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-
-          {user?.email === 'user.guest@univent.com' ? (
+          {isGuest ? (
             <View style={styles.guestContainer}>
               <Octicons name="blocked" size={100} color={theme.colorRed} style={styles.accessDenyIcon} />
               <View style={styles.guestAccountTextContainer}>
@@ -215,7 +227,13 @@ const CreateEvent = () => {
 
                 <View style={styles.pickerContainer}>
                   {/* Date */}
-                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTimeInput}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      setShowDatePicker(true);
+                    }}
+                    style={styles.dateTimeInput}
+                  >
                     <CustomText style={styles.input}>{eventDate || "Select Date"}</CustomText>
                   </TouchableOpacity>
 
@@ -229,7 +247,13 @@ const CreateEvent = () => {
                   )}
 
                   {/* Time */}
-                  <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.dateTimeInput}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      setShowTimePicker(true);
+                    }}
+                    style={styles.dateTimeInput}
+                  >
                     <CustomText style={styles.input}>{eventTime || "Select Time"}</CustomText>
                   </TouchableOpacity>
 
@@ -284,7 +308,10 @@ const CreateEvent = () => {
                     offColor={theme.colorSlightDark}
                     labelStyle={{ color: theme.colorFontLight, fontWeight: 'bold' }}
                     size='medium'
-                    onToggle={(isOn) => setIsPaid(isOn)}
+                    onToggle={(isOn) => {
+                      conditionalHaptics.selectionAsync();
+                      setIsPaid(isOn);
+                    }}
                   />
                 </View>
               </View>
@@ -303,6 +330,14 @@ const CreateEvent = () => {
               </View>
             </>
           )}
+
+          <ConfettiCannon
+            ref={confettiRef}
+            count={100}
+            origin={{ x: Dimensions.get("window").width / 2, y: -30 }}
+            autoStart={false}
+            fadeOut={true}
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
