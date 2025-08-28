@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import CustomText from '../components/CustomText';
 import AnimatedButton from '../components/AnimatedButton';
 import React, { useState } from 'react';
@@ -11,6 +12,7 @@ import { useToast } from '../components/useToast';
 import { Controller, useForm } from "react-hook-form";
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { conditionalHaptics } from "../utils/haptics";
 
 const isDev = __DEV__;
 
@@ -58,9 +60,11 @@ const Signup = () => {
       setSignupLoading(true);
       const response = await api.post("/auth/signup", data);
       if (isDev) console.log(`User created: ${response.data.username}`);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showSuccess(3000, 'Account created', 'Please log in');
       navigation.navigate('Auth');
     } catch (error: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       console.error(error);
       showError(3000, 'Signup Failed', error.response?.data?.message || "Please try again");
     } finally {
@@ -69,6 +73,7 @@ const Signup = () => {
   };
 
   const redirectLogin = () => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     try {
       setLoginLoading(true);
       navigation.replace('Auth')
@@ -300,7 +305,7 @@ const styles = StyleSheet.create({
   oldAccContainer: {
     flex: 1,
     flexDirection: "column-reverse",
-    marginBottom: 10,
+    marginBottom: 6,
     width: "95%",
     maxWidth: 500
   },
@@ -312,7 +317,6 @@ const styles = StyleSheet.create({
     color: theme.colorFontGray,
     fontSize: 13,
     textAlign: "center",
-    marginBottom: 5,
     letterSpacing: 0.5
   }
 });
