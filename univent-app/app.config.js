@@ -10,7 +10,7 @@ export default {
   expo: {
     name: "Univent",
     slug: "univent",
-    version: "0.2.0-beta",
+    version: "0.3.0-dev",
     orientation: "portrait",
     icon: "./assets/icons/splash-icon-light.png",
     userInterfaceStyle: "light",
@@ -57,7 +57,8 @@ export default {
       ],
       "expo-dev-client",
       [
-        "expo-notifications", {
+        "expo-notifications",
+        {
           "icon": "./assets/icons/notification-icon.png",
           "color": "#ffffff"
         }
