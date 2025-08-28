@@ -1,6 +1,6 @@
 {
   "name": "univent-backend",
-  "version": "1.0.0",
+  "version": "0.3.0-dev",
   "main": "index.js",
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.json",
