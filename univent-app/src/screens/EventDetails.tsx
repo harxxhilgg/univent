@@ -1,22 +1,30 @@
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import * as Haptics from "expo-haptics";
 import Entypo from '@expo/vector-icons/Entypo';
 import CustomText from '../components/CustomText';
 import AnimatedButton from '../components/AnimatedButton';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Image } from 'react-native';
 import { theme } from '../../theme';
-import { calculateTimeUntil, getMonthAndDay } from '../components/EventCard';
 import { formatTime } from '../components/EventCard';
 import { useToast } from '../components/useToast';
 import { UserContext } from '../context/UserContext';
+import { conditionalHaptics } from '../utils/haptics';
+import { RouteProp } from "@react-navigation/native";
+import { View, ScrollView, StyleSheet, Image } from 'react-native';
+import { calculateTimeUntil, getMonthAndDay } from '../components/EventCard';
+import { RootStackParamList } from "../../App";
 
-const EventDetails = ({ route }: { route: any }) => {
+type EventDetailsRouteProp = RouteProp<RootStackParamList, 'EventDetails'>;
+
+const EventDetails = ({ route: eventRoute }: { route: EventDetailsRouteProp }) => {
   // getting full event object from navigation params
-  const { event } = route.params;
+  const { event } = eventRoute.params;
   const { user } = useContext(UserContext);
   const [timeUntil, setTimeUntil] = useState("");
   const { showInfo, showError } = useToast();
   const [registerLoading, setRegisterLoading] = useState(false);
+
+  const isGuest = user?.email === "user.guest@univent.com";
 
   useEffect(() => {
     setTimeUntil(calculateTimeUntil(event.event_date, event.event_time));
@@ -42,6 +50,8 @@ const EventDetails = ({ route }: { route: any }) => {
   const formattedWeekday = dateDay.toLocaleDateString('en-US', options);
 
   const handleRegister = () => {
+    // change it when feature is implemented
+    conditionalHaptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
       setRegisterLoading(true);
       if (event.created_by_email === user.email) {
@@ -57,6 +67,7 @@ const EventDetails = ({ route }: { route: any }) => {
   };
 
   const handleGuestRegister = () => {
+    conditionalHaptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
       setRegisterLoading(true);
       showInfo(3000, "Guest users cannot register for events", "Please Login or Signup to register");
@@ -137,7 +148,7 @@ const EventDetails = ({ route }: { route: any }) => {
           <View style={styles.registerContainer}>
             <AnimatedButton
               label='Register'
-              onPress={user.email === 'user.guest@univent.com' ? handleGuestRegister : handleRegister}
+              onPress={isGuest ? handleGuestRegister : handleRegister}
               loading={registerLoading}
               disabled={registerLoading}
               variant='light-purple'
@@ -253,10 +264,11 @@ const styles = StyleSheet.create({
     borderColor: theme.colorWhite,
   },
   month: {
-    fontSize: 14,
+    fontSize: 15,
     color: theme.colorFontDark,
     textTransform: 'uppercase',
-    letterSpacing: 1.3
+    letterSpacing: 1,
+    fontFamily: "SpaceMono-Bold"
   },
   dayTextContainer: {
     flex: 1,
@@ -271,7 +283,8 @@ const styles = StyleSheet.create({
   day: {
     textAlign: 'center',
     fontSize: 20,
-    color: theme.colorLightGray
+    color: theme.colorLightGray,
+    fontFamily: "SpaceMono"
   },
   eventDateDetailsContainer: {
     marginLeft: 16,
@@ -283,7 +296,7 @@ const styles = StyleSheet.create({
   },
   eventTimeDetailsText: {
     color: theme.colorFontLight,
-    fontSize: 15
+    fontSize: 16
   },
   eventLocationInlineContainer: {
     flexDirection: "row",
