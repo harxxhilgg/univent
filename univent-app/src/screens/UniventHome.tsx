@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import axios from 'axios';
 import CustomText from '../components/CustomText';
 import AnimatedEventCard from '../components/AnimatedEventCard';
@@ -9,6 +10,7 @@ import { UserContext } from '../context/UserContext';
 import { api, API_URL } from '../utils/api';
 import { theme } from '../../theme';
 import { CurrentEvents } from '../components/CurrentEvents';
+import { conditionalHaptics } from '../utils/haptics';
 
 export interface Event {
   id: number;
@@ -128,6 +130,7 @@ const UniventHome = ({ navigation }: { navigation: any }) => {
   }, [fetchEvents]);
 
   const onRefresh = useCallback(() => {
+    conditionalHaptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     if (isRefreshingRef.current) return;
     isRefreshingRef.current = true;
     setHasSearchData(false);
