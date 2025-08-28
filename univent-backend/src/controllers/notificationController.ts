@@ -11,11 +11,11 @@ export const sendNotification = async (req: Request, res: Response) => {
 
     if (!userEmail || !title || !body) {
       return res.status(400).json({
-        message: "userEmail, title and body are required",
+        message: "sendNotification - userEmail, title and body are required",
       });
     }
 
-    logger.debug(`Sending notification to: ${userEmail}`);
+    logger.debug(`sendNotification - sending notification to: ${userEmail}`);
 
     // getting user's push token from db
     const userResult = await pool.query(
@@ -31,18 +31,23 @@ export const sendNotification = async (req: Request, res: Response) => {
     );
 
     if (userResult.rows.length === 0) {
-      return res.status(404).json({ messgae: "User not found" });
+      return res
+        .status(404)
+        .json({ messgae: "sendNotification - user not found" });
     }
 
     const pushToken = userResult.rows[0].expo_push_token;
 
     if (!pushToken) {
       return res.status(400).json({
-        message: "User has no push token registered",
+        message:
+          "sendNotification - user has no push notification token registered",
       });
     }
 
-    logger.debug(`Using push token: ${pushToken.substring(0, 20)}...`);
+    logger.debug(
+      `sendNotification - using push token: ${pushToken.substring(0, 20)}...`
+    );
 
     const message: any = {
       to: pushToken,
@@ -64,15 +69,18 @@ export const sendNotification = async (req: Request, res: Response) => {
     }
 
     res.json({
-      message: "Notifications send successfully",
+      message: "sendNotification - notifications sent successfully",
       messageId: tickets,
       recipient: userEmail,
     });
   } catch (error) {
-    logger.error(`Error sending notifications: ${error}`);
+    logger.error(`sendNotification - error sending notifications: ${error}`);
     res.status(500).json({
-      message: "Failed to send notification",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "sendNotification - failed to send notification",
+      error:
+        error instanceof Error
+          ? error.message
+          : "sendNotification - unknown error",
     });
   }
 };
