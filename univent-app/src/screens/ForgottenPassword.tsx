@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import AnimatedButton from '../components/AnimatedButton';
 import CustomText from '../components/CustomText';
 import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
@@ -9,6 +10,14 @@ import { TextInput } from 'react-native-paper';
 import { useToast } from '../components/useToast';
 import { api } from '../utils/api';
 import { useState } from 'react';
+import { RouteProp } from "@react-navigation/native";
+import { RootStackParamList } from "../../App";
+
+type ForgottenPasswordRouteProp = RouteProp<RootStackParamList, 'ForgottenPassword'>;
+type FormData = z.infer<typeof EmailSchema>;
+type StatusHandler = {
+  [key: number]: () => void;
+};
 
 const EmailSchema = z.object({
   email: z.string().regex(
@@ -17,10 +26,8 @@ const EmailSchema = z.object({
   )
 });
 
-type FormData = z.infer<typeof EmailSchema>;
-
-const ForgottenPassword = ({ route }: { route: any }) => {
-  const passedEmail = route.params?.email || '';
+const ForgottenPassword = ({ route: email }: { route: ForgottenPasswordRouteProp }) => {
+  const passedEmail: string = email.params?.email || '';
   const [forgottenPasswordLoading, setForgottenPasswordLoading] = useState(false);
   const { showSuccess, showInfo, showError } = useToast();
 
@@ -35,22 +42,38 @@ const ForgottenPassword = ({ route }: { route: any }) => {
     resolver: zodResolver(EmailSchema)
   });
 
+  function showResponse(response: any, status: number) {
+    const message = response?.data?.message.toString().split('- ')[1];
+
+    const statusHandler: StatusHandler = {
+      200: () => showSuccess(3000, message), // success
+      400: () => showInfo(4000, message), // no input value
+      404: () => showInfo(4000, message), // no user
+      500: () => showError(4000, message) // server error
+    };
+
+    const handler = statusHandler[status];
+
+    if (handler) {
+      handler();
+    };
+  };
+
   const onSubmit = async (data: FormData) => {
     try {
       setForgottenPasswordLoading(true);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const response = await api.post("/auth/forgotPassword", data);
-      showSuccess(2500, "Credentials sent via email");
-    } catch (error: any) {
-      const status = error.response?.status;
+      const status = response?.status;
 
-      if (status === 404) {
-        showError(2500, "No user found with this email", "Please check your email");
-      } else if (status === 400) {
-        showInfo(2500, "Please enter your email");
-      } else {
-        showError(2500, "Something went wrong", "Please try again");
-      };
+      // show response upon user interaction on 'Continue' button.
+      showResponse(response, status);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error: any) {
+      const status = error?.response?.status;
+
+      // show response upon user interaction on 'Continue' button.
+      showResponse(error?.response, status);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setForgottenPasswordLoading(false);
     };
@@ -87,6 +110,7 @@ const ForgottenPassword = ({ route }: { route: any }) => {
                     }}
                     textColor={theme.colorFontLight}
                     outlineStyle={{ borderRadius: 10 }}
+                    activeOutlineColor={theme.colorWhite}
                     autoCapitalize='none'
                   />
                   {errors.email && (
@@ -113,8 +137,8 @@ const ForgottenPassword = ({ route }: { route: any }) => {
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
 export default ForgottenPassword;
 
